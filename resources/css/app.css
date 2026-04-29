@@ -1,11 +1,109 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source '../../app/Livewire/**/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        "Outfit", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+    --color-brand-50: #f8fafc;
+    --color-brand-100: #f1f5f9;
+    --color-brand-200: #e2e8f0;
+    --color-brand-300: #cbd5e1;
+    --color-brand-400: #64748b;
+    --color-brand-500: #334155;
+    --color-brand-600: #1e293b;
+    --color-brand-700: #0f172a;
+    --color-brand-800: #020617;
+    --color-brand-900: #000000;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply font-sans antialiased text-slate-800 bg-slate-50;
+    }
+}
+
+@layer components {
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .input {
+        @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none;
+    }
+    /* Custom select with proper chevron positioning */
+    select.input {
+        @apply appearance-none pr-10 bg-no-repeat;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%2364748b' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+        background-position: right 0.75rem center;
+        background-size: 1.1rem 1.1rem;
+    }
+    .label {
+        @apply block text-sm font-medium text-slate-700 mb-1;
+    }
+    .card {
+        @apply bg-white rounded-xl shadow-sm border border-slate-200;
+    }
+    .badge {
+        @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .mobile-shell {
+        @apply min-h-screen max-w-md mx-auto bg-slate-50 relative;
+    }
+    .safe-bottom {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem);
+    }
+    .safe-top {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    /* Quill editor — match Tailwind look */
+    .ql-toolbar.ql-snow {
+        @apply rounded-t-lg border-slate-300 bg-slate-50;
+    }
+    .ql-container.ql-snow {
+        @apply rounded-b-lg border-slate-300;
+        font-family: inherit;
+        font-size: 0.875rem;
+    }
+    .ql-editor {
+        min-height: 180px;
+    }
+    .ql-editor.ql-blank::before {
+        @apply text-slate-400;
+        font-style: normal;
+    }
+
+    /* Rich text rendered output */
+    .prose-announcement {
+        @apply text-sm text-slate-700 leading-relaxed;
+    }
+    .prose-announcement h1 { @apply text-lg font-semibold mt-3 mb-1.5 text-slate-900; }
+    .prose-announcement h2 { @apply text-base font-semibold mt-3 mb-1.5 text-slate-900; }
+    .prose-announcement h3 { @apply text-sm font-semibold mt-2 mb-1 text-slate-900; }
+    .prose-announcement p { @apply mb-2; }
+    .prose-announcement ul { @apply list-disc pl-5 mb-2; }
+    .prose-announcement ol { @apply list-decimal pl-5 mb-2; }
+    .prose-announcement a { @apply text-brand-600 underline; }
+    .prose-announcement blockquote { @apply border-l-4 border-slate-300 pl-3 text-slate-600 italic my-2; }
+    .prose-announcement strong { @apply font-semibold text-slate-900; }
 }

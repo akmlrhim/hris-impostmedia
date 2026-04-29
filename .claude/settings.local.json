@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "Bash(npm run *)",
+      "Bash(grep -n \"Models\\\\\\\\\\\\\\\\HRIS\" app/Models/User.php)",
+      "Bash(sed -i 's|App\\\\\\\\Models\\\\\\\\HRIS\\\\\\\\|App\\\\\\\\Models\\\\\\\\|g' app/Models/User.php)",
+      "Bash(grep \"Models\\\\\\\\\\\\\\\\\" app/Models/User.php)",
+      "Bash(grep -rln \"App\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\HRIS\" app/ database/ resources/ routes/ bootstrap/)",
+      "Bash(php -r ' *)"
+    ]
+  }
+}
