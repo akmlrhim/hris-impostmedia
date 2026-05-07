@@ -1,6 +1,6 @@
 <div>
 	<div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3">
-		<a href="{{ route('mobile.home') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
+		<a wire:navigate href="{{ route('mobile.home') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
 			<x-icon name="arrow-left" class="w-5 h-5" />
 		</a>
 		<h1 class="text-xl font-bold text-slate-900">Slip Gaji</h1>
@@ -8,7 +8,7 @@
 
 	<div class="p-5 space-y-3">
 		@forelse ($payslips as $p)
-			<a href="{{ route('mobile.payslip.show', $p->id) }}" class="card p-4 flex items-center justify-between hover:bg-slate-50 transition">
+			<a wire:navigate href="{{ route('mobile.payslip.show', $p) }}" class="card p-4 flex items-center justify-between hover:bg-slate-50 transition">
 				<div>
 					<p class="font-semibold text-slate-900">
 						{{ \Carbon\Carbon::create()->month($p->period->month)->translatedFormat('F') }} {{ $p->period->year }}

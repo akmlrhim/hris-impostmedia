@@ -1,40 +1,91 @@
 {
-    "name": "IMPOST MEDIA",
-    "short_name": "IM",
-    "description": "Human Resource Information System",
-    "start_url": "/m",
+    "name": "HRIS Impost Media",
+    "short_name": "HRIS IM",
+    "description": "Human Resource Information System – Impost Media",
+    "id": "/",
+    "start_url": "/",
     "scope": "/",
     "display": "standalone",
-    "orientation": "portrait",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "any",
     "background_color": "#f8fafc",
-    "theme_color": "#0f172a",
+    "theme_color": "#1e293b",
     "lang": "id",
+    "categories": ["business", "productivity"],
     "icons": [
+        {
+            "src": "/icons/icon-72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-180.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
         {
             "src": "/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-192-maskable.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/icon-384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
     "shortcuts": [
         {
-            "name": "Check-in",
+            "name": "Check-in Absensi",
             "short_name": "Check-in",
             "url": "/m/attendance",
-            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-        },
-        {
-            "name": "Pengajuan Cuti",
-            "short_name": "Cuti",
-            "url": "/m/leave/create",
-            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+            "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
         }
     ]
 }

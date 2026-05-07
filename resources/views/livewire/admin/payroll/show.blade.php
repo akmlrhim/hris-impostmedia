@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.payroll') }}" class="text-slate-600 hover:text-slate-900">
+            <a wire:navigate href="{{ route('admin.payroll') }}" class="text-slate-600 hover:text-slate-900">
                 <x-icon name="arrow-left" class="w-5 h-5" />
             </a>
             <div>
@@ -39,14 +39,10 @@
     </div>
 
     {{-- Summary --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="card p-4">
-            <p class="text-xs uppercase text-slate-500">Total Gross</p>
+            <p class="text-xs uppercase text-slate-500">Total Pendapatan</p>
             <p class="text-xl font-bold text-slate-900 mt-1">{{ rupiah($totals['gross']) }}</p>
-        </div>
-        <div class="card p-4">
-            <p class="text-xs uppercase text-slate-500">Total Potongan</p>
-            <p class="text-xl font-bold text-red-600 mt-1">{{ rupiah($totals['deductions']) }}</p>
         </div>
         <div class="card p-4">
             <p class="text-xs uppercase text-slate-500">Total Net</p>
@@ -70,10 +66,7 @@
                     <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
                         <th class="px-5 py-3">Karyawan</th>
                         <th class="px-5 py-3 text-right">Hadir</th>
-                        <th class="px-5 py-3 text-right">Lembur</th>
-                        <th class="px-5 py-3 text-right">Earnings</th>
-                        <th class="px-5 py-3 text-right">Potongan</th>
-                        <th class="px-5 py-3 text-right">Net</th>
+                        <th class="px-5 py-3 text-right">Total</th>
                         <th class="px-5 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -85,17 +78,16 @@
                                 <p class="text-xs text-slate-500">{{ $pr->employee->employee_number }} · {{ $pr->employee->position?->name ?? '—' }}</p>
                             </td>
                             <td class="px-5 py-3 text-right">{{ $pr->present_days }}/{{ $pr->working_days }}</td>
-                            <td class="px-5 py-3 text-right">{{ floor($pr->overtime_minutes / 60) }}j {{ $pr->overtime_minutes % 60 }}m</td>
-                            <td class="px-5 py-3 text-right">{{ rupiah($pr->total_earnings) }}</td>
-                            <td class="px-5 py-3 text-right text-red-600">{{ rupiah($pr->total_deductions) }}</td>
                             <td class="px-5 py-3 text-right font-semibold text-emerald-600">{{ rupiah($pr->net_salary) }}</td>
-                            <td class="px-5 py-3 text-right whitespace-nowrap">
-                                <a href="{{ route('admin.payroll.payslip', $pr->id) }}" class="text-brand-600 hover:underline text-sm">Lihat Slip</a>
+                            <td class="px-5 py-3 text-right">
+                                <a wire:navigate href="{{ route('admin.payroll.payslip', $pr) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
+                                    <x-icon name="file-text" class="w-3.5 h-3.5" /> Lihat Slip
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-5 py-12 text-center text-slate-500">Tidak ada data slip gaji.</td>
+                            <td colspan="4" class="px-5 py-12 text-center text-slate-500">Tidak ada data slip gaji.</td>
                         </tr>
                     @endforelse
                 </tbody>

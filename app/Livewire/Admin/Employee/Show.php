@@ -5,9 +5,7 @@ namespace App\Livewire\Admin\Employee;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Employee;
-use App\Models\LeaveRequest;
 use App\Models\Payroll;
-use App\Models\Reimbursement;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -45,23 +43,6 @@ class Show extends Component
                 ->count(),
         ];
 
-        $leaveBalances = $emp->leaveBalances()
-            ->with('leaveType')
-            ->where('year', now()->year)
-            ->get();
-
-        $recentLeaves = LeaveRequest::with('leaveType')
-            ->where('employee_id', $emp->id)
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        $recentReimbursements = Reimbursement::with('category')
-            ->where('employee_id', $emp->id)
-            ->latest()
-            ->limit(5)
-            ->get();
-
         $recentPayrolls = Payroll::with('period')
             ->where('employee_id', $emp->id)
             ->latest()
@@ -70,10 +51,7 @@ class Show extends Component
 
         return view('livewire.admin.employee.show', compact(
             'attendanceStats',
-            'leaveBalances',
-            'recentLeaves',
-            'recentReimbursements',
-            'recentPayrolls'
+            'recentPayrolls',
         ));
     }
 }

@@ -19,8 +19,7 @@ class Payslip extends Component
     public function render(): mixed
     {
         $earnings = $this->payroll->items->where('type', 'earning');
-        $deductions = $this->payroll->items->whereIn('type', ['deduction', 'tax']);
 
-        return view('livewire.admin.payroll.payslip', compact('earnings', 'deductions'));
+        return view('livewire.admin.payroll.payslip', compact('earnings'));
     }
 }

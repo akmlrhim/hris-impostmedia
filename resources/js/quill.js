@@ -1,5 +1,5 @@
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
+import Quill from "quill";
+import "quill/dist/quill.snow.css";
 
 window.Quill = Quill;
 
@@ -8,32 +8,46 @@ window.quillEditor = function (wire, property) {
     return {
         editor: null,
         init() {
-            const initial = wire.get(property) || '';
+            const initial = wire.get(property) || "";
 
             this.editor = new Quill(this.$refs.editor, {
-                theme: 'snow',
-                placeholder: 'Tulis konten pengumuman…',
+                theme: "snow",
+                placeholder: "Tulis konten pengumuman…",
                 modules: {
                     toolbar: [
                         [{ header: [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
+                        ["bold", "italic", "underline", "strike"],
                         [{ color: [] }, { background: [] }],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        ['blockquote', 'link'],
-                        ['clean'],
+                        [{ list: "ordered" }, { list: "bullet" }],
+                        ["blockquote", "link"],
+                        ["clean"],
                     ],
                 },
             });
 
             if (initial) {
                 this.editor.clipboard.dangerouslyPasteHTML(initial);
+                this.editor.setSelection(this.editor.getLength(), 0);
             }
 
-            this.editor.on('text-change', () => {
+            this.editor.on("text-change", () => {
                 const html = this.editor.root.innerHTML;
-                // Treat Quill's empty state as empty string for validation
-                const clean = html === '<p><br></p>' ? '' : html;
+                const clean = html === "<p><br></p>" ? "" : html;
                 wire.set(property, clean, false);
+            });
+
+            // Sync editor when Livewire updates the property from the server
+            // (e.g. when open() is called for editing or resetting the form)
+            wire.$watch(property, (value) => {
+                const currentHtml = this.editor.root.innerHTML;
+                const normalized =
+                    currentHtml === "<p><br></p>" ? "" : currentHtml;
+                if ((value || "") === normalized) {
+                    return;
+                }
+                this.editor.clipboard.dangerouslyPasteHTML(value || "");
+                const length = this.editor.getLength();
+                this.editor.setSelection(length, 0);
             });
         },
     };

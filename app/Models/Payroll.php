@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasRouteHash;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Payroll extends Model
 {
+    use HasRouteHash;
+
     protected function casts(): array
     {
         return [
@@ -48,10 +51,5 @@ class Payroll extends Model
     public function earnings()
     {
         return $this->items()->where('type', 'earning');
-    }
-
-    public function deductions()
-    {
-        return $this->items()->where('type', 'deduction');
     }
 }

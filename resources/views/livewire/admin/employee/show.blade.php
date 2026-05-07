@@ -1,7 +1,7 @@
 <div class="space-y-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.employees') }}" class="text-slate-600 hover:text-slate-900">
+            <a wire:navigate href="{{ route('admin.employees') }}" class="text-slate-600 hover:text-slate-900">
                 <x-icon name="arrow-left" class="w-5 h-5" />
             </a>
             <div>
@@ -15,7 +15,7 @@
                     class="btn-secondary">
                 {{ $employee->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
             </button>
-            <a href="{{ route('admin.employees.edit', $employee->id) }}" class="btn-primary">
+            <a wire:navigate href="{{ route('admin.employees', ['edit' => $employee->getRouteKey()]) }}" class="btn-primary">
                 <x-icon name="cog" class="w-4 h-4" /> Edit
             </a>
         </div>
@@ -24,8 +24,12 @@
     {{-- Header card --}}
     <div class="card p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div class="w-20 h-20 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl font-bold shrink-0">
-                {{ strtoupper(substr($employee->full_name, 0, 1)) }}
+            <div class="w-20 h-20 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl font-bold shrink-0 overflow-hidden">
+                @if ($employee->avatar_path)
+                    <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
+                @else
+                    {{ strtoupper(substr($employee->full_name, 0, 1)) }}
+                @endif
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
@@ -73,8 +77,8 @@
             <p class="text-lg font-bold text-slate-900 mt-1">{{ rupiah($employee->basic_salary) }}</p>
         </div>
         <div class="card p-4">
-            <p class="text-xs uppercase text-slate-500">PTKP</p>
-            <p class="text-lg font-bold text-slate-900 mt-1">{{ $employee->ptkp_status ?? '—' }}</p>
+            <p class="text-xs uppercase text-slate-500">Bergabung</p>
+            <p class="text-lg font-bold text-slate-900 mt-1">{{ $employee->join_date?->translatedFormat('M Y') ?? '—' }}</p>
         </div>
     </div>
 
@@ -91,10 +95,6 @@
                         'Tanggal Lahir' => $employee->date_of_birth?->translatedFormat('d M Y'),
                         'Tempat Lahir' => $employee->place_of_birth,
                         'Agama' => $employee->religion,
-                        'Status Pernikahan' => $employee->marital_status,
-                        'Golongan Darah' => $employee->blood_type,
-                        'NIK KTP' => $employee->nik_ktp,
-                        'NPWP' => $employee->npwp,
                     ];
                 @endphp
                 @foreach ($identity as $k => $v)
@@ -118,10 +118,6 @@
                         'Kota' => $employee->city,
                         'Provinsi' => $employee->province,
                         'Kode Pos' => $employee->postal_code,
-                        'Kontak Darurat' => $employee->emergency_contact_name
-                            ? "{$employee->emergency_contact_name} ({$employee->emergency_contact_relation})"
-                            : null,
-                        'Telp. Darurat' => $employee->emergency_contact_phone,
                     ];
                 @endphp
                 @foreach ($contact as $k => $v)
@@ -140,12 +136,9 @@
                 @php
                     $salary = [
                         'Gaji Pokok' => rupiah($employee->basic_salary),
-                        'PTKP' => $employee->ptkp_status,
                         'Bank' => $employee->bank_name,
                         'No. Rekening' => $employee->bank_account_number,
                         'Atas Nama' => $employee->bank_account_holder,
-                        'BPJS Kesehatan' => $employee->bpjs_kesehatan,
-                        'BPJS Ketenagakerjaan' => $employee->bpjs_ketenagakerjaan,
                     ];
                 @endphp
                 @foreach ($salary as $k => $v)
@@ -157,60 +150,13 @@
             </dl>
         </div>
 
-        {{-- Leave Balances --}}
-        <div class="card p-5">
-            <h3 class="text-sm font-semibold text-slate-900 mb-3">Saldo Cuti {{ now()->year }}</h3>
-            @if ($leaveBalances->isEmpty())
-                <p class="text-sm text-slate-500">Belum ada saldo cuti.</p>
-            @else
-                <div class="space-y-2">
-                    @foreach ($leaveBalances as $b)
-                        @php $remaining = (float) $b->quota_days + (float) $b->carried_over_days - (float) $b->used_days; @endphp
-                        <div class="flex items-center justify-between text-sm">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full" style="background:{{ $b->leaveType->color }}"></span>
-                                <span class="text-slate-700">{{ $b->leaveType->name }}</span>
-                            </div>
-                            <span class="font-medium text-slate-900">
-                                {{ rtrim(rtrim(number_format($remaining, 1), '0'), '.') }}
-                                / {{ rtrim(rtrim(number_format((float) $b->quota_days, 1), '0'), '.') }} hari
-                            </span>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
-        {{-- Recent Leaves --}}
-        <div class="card p-5">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-semibold text-slate-900">Pengajuan Cuti Terbaru</h3>
-            </div>
-            @forelse ($recentLeaves as $r)
-                <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm">
-                    <div>
-                        <p class="font-medium text-slate-900">{{ $r->leaveType->name }}</p>
-                        <p class="text-xs text-slate-500">
-                            {{ $r->start_date->format('d M') }} – {{ $r->end_date->format('d M Y') }}
-                            ({{ $r->total_days }} hari)
-                        </p>
-                    </div>
-                    <span class="badge bg-{{ $r->status?->color() }}-100 text-{{ $r->status?->color() }}-700">
-                        {{ $r->status?->label() }}
-                    </span>
-                </div>
-            @empty
-                <p class="text-sm text-slate-500">Belum ada pengajuan.</p>
-            @endforelse
-        </div>
-
         {{-- Recent Payslips --}}
         <div class="card p-5">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-sm font-semibold text-slate-900">Slip Gaji Terbaru</h3>
             </div>
             @forelse ($recentPayrolls as $p)
-                <a href="{{ route('admin.payroll.payslip', $p->id) }}"
+                <a wire:navigate href="{{ route('admin.payroll.payslip', $p) }}"
                    class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm hover:bg-slate-50 -mx-2 px-2 rounded transition">
                     <div>
                         <p class="font-medium text-slate-900">{{ $p->period->code }}</p>
@@ -223,4 +169,5 @@
             @endforelse
         </div>
     </div>
+
 </div>

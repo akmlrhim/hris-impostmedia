@@ -5,18 +5,15 @@
             <p class="text-sm text-slate-500">Generate & kelola perhitungan gaji bulanan.</p>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('admin.payroll.components') }}" class="btn-secondary">
-                <x-icon name="cog" class="w-4 h-4" /> Komponen
-            </a>
             <button wire:click="openForm" class="btn-primary">
                 <x-icon name="plus" class="w-4 h-4" /> Generate Periode
             </button>
         </div>
     </div>
 
-    @if ($showForm)
-        <div class="card p-5">
-            <form wire:submit="createPeriod" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <x-modal show="showForm" max-width="2xl" title="Generate Periode Payroll">
+        <form wire:submit="createPeriod" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="label">Tahun</label>
                     <input type="number" wire:model="year" min="2020" max="2099" class="input">
@@ -35,20 +32,20 @@
                     <label class="label">Tanggal Pembayaran</label>
                     <input type="date" wire:model="payment_date" class="input">
                 </div>
-                <div class="md:col-span-3 flex flex-wrap gap-2 justify-end">
-                    <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
-                    <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="createPeriod">Generate Sekarang</span>
-                        <span wire:loading wire:target="createPeriod">Memproses…</span>
-                    </button>
-                </div>
-                <p class="md:col-span-3 text-xs text-slate-500">
-                    Sistem akan menghitung gaji untuk semua karyawan aktif berdasarkan kehadiran, cuti, lembur,
-                    dan komponen yang tersedia. Periode existing dengan status <em>draft</em> akan ditimpa.
-                </p>
-            </form>
-        </div>
-    @endif
+            </div>
+            <p class="text-xs text-slate-500">
+                Sistem akan menghitung gaji untuk semua karyawan aktif berdasarkan kehadiran, cuti, lembur,
+                dan komponen yang tersedia. Periode existing dengan status <em>draft</em> akan ditimpa.
+            </p>
+            <div class="flex flex-wrap gap-2 justify-end pt-2 border-t border-slate-100">
+                <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
+                <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="createPeriod">Generate Sekarang</span>
+                    <span wire:loading wire:target="createPeriod">Memproses…</span>
+                </button>
+            </div>
+        </form>
+    </x-modal>
 
     <div class="card overflow-hidden">
         <div class="overflow-x-auto">
@@ -81,11 +78,17 @@
                                 @endphp
                                 <span class="badge bg-{{ $color }}-100 text-{{ $color }}-700 capitalize">{{ $p->status }}</span>
                             </td>
-                            <td class="px-5 py-3 text-right whitespace-nowrap">
-                                <a href="{{ route('admin.payroll.show', $p->id) }}" class="text-brand-600 hover:underline text-sm mr-3">Detail</a>
-                                @if (! $p->locked_at)
-                                    <button wire:click="delete({{ $p->id }})" wire:confirm="Hapus periode ini? Semua slip gaji terkait akan ikut terhapus." class="text-red-600 hover:underline text-sm">Hapus</button>
-                                @endif
+                            <td class="px-5 py-3">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a wire:navigate href="{{ route('admin.payroll.show', $p) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
+                                        <x-icon name="eye" class="w-3.5 h-3.5" /> Detail
+                                    </a>
+                                    @if (! $p->locked_at)
+                                        <button wire:click="delete({{ $p->id }})" wire:confirm="Hapus periode ini? Semua slip gaji terkait akan ikut terhapus." class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                                            <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
+                                        </button>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty

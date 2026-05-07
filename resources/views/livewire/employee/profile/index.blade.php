@@ -1,8 +1,12 @@
 <div>
 	<div class="bg-gradient-to-br from-brand-600 to-brand-800 text-white px-5 pt-8 pb-16">
 		<div class="flex flex-col items-center text-center">
-			<div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold">
-				{{ substr($employee?->full_name ?? auth()->user()->name, 0, 1) }}
+			<div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold overflow-hidden ring-2 ring-white/30">
+				@if ($employee?->avatar_path)
+					<img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
+				@else
+					{{ strtoupper(substr($employee?->full_name ?? auth()->user()->name, 0, 1)) }}
+				@endif
 			</div>
 			<h1 class="text-xl font-bold mt-3">{{ $employee?->full_name ?? auth()->user()->name }}</h1>
 			<p class="text-sm text-brand-100">{{ $employee?->position?->name ?? '—' }}</p>
@@ -15,10 +19,9 @@
 			@php
 				$rows = [
 					['label' => 'Email', 'value' => auth()->user()->email],
-					['label' => 'Departemen', 'value' => $employee?->position?->name ?? '—'],
 					['label' => 'Posisi', 'value' => $employee?->position?->name ?? '—'],
 					['label' => 'Status', 'value' => $employee?->employment_status?->label() ?? '—'],
-					['label' => 'Tanggal Bergabung', 'value' => $employee?->join_date?->format('d M Y') ?? '—'],
+					['label' => 'Tanggal Bergabung', 'value' => $employee?->join_date?->translatedFormat('d M Y') ?? '—'],
 					['label' => 'Telepon', 'value' => $employee?->phone ?? '—'],
 				];
 			@endphp
@@ -30,7 +33,7 @@
 			@endforeach
 		</div>
 
-		<a href="{{ route('mobile.profile.edit') }}"
+		<a wire:navigate href="{{ route('mobile.profile.edit') }}"
 		   class="btn-secondary w-full mt-5">
 			<x-icon name="cog" class="w-4 h-4" /> Edit Profil & Kata Sandi
 		</a>

@@ -61,7 +61,6 @@ class Show extends Component
 
         $totals = [
             'gross' => $payrolls->sum('gross_salary'),
-            'deductions' => $payrolls->sum('total_deductions'),
             'net' => $payrolls->sum('net_salary'),
         ];
 

@@ -2,40 +2,46 @@
 
 namespace App\Livewire\Employee\Profile;
 
-use App\Models\Employee;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('components.layouts.mobile')]
 class Edit extends Component
 {
+    use WithFileUploads;
+
     // Account
     public string $name = '';
 
     public string $email = '';
 
-    // Employee fields
+    // Avatar
+    public $avatar = null;
+
+    public ?string $existing_avatar_path = null;
+
+    // Identitas dasar
+    public string $full_name = '';
+
     public string $nickname = '';
 
     public string $phone = '';
 
-    public string $address = '';
+    // Data pribadi
+    public string $gender = '';
 
-    public string $city = '';
+    public ?string $date_of_birth = null;
 
-    public string $province = '';
+    public string $place_of_birth = '';
 
-    public string $postal_code = '';
+    public string $religion = '';
 
-    public string $emergency_contact_name = '';
-
-    public string $emergency_contact_phone = '';
-
-    public string $emergency_contact_relation = '';
-
+    // Bank
     public string $bank_name = '';
 
     public string $bank_account_number = '';
@@ -58,15 +64,14 @@ class Edit extends Component
         $this->email = (string) $user?->email;
 
         if ($employee) {
+            $this->existing_avatar_path = $employee->avatar_path;
+            $this->full_name = (string) $employee->full_name;
             $this->nickname = (string) $employee->nickname;
             $this->phone = (string) $employee->phone;
-            $this->address = (string) $employee->address;
-            $this->city = (string) $employee->city;
-            $this->province = (string) $employee->province;
-            $this->postal_code = (string) $employee->postal_code;
-            $this->emergency_contact_name = (string) $employee->emergency_contact_name;
-            $this->emergency_contact_phone = (string) $employee->emergency_contact_phone;
-            $this->emergency_contact_relation = (string) $employee->emergency_contact_relation;
+            $this->gender = (string) $employee->gender;
+            $this->date_of_birth = $employee->date_of_birth?->format('Y-m-d');
+            $this->place_of_birth = (string) $employee->place_of_birth;
+            $this->religion = (string) $employee->religion;
             $this->bank_name = (string) $employee->bank_name;
             $this->bank_account_number = (string) $employee->bank_account_number;
             $this->bank_account_holder = (string) $employee->bank_account_holder;
@@ -80,20 +85,28 @@ class Edit extends Component
         $this->validate([
             'name' => 'required|string|max:200',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'avatar' => 'nullable|image|max:2048',
+            'full_name' => 'nullable|string|max:200',
+            'nickname' => 'nullable|string|max:80',
             'phone' => 'nullable|string|max:30',
-            'address' => 'nullable|string|max:500',
-            'city' => 'nullable|string|max:100',
-            'province' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:10',
-            'emergency_contact_name' => 'nullable|string|max:200',
-            'emergency_contact_phone' => 'nullable|string|max:30',
-            'emergency_contact_relation' => 'nullable|string|max:50',
+            'gender' => 'nullable|in:male,female',
+            'date_of_birth' => 'nullable|date|before:today',
+            'place_of_birth' => 'nullable|string|max:100',
+            'religion' => 'nullable|string|max:30',
             'bank_name' => 'nullable|string|max:60',
             'bank_account_number' => 'nullable|string|max:30',
             'bank_account_holder' => 'nullable|string|max:200',
         ]);
 
-        DB::transaction(function () use ($user): void {
+        $avatarPath = $this->existing_avatar_path;
+        if ($this->avatar) {
+            if ($this->existing_avatar_path) {
+                Storage::disk('local')->delete($this->existing_avatar_path);
+            }
+            $avatarPath = $this->avatar->store('avatars', 'local');
+        }
+
+        DB::transaction(function () use ($user, $avatarPath): void {
             $user->update([
                 'name' => $this->name,
                 'email' => $this->email,
@@ -101,21 +114,23 @@ class Edit extends Component
 
             if ($emp = $user->employee) {
                 $emp->update([
+                    'avatar_path' => $avatarPath,
+                    'full_name' => $this->full_name ?: $this->name,
                     'nickname' => $this->nickname ?: null,
                     'phone' => $this->phone ?: null,
-                    'address' => $this->address ?: null,
-                    'city' => $this->city ?: null,
-                    'province' => $this->province ?: null,
-                    'postal_code' => $this->postal_code ?: null,
-                    'emergency_contact_name' => $this->emergency_contact_name ?: null,
-                    'emergency_contact_phone' => $this->emergency_contact_phone ?: null,
-                    'emergency_contact_relation' => $this->emergency_contact_relation ?: null,
+                    'gender' => $this->gender ?: null,
+                    'date_of_birth' => $this->date_of_birth ?: null,
+                    'place_of_birth' => $this->place_of_birth ?: null,
+                    'religion' => $this->religion ?: null,
                     'bank_name' => $this->bank_name ?: null,
                     'bank_account_number' => $this->bank_account_number ?: null,
                     'bank_account_holder' => $this->bank_account_holder ?: null,
                 ]);
             }
         });
+
+        $this->existing_avatar_path = $avatarPath;
+        $this->avatar = null;
 
         $this->dispatch('notify', type: 'success', message: 'Profil berhasil disimpan.');
     }

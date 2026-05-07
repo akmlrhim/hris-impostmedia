@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasRouteHash;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class PayrollPeriod extends Model
 {
+    use HasRouteHash;
+
     protected function casts(): array
     {
         return [

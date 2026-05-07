@@ -8,7 +8,7 @@
 
 @theme {
     --font-sans:
-        "Outfit", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+        "Nunito", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
     --color-brand-50: #f8fafc;
@@ -30,6 +30,10 @@
 
     body {
         @apply font-sans antialiased text-slate-800 bg-slate-50;
+    }
+
+    [x-cloak] {
+        display: none !important;
     }
 }
 
@@ -97,13 +101,31 @@
     .prose-announcement {
         @apply text-sm text-slate-700 leading-relaxed;
     }
-    .prose-announcement h1 { @apply text-lg font-semibold mt-3 mb-1.5 text-slate-900; }
-    .prose-announcement h2 { @apply text-base font-semibold mt-3 mb-1.5 text-slate-900; }
-    .prose-announcement h3 { @apply text-sm font-semibold mt-2 mb-1 text-slate-900; }
-    .prose-announcement p { @apply mb-2; }
-    .prose-announcement ul { @apply list-disc pl-5 mb-2; }
-    .prose-announcement ol { @apply list-decimal pl-5 mb-2; }
-    .prose-announcement a { @apply text-brand-600 underline; }
-    .prose-announcement blockquote { @apply border-l-4 border-slate-300 pl-3 text-slate-600 italic my-2; }
-    .prose-announcement strong { @apply font-semibold text-slate-900; }
+    .prose-announcement h1 {
+        @apply text-lg font-semibold mt-3 mb-1.5 text-slate-900;
+    }
+    .prose-announcement h2 {
+        @apply text-base font-semibold mt-3 mb-1.5 text-slate-900;
+    }
+    .prose-announcement h3 {
+        @apply text-sm font-semibold mt-2 mb-1 text-slate-900;
+    }
+    .prose-announcement p {
+        @apply mb-2;
+    }
+    .prose-announcement ul {
+        @apply list-disc pl-5 mb-2;
+    }
+    .prose-announcement ol {
+        @apply list-decimal pl-5 mb-2;
+    }
+    .prose-announcement a {
+        @apply text-brand-600 underline;
+    }
+    .prose-announcement blockquote {
+        @apply border-l-4 border-slate-300 pl-3 text-slate-600 italic my-2;
+    }
+    .prose-announcement strong {
+        @apply font-semibold text-slate-900;
+    }
 }

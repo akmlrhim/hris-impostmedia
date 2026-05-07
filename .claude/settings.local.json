@@ -7,7 +7,10 @@
       "Bash(sed -i 's|App\\\\\\\\Models\\\\\\\\HRIS\\\\\\\\|App\\\\\\\\Models\\\\\\\\|g' app/Models/User.php)",
       "Bash(grep \"Models\\\\\\\\\\\\\\\\\" app/Models/User.php)",
       "Bash(grep -rln \"App\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\HRIS\" app/ database/ resources/ routes/ bootstrap/)",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "Bash(vendor/bin/pint app/Livewire/Admin app/Livewire/Employee --format agent)",
+      "Bash(vendor/bin/pint --format agent)",
+      "Bash(vendor/bin/pint bootstrap/app.php --format agent)"
     ]
   }
 }

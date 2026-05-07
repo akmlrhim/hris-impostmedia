@@ -21,8 +21,6 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
             $table->string('place_of_birth', 100)->nullable();
             $table->string('religion', 30)->nullable();
-            $table->string('marital_status', 20)->nullable();
-            $table->string('blood_type', 5)->nullable();
 
             $table->string('nik_ktp', 20)->nullable()->unique();
             $table->string('npwp', 25)->nullable();
@@ -74,23 +72,10 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
         });
-
-        Schema::create('employee_families', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
-            $table->string('relationship', 30);
-            $table->string('gender', 10)->nullable();
-            $table->date('date_of_birth')->nullable();
-            $table->string('phone', 30)->nullable();
-            $table->boolean('is_dependent')->default(false);
-            $table->timestamps();
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('employee_families');
         Schema::dropIfExists('employee_documents');
         Schema::dropIfExists('employees');
     }

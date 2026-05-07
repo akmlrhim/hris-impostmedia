@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php strip_dept_views.php)",
       "Bash(npm uninstall *)",
       "Bash(npm list *)"
     ]

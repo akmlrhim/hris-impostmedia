@@ -6,15 +6,15 @@
 
     {{-- Sidebar --}}
     <aside
-      class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-100 flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0"
+      class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
-      <div class="h-16 flex items-center justify-between px-5 border-b border-slate-800">
+      <div class="h-16 flex items-center justify-between px-5 border-b border-slate-200">
         <div class="flex items-center gap-2">
-          <div class="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-white">H</div>
-          <span class="font-semibold text-lg">{{ config('app.name', 'HRIS') }}</span>
+          <img src="{{ asset('logo.webp') }}" class="w-9 h-9 rounded-lg flex items-center justify-center" alt="Logo">
+          <span class="font-semibold text-lg text-slate-900">Impost Media</span>
         </div>
-        <button @click="sidebarOpen = false" class="lg:hidden p-1 rounded hover:bg-slate-800">
-          <x-icon name="x" class="w-5 h-5" />
+        <button @click="sidebarOpen = false" class="lg:hidden p-1 rounded hover:bg-slate-100">
+          <x-icon name="x" class="w-5 h-5 text-slate-500" />
         </button>
       </div>
 
@@ -24,35 +24,40 @@
               ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'home'],
               ['label' => 'Karyawan', 'route' => 'admin.employees', 'icon' => 'users'],
               ['label' => 'Absensi', 'route' => 'admin.attendance', 'icon' => 'clock'],
-              ['label' => 'Cuti & Izin', 'route' => 'admin.leave', 'icon' => 'calendar'],
-              ['label' => 'Lembur', 'route' => 'admin.overtime', 'icon' => 'sun'],
-              ['label' => 'Reimbursement', 'route' => 'admin.reimbursement', 'icon' => 'receipt'],
               ['label' => 'Shift & Jadwal', 'route' => 'admin.shift', 'icon' => 'layers'],
               ['label' => 'Payroll', 'route' => 'admin.payroll', 'icon' => 'wallet'],
+              ['label' => 'Hari Libur', 'route' => 'admin.holidays', 'icon' => 'flag'],
               ['label' => 'Pengumuman', 'route' => 'admin.announcements', 'icon' => 'megaphone'],
           ];
         @endphp
 
         @foreach ($nav as $item)
           @php $isActive = request()->routeIs($item['route'].'*'); @endphp
-          <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
-            class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ $isActive ? 'bg-brand-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+          <a wire:navigate href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
+            class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ $isActive ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
             <x-icon :name="$item['icon']" class="w-5 h-5 shrink-0" />
             <span>{{ $item['label'] }}</span>
           </a>
         @endforeach
+
+        <a wire:navigate href="{{ route('mobile.home') }}"
+          class="flex items-center gap-3 px-3 py-2 rounded-lg transition mt-2 border-t border-slate-200 pt-3 text-slate-600 hover:bg-slate-100 hover:text-slate-900">
+          <x-icon name="smartphone" class="w-5 h-5 shrink-0" />
+          <span>Buka Mobile View</span>
+        </a>
       </nav>
 
-      <a href="{{ route('admin.profile') }}"
-        class="p-4 border-t border-slate-800 hover:bg-slate-800 transition flex items-center gap-3 {{ request()->routeIs('admin.profile') ? 'bg-slate-800' : '' }}">
-        <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-sm font-semibold shrink-0">
+      <a wire:navigate href="{{ route('admin.profile') }}"
+        class="p-4 border-t border-slate-200 hover:bg-slate-100 transition flex items-center gap-3 {{ request()->routeIs('admin.profile') ? 'bg-slate-100' : '' }}">
+        <div
+          class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-semibold shrink-0">
           {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium truncate">{{ auth()->user()?->name }}</p>
-          <p class="text-xs text-slate-400 truncate">{{ auth()->user()?->role?->label() }}</p>
+          <p class="text-sm font-medium text-slate-900 truncate">{{ auth()->user()?->name }}</p>
+          <p class="text-xs text-slate-500 truncate">{{ auth()->user()?->role?->label() }}</p>
         </div>
-        <x-icon name="chevron-right" class="w-4 h-4 text-slate-500 shrink-0" />
+        <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 shrink-0" />
       </a>
     </aside>
 
@@ -92,7 +97,7 @@
                 <p class="text-sm font-medium text-slate-900 truncate">{{ auth()->user()?->name }}</p>
                 <p class="text-xs text-slate-500 truncate">{{ auth()->user()?->email }}</p>
               </div>
-              <a href="{{ route('admin.profile') }}"
+              <a wire:navigate href="{{ route('admin.profile') }}"
                 class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
                 <x-icon name="user" class="w-4 h-4" /> Profil Saya
               </a>

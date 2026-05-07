@@ -1,6 +1,6 @@
 <div>
     <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3">
-        <a href="{{ route('mobile.payslip') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
+        <a wire:navigate href="{{ route('mobile.payslip') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
             <x-icon name="arrow-left" class="w-5 h-5" />
         </a>
         <div>
@@ -27,14 +27,6 @@
                     <p class="font-semibold">{{ $payroll->present_days }} / {{ $payroll->working_days }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-slate-500">Cuti</p>
-                    <p class="font-semibold">{{ $payroll->leave_days }} hari</p>
-                </div>
-                <div>
-                    <p class="text-xs text-slate-500">Lembur</p>
-                    <p class="font-semibold">{{ floor($payroll->overtime_minutes / 60) }}j {{ $payroll->overtime_minutes % 60 }}m</p>
-                </div>
-                <div>
                     <p class="text-xs text-slate-500">Tidak Hadir</p>
                     <p class="font-semibold">{{ $payroll->absent_days }} hari</p>
                 </div>
@@ -52,24 +44,6 @@
                     <span>Total</span>
                     <span>{{ rupiah($payroll->total_earnings) }}</span>
                 </div>
-            </div>
-
-            <div class="py-4 border-b">
-                <p class="text-xs uppercase text-slate-500 mb-2">Potongan</p>
-                @forelse ($deductions as $item)
-                    <div class="flex justify-between text-sm py-1">
-                        <span class="text-slate-600">{{ $item->component_name }}</span>
-                        <span class="font-medium">- {{ rupiah($item->amount) }}</span>
-                    </div>
-                @empty
-                    <p class="text-sm text-slate-500">Tidak ada potongan.</p>
-                @endforelse
-                @if ($deductions->count())
-                    <div class="flex justify-between pt-2 mt-2 border-t font-semibold text-red-600 text-sm">
-                        <span>Total Potongan</span>
-                        <span>- {{ rupiah($payroll->total_deductions) }}</span>
-                    </div>
-                @endif
             </div>
 
             <div class="pt-4 text-center">
