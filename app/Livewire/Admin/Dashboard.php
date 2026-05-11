@@ -37,6 +37,15 @@ class Dashboard extends Component
             ->limit(5)
             ->get();
 
-        return view('livewire.admin.dashboard', compact('stats', 'recentAttendance', 'upcomingHolidays'));
+        $myEmployee = auth()->user()?->employee;
+        $myAttendance = $myEmployee
+            ? Attendance::where('employee_id', $myEmployee->id)
+                ->whereDate('attendance_date', $today)
+                ->first()
+            : null;
+
+        return view('livewire.admin.dashboard', compact(
+            'stats', 'recentAttendance', 'upcomingHolidays', 'myEmployee', 'myAttendance'
+        ));
     }
 }

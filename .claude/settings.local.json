@@ -12,5 +12,9 @@
       "Bash(vendor/bin/pint --format agent)",
       "Bash(vendor/bin/pint bootstrap/app.php --format agent)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "laravel-boost"
+  ],
+  "enableAllProjectMcpServers": true
 }

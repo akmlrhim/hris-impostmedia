@@ -21,7 +21,7 @@
     <form wire:submit="save" class="space-y-4" wire:key="holiday-form-{{ $editingId ?? 'new' }}">
       <div>
         <label class="label">Tanggal <span class="text-red-500">*</span></label>
-        <input type="date" wire:model="date" class="input">
+        <input type="date" wire:model="date" onclick="this.showPicker()" class="input">
         @error('date')
           <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
         @enderror

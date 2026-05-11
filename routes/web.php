@@ -1,17 +1,20 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Livewire\Admin\AccessControl as AdminAccessControl;
 use App\Livewire\Admin\Announcements as AdminAnnouncements;
 use App\Livewire\Admin\Attendance as AdminAttendance;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Employee\Index as AdminEmployee;
 use App\Livewire\Admin\Employee\Show as AdminEmployeeShow;
 use App\Livewire\Admin\Holiday as AdminHoliday;
+use App\Livewire\Admin\OfficeLocation as AdminOfficeLocation;
 use App\Livewire\Admin\Payroll\Index as AdminPayroll;
 use App\Livewire\Admin\Payroll\Payslip as AdminPayslip;
 use App\Livewire\Admin\Payroll\Show as AdminPayrollShow;
 use App\Livewire\Admin\Profile as AdminProfileEdit;
 use App\Livewire\Admin\Shift as AdminShift;
+use App\Livewire\Admin\UserManagement as AdminUserManagement;
 use App\Livewire\Auth\Login;
 use App\Livewire\Employee\Attendance as MobileAttendance;
 use App\Livewire\Employee\Directory as MobileDirectory;
@@ -58,17 +61,23 @@ Route::middleware(['auth', 'admin.panel'])
     ->group(function () {
         Route::get('/', AdminDashboard::class)->name('dashboard');
 
-        Route::get('/employees', AdminEmployee::class)->name('employees');
-        Route::get('/employees/{employee}', AdminEmployeeShow::class)->name('employees.show');
+        Route::get('/employees', AdminEmployee::class)->name('employees')->middleware('can:manage_employees');
+        Route::get('/employees/{employee}', AdminEmployeeShow::class)->name('employees.show')->middleware('can:manage_employees');
 
-        Route::get('/attendance', AdminAttendance::class)->name('attendance');
+        Route::get('/attendance', AdminAttendance::class)->name('attendance')->middleware('can:manage_attendance');
 
-        Route::get('/shift', AdminShift::class)->name('shift');
-        Route::get('/payroll', AdminPayroll::class)->name('payroll');
-        Route::get('/payroll/payslip/{payroll}', AdminPayslip::class)->name('payroll.payslip');
-        Route::get('/payroll/{period}', AdminPayrollShow::class)->name('payroll.show');
-        Route::get('/announcements', AdminAnnouncements::class)->name('announcements');
-        Route::get('/holidays', AdminHoliday::class)->name('holidays');
+        Route::get('/shift', AdminShift::class)->name('shift')->middleware('can:manage_shifts');
+        Route::get('/payroll', AdminPayroll::class)->name('payroll')->middleware('can:manage_payroll');
+        Route::get('/payroll/payslip/{payroll}', AdminPayslip::class)->name('payroll.payslip')->middleware('can:manage_payroll');
+        Route::get('/payroll/{period}', AdminPayrollShow::class)->name('payroll.show')->middleware('can:manage_payroll');
+        Route::get('/announcements', AdminAnnouncements::class)->name('announcements')->middleware('can:manage_announcements');
+        Route::get('/holidays', AdminHoliday::class)->name('holidays')->middleware('can:manage_holidays');
+        Route::get('/office-locations', AdminOfficeLocation::class)->name('office-locations')->middleware('can:manage_office_locations');
+
+        // Pengaturan (SuperAdmin only)
+        Route::get('/users', AdminUserManagement::class)->name('users')->middleware('can:manage_users');
+        Route::get('/access-control', AdminAccessControl::class)->name('access-control')->middleware('can:manage_users');
+
         Route::get('/profile', AdminProfileEdit::class)->name('profile');
     });
 

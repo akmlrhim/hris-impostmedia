@@ -46,6 +46,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'ptkp_status',
     'basic_salary',
     'avatar_path',
+    'face_descriptor',
     'is_active',
 ])]
 class Employee extends Model
@@ -62,6 +63,7 @@ class Employee extends Model
             'resign_date' => 'date',
             'basic_salary' => 'decimal:2',
             'employment_status' => EmploymentStatus::class,
+            'face_descriptor' => 'array',
             'is_active' => 'boolean',
         ];
     }

@@ -55,6 +55,9 @@ class Edit extends Component
 
     public string $new_password_confirmation = '';
 
+    // Face enrollment
+    public bool $hasFaceEnrolled = false;
+
     public function mount(): void
     {
         $user = auth()->user();
@@ -65,6 +68,7 @@ class Edit extends Component
 
         if ($employee) {
             $this->existing_avatar_path = $employee->avatar_path;
+            $this->hasFaceEnrolled = ! empty($employee->face_descriptor);
             $this->full_name = (string) $employee->full_name;
             $this->nickname = (string) $employee->nickname;
             $this->phone = (string) $employee->phone;
@@ -133,6 +137,30 @@ class Edit extends Component
         $this->avatar = null;
 
         $this->dispatch('notify', type: 'success', message: 'Profil berhasil disimpan.');
+    }
+
+    public function enrollFace(array $descriptor): void
+    {
+        abort_unless(count($descriptor) === 128, 422, 'Deskriptor wajah tidak valid.');
+
+        $employee = auth()->user()?->employee;
+        abort_if(! $employee, 403);
+
+        $employee->update(['face_descriptor' => $descriptor]);
+        $this->hasFaceEnrolled = true;
+
+        $this->dispatch('notify', type: 'success', message: 'Data wajah berhasil didaftarkan.');
+    }
+
+    public function deleteFace(): void
+    {
+        $employee = auth()->user()?->employee;
+        abort_if(! $employee, 403);
+
+        $employee->update(['face_descriptor' => null]);
+        $this->hasFaceEnrolled = false;
+
+        $this->dispatch('notify', type: 'success', message: 'Data wajah dihapus.');
     }
 
     public function changePassword(): void

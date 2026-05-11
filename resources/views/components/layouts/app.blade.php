@@ -29,11 +29,13 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
     rel="stylesheet">
 
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   @livewireStyles
+  @stack('head')
 </head>
 
 <body class="h-full">
@@ -43,6 +45,7 @@
   <x-pwa-install-banner />
 
   @livewireScripts
+  @stack('scripts')
 </body>
 
 </html>

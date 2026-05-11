@@ -21,30 +21,85 @@
       <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 text-sm">
         @php
           $nav = [
-              ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'home'],
-              ['label' => 'Karyawan', 'route' => 'admin.employees', 'icon' => 'users'],
-              ['label' => 'Absensi', 'route' => 'admin.attendance', 'icon' => 'clock'],
-              ['label' => 'Shift & Jadwal', 'route' => 'admin.shift', 'icon' => 'layers'],
-              ['label' => 'Payroll', 'route' => 'admin.payroll', 'icon' => 'wallet'],
-              ['label' => 'Hari Libur', 'route' => 'admin.holidays', 'icon' => 'flag'],
-              ['label' => 'Pengumuman', 'route' => 'admin.announcements', 'icon' => 'megaphone'],
+              ['label' => 'Dashboard',       'route' => 'admin.dashboard',        'icon' => 'home',       'gate' => null],
+              ['label' => 'Karyawan',        'route' => 'admin.employees',        'icon' => 'users',      'gate' => 'manage_employees'],
+              ['label' => 'Data Absensi',    'route' => 'admin.attendance',       'icon' => 'clock',      'gate' => 'manage_attendance'],
+              ['label' => 'Shift & Jadwal',  'route' => 'admin.shift',            'icon' => 'layers',     'gate' => 'manage_shifts'],
+              ['label' => 'Payroll',         'route' => 'admin.payroll',          'icon' => 'wallet',     'gate' => 'manage_payroll'],
+              ['label' => 'Hari Libur',      'route' => 'admin.holidays',         'icon' => 'flag',       'gate' => 'manage_holidays'],
+              ['label' => 'Pengumuman',      'route' => 'admin.announcements',    'icon' => 'megaphone',  'gate' => 'manage_announcements'],
+              ['label' => 'Lokasi Kantor',   'route' => 'admin.office-locations', 'icon' => 'map-pin',    'gate' => 'manage_office_locations'],
           ];
+          $myEmployee = auth()->user()?->employee;
+          $myTodayAttendance = $myEmployee
+              ? \App\Models\Attendance::where('employee_id', $myEmployee->id)
+                  ->whereDate('attendance_date', today())
+                  ->first()
+              : null;
         @endphp
 
         @foreach ($nav as $item)
-          @php $isActive = request()->routeIs($item['route'].'*'); @endphp
-          <a wire:navigate href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
-            class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ $isActive ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <x-icon :name="$item['icon']" class="w-5 h-5 shrink-0" />
-            <span>{{ $item['label'] }}</span>
-          </a>
+          @if (! $item['gate'] || auth()->user()?->can($item['gate']))
+            @php $isActive = request()->routeIs($item['route'].'*'); @endphp
+            <a wire:navigate href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ $isActive ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              <x-icon :name="$item['icon']" class="w-5 h-5 shrink-0" />
+              <span>{{ $item['label'] }}</span>
+            </a>
+          @endif
         @endforeach
 
-        <a wire:navigate href="{{ route('mobile.home') }}"
-          class="flex items-center gap-3 px-3 py-2 rounded-lg transition mt-2 border-t border-slate-200 pt-3 text-slate-600 hover:bg-slate-100 hover:text-slate-900">
-          <x-icon name="smartphone" class="w-5 h-5 shrink-0" />
-          <span>Buka Mobile View</span>
-        </a>
+        {{-- Pengaturan (Admin only) --}}
+        @can('manage_users')
+          <div class="pt-3 mt-1 border-t border-slate-200 space-y-1">
+            <p class="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Pengaturan</p>
+            <a wire:navigate href="{{ route('admin.users') }}"
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.users') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              <x-icon name="users" class="w-5 h-5 shrink-0" />
+              <span>Pengguna</span>
+            </a>
+            <a wire:navigate href="{{ route('admin.access-control') }}"
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.access-control') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              <x-icon name="shield-check" class="w-5 h-5 shrink-0" />
+              <span>Hak Akses</span>
+            </a>
+          </div>
+        @endcan
+
+        {{-- Absensi Saya — for admin panel users who are also employees --}}
+        <div class="pt-3 mt-2 border-t border-slate-200 space-y-1">
+          <p class="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Saya</p>
+
+          <a wire:navigate href="{{ route('mobile.attendance') }}"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('mobile.attendance') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+            <x-icon name="scan-face" class="w-5 h-5 shrink-0" />
+            <div class="flex-1 min-w-0">
+              <span class="font-medium">Absensi Saya</span>
+              @if ($myTodayAttendance?->check_out_at)
+                <p class="text-[10px] leading-tight text-emerald-600">Selesai {{ $myTodayAttendance->check_in_at->format('H:i') }}–{{ $myTodayAttendance->check_out_at->format('H:i') }}</p>
+              @elseif ($myTodayAttendance?->check_in_at)
+                <p class="text-[10px] leading-tight text-amber-600">Check-in {{ $myTodayAttendance->check_in_at->format('H:i') }}</p>
+              @elseif ($myEmployee)
+                <p class="text-[10px] leading-tight text-slate-400">Belum absen hari ini</p>
+              @else
+                <p class="text-[10px] leading-tight text-slate-400">Buka halaman absensi</p>
+              @endif
+            </div>
+            @if ($myTodayAttendance?->check_out_at)
+              <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+            @elseif ($myTodayAttendance?->check_in_at)
+              <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            @elseif ($myEmployee)
+              <span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span>
+            @endif
+          </a>
+
+          <a wire:navigate href="{{ route('mobile.home') }}"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg transition text-slate-600 hover:bg-slate-100 hover:text-slate-900">
+            <x-icon name="smartphone" class="w-5 h-5 shrink-0" />
+            <span>Tampilan Mobile</span>
+          </a>
+        </div>
       </nav>
 
       <a wire:navigate href="{{ route('admin.profile') }}"
