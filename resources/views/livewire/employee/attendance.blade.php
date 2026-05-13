@@ -338,7 +338,7 @@ function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEn
 
         async loadModels() {
             this.loadingMsg = 'Memuat model AI…';
-            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+            const MODEL_URL = window.FACE_API_MODEL_URL;
             try {
                 await Promise.all([
                     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
