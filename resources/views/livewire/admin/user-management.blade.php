@@ -1,13 +1,9 @@
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-base font-semibold text-slate-900">Manajemen Pengguna</h2>
-      <p class="text-sm text-slate-500">Kelola akun pengguna dan peran sistem.</p>
-    </div>
-    <button wire:click="open" class="btn-primary">
-      <x-icon name="plus" class="w-4 h-4" /> Tambah Pengguna
-    </button>
-  </div>
+  <x-page-header title="Manajemen Pengguna" description="Kelola akun pengguna dan peran sistem.">
+    <x-slot:action>
+      <button wire:click="open" class="btn-primary">Tambah Pengguna</button>
+    </x-slot:action>
+  </x-page-header>
 
   {{-- Filters --}}
   <div class="flex flex-wrap gap-3">
@@ -17,77 +13,15 @@
     </div>
     <select wire:model.live="filterRole" class="input w-44">
       <option value="">Semua Peran</option>
-      @foreach ($roles as $r)
+      @foreach ($allRoles as $r)
         <option value="{{ $r->value }}">{{ $r->label() }}</option>
       @endforeach
     </select>
   </div>
 
-  {{-- Create / Edit Modal --}}
-  <x-modal show="showForm" max-width="lg" :title="$editingId ? 'Ubah Pengguna' : 'Tambah Pengguna'">
-    <form wire:submit="save" class="space-y-4">
-      <div>
-        <label class="label">Nama</label>
-        <input wire:model="name" class="input" placeholder="Budi Santoso">
-        @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-      </div>
-      <div>
-        <label class="label">Email</label>
-        <input type="email" wire:model="email" class="input" placeholder="budi@perusahaan.com">
-        @error('email') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-      </div>
-      <div>
-        <label class="label">Peran</label>
-        <select wire:model="role" class="input">
-          @foreach ($roles as $r)
-            <option value="{{ $r->value }}">{{ $r->label() }}</option>
-          @endforeach
-        </select>
-        @error('role') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-      </div>
-
-      @if (! $editingId)
-        <div>
-          <label class="label">Kata Sandi</label>
-          <input type="password" wire:model="password" class="input" autocomplete="new-password">
-          @error('password') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-        </div>
-        <div>
-          <label class="label">Konfirmasi Kata Sandi</label>
-          <input type="password" wire:model="password_confirmation" class="input" autocomplete="new-password">
-        </div>
-      @endif
-
-      <label class="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" wire:model="is_active" class="rounded">
-        <span class="text-sm text-slate-700">Akun aktif</span>
-      </label>
-
-      <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
-        <button type="submit" class="btn-primary">Simpan</button>
-      </div>
-    </form>
-  </x-modal>
-
-  {{-- Change Password Modal --}}
-  <x-modal show="showPasswordForm" max-width="sm" title="Ganti Kata Sandi">
-    <form wire:submit="savePassword" class="space-y-4">
-      <div>
-        <label class="label">Kata Sandi Baru</label>
-        <input type="password" wire:model="newPassword" class="input" autocomplete="new-password">
-        @error('newPassword') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-      </div>
-      <div>
-        <label class="label">Konfirmasi Kata Sandi Baru</label>
-        <input type="password" wire:model="newPasswordConfirmation" class="input">
-      </div>
-      <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showPasswordForm', false)" class="btn-secondary">Batal</button>
-        <button type="submit" class="btn-primary">Simpan</button>
-      </div>
-    </form>
-  </x-modal>
+  @include('livewire.admin.partials.user-form-modal')
+  @include('livewire.admin.partials.user-link-modal')
+  @include('livewire.admin.partials.user-password-modal')
 
   {{-- Table --}}
   <div class="card overflow-hidden">
@@ -123,18 +57,36 @@
                     'hr'       => 'bg-emerald-100 text-emerald-700',
                     'employee' => 'bg-slate-100 text-slate-600',
                   ];
-                  $roleColor = $roleColors[$u->role?->value ?? ''] ?? 'bg-slate-100 text-slate-600';
                 @endphp
-                <span class="badge {{ $roleColor }}">{{ $u->role?->label() ?? '—' }}</span>
+                <div class="flex flex-wrap gap-1">
+                  @forelse ($u->getRoleObjects() as $r)
+                    <span class="badge {{ $roleColors[$r->value] ?? 'bg-slate-100 text-slate-600' }}">{{ $r->label() }}</span>
+                  @empty
+                    <span class="text-xs text-slate-400">-</span>
+                  @endforelse
+                </div>
               </td>
               <td class="px-5 py-3">
                 @if ($u->employee)
-                  <a wire:navigate href="{{ route('admin.employees.show', $u->employee) }}"
-                    class="text-brand-600 hover:underline text-xs font-medium">
-                    {{ $u->employee->employee_number }} — {{ $u->employee->full_name }}
-                  </a>
+                  <div class="flex items-center gap-2">
+                    <a wire:navigate href="{{ route('admin.employees.show', $u->employee) }}"
+                      class="text-brand-600 hover:underline text-xs font-medium">
+                      {{ $u->employee->employee_number }} - {{ $u->employee->full_name }}
+                    </a>
+                    <button wire:click="unlinkEmployee({{ $u->id }})"
+                      wire:confirm="Lepas koneksi akun {{ $u->name }} dari karyawan {{ $u->employee->full_name }}?"
+                      class="shrink-0 px-2 py-0.5 rounded-md text-[11px] font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 transition">
+                      Lepas
+                    </button>
+                  </div>
                 @else
-                  <span class="text-xs text-slate-400">Belum terhubung</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 italic">Belum terhubung</span>
+                    <button wire:click="openLinkForm({{ $u->id }})"
+                      class="shrink-0 px-2 py-0.5 rounded-md text-[11px] font-medium bg-brand-50 text-brand-600 hover:bg-brand-100 transition">
+                      Hubungkan
+                    </button>
+                  </div>
                 @endif
               </td>
               <td class="px-5 py-3">
@@ -147,22 +99,21 @@
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-1.5">
                   <button wire:click="open({{ $u->id }})"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-                    <x-icon name="pencil" class="w-3.5 h-3.5" /> Edit
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
+                    Edit
                   </button>
                   <button wire:click="openPasswordForm({{ $u->id }})"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 hover:bg-slate-100 transition">
-                    <x-icon name="lock" class="w-3.5 h-3.5" /> Sandi
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 hover:bg-slate-100 transition">
+                    Sandi
                   </button>
                   <button wire:click="toggleActive({{ $u->id }})"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $u->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
-                    <x-icon name="{{ $u->is_active ? 'eye-off' : 'eye' }}" class="w-3.5 h-3.5" />
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $u->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
                     {{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                   </button>
                   @if ($u->id !== auth()->id())
                     <button wire:click="delete({{ $u->id }})" wire:confirm="Hapus pengguna {{ $u->name }}?"
-                      class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                      <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
+                      class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                      Hapus
                     </button>
                   @endif
                 </div>

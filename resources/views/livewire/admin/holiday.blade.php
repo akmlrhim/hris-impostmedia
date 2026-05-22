@@ -1,20 +1,16 @@
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-base font-semibold text-slate-900">Hari Libur</h2>
-      <p class="text-sm text-slate-500">Kelola hari libur nasional & cuti bersama.</p>
-    </div>
-    <div class="flex gap-2">
-      <select wire:model.live="year" class="input">
-        @foreach ($availableYears as $y)
-          <option value="{{ $y }}">{{ $y }}</option>
-        @endforeach
-      </select>
-      <button wire:click="open" class="btn-primary">
-        <x-icon name="plus" class="w-4 h-4" /> Tambah
-      </button>
-    </div>
-  </div>
+  <x-page-header title="Hari Libur" description="Kelola hari libur nasional & cuti bersama.">
+    <x-slot:action>
+      <div class="flex gap-2">
+        <select wire:model.live="year" class="input">
+          @foreach ($availableYears as $y)
+            <option value="{{ $y }}">{{ $y }}</option>
+          @endforeach
+        </select>
+        <button wire:click="open" class="btn-primary">Tambah</button>
+      </div>
+    </x-slot:action>
+  </x-page-header>
 
   {{-- Form modal --}}
   <x-modal show="showForm" max-width="lg" :title="$editingId ? 'Ubah Hari Libur' : 'Tambah Hari Libur'">
@@ -28,14 +24,14 @@
       </div>
       <div>
         <label class="label">Nama <span class="text-red-500">*</span></label>
-        <input wire:model="name" class="input" placeholder="Hari Raya Idul Fitri">
+        <input wire:model="name" class="input" placeholder="Masukkan nama hari libur">
         @error('name')
           <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
         @enderror
       </div>
       <div>
         <label class="label">Keterangan</label>
-        <textarea wire:model="description" rows="2" class="input"></textarea>
+        <textarea wire:model="description" rows="2" class="input" placeholder="Masukkan keterangan (opsional)"></textarea>
       </div>
       <label class="flex items-center gap-2 text-sm">
         <input type="checkbox" wire:model="is_national" class="rounded border-slate-300">
@@ -86,13 +82,13 @@
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-2">
                   <button wire:click="open({{ $h->id }})"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-                    <x-icon name="pencil" class="w-3.5 h-3.5" /> Edit
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
+                    Edit
                   </button>
                   <button wire:click="delete({{ $h->id }})"
                     wire:confirm="Hapus hari libur '{{ $h->name }}'?"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                    <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                    Hapus
                   </button>
                 </div>
               </td>

@@ -3,9 +3,12 @@
 namespace App\Livewire\Admin;
 
 use App\Models\OfficeLocation as OfficeLocationModel;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Lokasi Kantor')]
 #[Layout('components.layouts.admin')]
 class OfficeLocation extends Component
 {
@@ -85,6 +88,11 @@ class OfficeLocation extends Component
     {
         OfficeLocationModel::findOrFail($id)->delete();
         $this->dispatch('notify', type: 'success', message: 'Lokasi kantor dihapus.');
+    }
+
+    public function mount(): void
+    {
+        Gate::authorize('manage_office_locations');
     }
 
     public function render(): mixed

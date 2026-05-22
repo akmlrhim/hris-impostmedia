@@ -7,10 +7,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
 #[Layout('components.layouts.mobile')]
+#[Title('Edit Profil')]
 class Edit extends Component
 {
     use WithFileUploads;
@@ -55,9 +57,6 @@ class Edit extends Component
 
     public string $new_password_confirmation = '';
 
-    // Face enrollment
-    public bool $hasFaceEnrolled = false;
-
     public function mount(): void
     {
         $user = auth()->user();
@@ -68,7 +67,6 @@ class Edit extends Component
 
         if ($employee) {
             $this->existing_avatar_path = $employee->avatar_path;
-            $this->hasFaceEnrolled = ! empty($employee->face_descriptor);
             $this->full_name = (string) $employee->full_name;
             $this->nickname = (string) $employee->nickname;
             $this->phone = (string) $employee->phone;
@@ -82,6 +80,30 @@ class Edit extends Component
         }
     }
 
+    public function updatedAvatar(): void
+    {
+        $this->validate(['avatar' => 'nullable|image|max:2048']);
+
+        $user = auth()->user();
+        $employee = $user?->employee;
+
+        if (! $this->avatar || ! $employee) {
+            return;
+        }
+
+        if ($this->existing_avatar_path) {
+            Storage::disk('local')->delete($this->existing_avatar_path);
+        }
+
+        $avatarPath = $this->avatar->store('avatars', 'local');
+        $employee->update(['avatar_path' => $avatarPath]);
+
+        $this->existing_avatar_path = $avatarPath;
+        $this->avatar = null;
+
+        $this->dispatch('notify', type: 'success', message: 'Foto profil berhasil diperbarui.');
+    }
+
     public function saveProfile(): void
     {
         $user = auth()->user();
@@ -89,7 +111,6 @@ class Edit extends Component
         $this->validate([
             'name' => 'required|string|max:200',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'avatar' => 'nullable|image|max:2048',
             'full_name' => 'nullable|string|max:200',
             'nickname' => 'nullable|string|max:80',
             'phone' => 'nullable|string|max:30',
@@ -102,15 +123,7 @@ class Edit extends Component
             'bank_account_holder' => 'nullable|string|max:200',
         ]);
 
-        $avatarPath = $this->existing_avatar_path;
-        if ($this->avatar) {
-            if ($this->existing_avatar_path) {
-                Storage::disk('local')->delete($this->existing_avatar_path);
-            }
-            $avatarPath = $this->avatar->store('avatars', 'local');
-        }
-
-        DB::transaction(function () use ($user, $avatarPath): void {
+        DB::transaction(function () use ($user): void {
             $user->update([
                 'name' => $this->name,
                 'email' => $this->email,
@@ -118,7 +131,6 @@ class Edit extends Component
 
             if ($emp = $user->employee) {
                 $emp->update([
-                    'avatar_path' => $avatarPath,
                     'full_name' => $this->full_name ?: $this->name,
                     'nickname' => $this->nickname ?: null,
                     'phone' => $this->phone ?: null,
@@ -133,34 +145,7 @@ class Edit extends Component
             }
         });
 
-        $this->existing_avatar_path = $avatarPath;
-        $this->avatar = null;
-
         $this->dispatch('notify', type: 'success', message: 'Profil berhasil disimpan.');
-    }
-
-    public function enrollFace(array $descriptor): void
-    {
-        abort_unless(count($descriptor) === 128, 422, 'Deskriptor wajah tidak valid.');
-
-        $employee = auth()->user()?->employee;
-        abort_if(! $employee, 403);
-
-        $employee->update(['face_descriptor' => $descriptor]);
-        $this->hasFaceEnrolled = true;
-
-        $this->dispatch('notify', type: 'success', message: 'Data wajah berhasil didaftarkan.');
-    }
-
-    public function deleteFace(): void
-    {
-        $employee = auth()->user()?->employee;
-        abort_if(! $employee, 403);
-
-        $employee->update(['face_descriptor' => null]);
-        $this->hasFaceEnrolled = false;
-
-        $this->dispatch('notify', type: 'success', message: 'Data wajah dihapus.');
     }
 
     public function changePassword(): void

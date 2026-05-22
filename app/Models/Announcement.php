@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'author_id',
     'title',
     'content',
-    'cover_path',
     'audience',
     'published_at',
     'expires_at',

@@ -7,13 +7,14 @@ use App\Enums\WorkType;
 use App\Models\Attendance as AttendanceModel;
 use App\Models\AttendanceLog;
 use App\Models\OfficeLocation;
-use App\Models\WorkSchedule;
-use Illuminate\Support\Carbon;
+use App\Models\RemoteWorkRequest;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
+#[Title('Absensi')]
 class Attendance extends Component
 {
     public ?float $latitude = null;
@@ -26,12 +27,24 @@ class Attendance extends Component
 
     public ?string $checkOutPhoto = null;
 
+    public bool $showEarlyCheckoutWarning = false;
+
+    public int $workedMinutes = 0;
+
+    private const MINIMUM_WORK_MINUTES = 480;
+
     public function checkIn(): void
     {
         $employee = auth()->user()?->employee;
 
         if (! $employee) {
             $this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
+
+            return;
+        }
+
+        if (! $employee->face_descriptor) {
+            $this->dispatch('notify', message: 'Wajah belum terdaftar. Daftarkan wajah di halaman profil terlebih dahulu.', type: 'error');
 
             return;
         }
@@ -49,12 +62,12 @@ class Attendance extends Component
             return;
         }
 
-        $schedule = WorkSchedule::where('employee_id', $employee->id)
-            ->whereDate('work_date', $today)
-            ->with('shift')
-            ->first();
+        $workType = $employee->work_type ?? WorkType::WFA;
 
-        $workType = $schedule?->work_type instanceof WorkType ? $schedule->work_type : WorkType::WFA;
+        $remoteRequest = RemoteWorkRequest::approvedFor($employee->id, $today);
+        if ($remoteRequest) {
+            $workType = $remoteRequest->work_type;
+        }
 
         if ($workType->requiresGeofencing()) {
             if (! $this->latitude || ! $this->longitude) {
@@ -73,30 +86,16 @@ class Attendance extends Component
             }
         }
 
-        $shift = $schedule?->shift;
-        $lateMinutes = 0;
-        $status = AttendanceStatus::Present;
-
-        if ($shift) {
-            $shiftStart = Carbon::parse($today.' '.$shift->start_time);
-            $diff = now()->diffInMinutes($shiftStart, false);
-            if ($diff < -$shift->late_tolerance_minutes) {
-                $lateMinutes = abs($diff) - $shift->late_tolerance_minutes;
-                $status = AttendanceStatus::Late;
-            }
-        }
-
         $photoPath = $this->savePhoto($this->checkInPhoto, "ci_{$employee->id}_".now()->format('Ymd_His'));
 
         $attendance->fill([
-            'shift_id' => $shift?->id,
             'check_in_at' => now(),
             'check_in_latitude' => $this->latitude,
             'check_in_longitude' => $this->longitude,
             'check_in_address' => $this->address,
             'check_in_photo_path' => $photoPath,
-            'status' => $status,
-            'late_minutes' => $lateMinutes,
+            'status' => AttendanceStatus::Present,
+            'late_minutes' => 0,
         ])->save();
 
         AttendanceLog::create([
@@ -126,6 +125,12 @@ class Attendance extends Component
             return;
         }
 
+        if (! $employee->face_descriptor) {
+            $this->dispatch('notify', message: 'Wajah belum terdaftar. Daftarkan wajah di halaman profil terlebih dahulu.', type: 'error');
+
+            return;
+        }
+
         $attendance = AttendanceModel::where('employee_id', $employee->id)
             ->whereDate('attendance_date', now()->toDateString())
             ->first();
@@ -142,7 +147,17 @@ class Attendance extends Component
             return;
         }
 
-        $workMinutes = $attendance->check_in_at->diffInMinutes(now());
+        $workedMinutes = (int) $attendance->check_in_at->diffInMinutes(now());
+
+        if ($workedMinutes < self::MINIMUM_WORK_MINUTES && ! $this->showEarlyCheckoutWarning) {
+            $this->workedMinutes = $workedMinutes;
+            $this->showEarlyCheckoutWarning = true;
+
+            return;
+        }
+
+        $this->showEarlyCheckoutWarning = false;
+        $workMinutes = (int) $attendance->check_in_at->diffInMinutes(now());
         $photoPath = $this->savePhoto($this->checkOutPhoto, "co_{$employee->id}_".now()->format('Ymd_His'));
 
         $attendance->update([
@@ -167,8 +182,14 @@ class Attendance extends Component
         ]);
 
         $this->checkOutPhoto = null;
-        $this->dispatch('notify', message: 'Check-out berhasil!', type: 'success');
+        $this->dispatch('notify', message: 'Check-out berhasil! Terima kasih.', type: 'success');
         $this->dispatch('attendance-recorded');
+    }
+
+    public function cancelEarlyCheckout(): void
+    {
+        $this->showEarlyCheckoutWarning = false;
+        $this->workedMinutes = 0;
     }
 
     private function savePhoto(?string $base64Data, string $filename): ?string
@@ -211,13 +232,9 @@ class Attendance extends Component
                 ->get()
             : collect();
 
-        $schedule = $employee
-            ? WorkSchedule::where('employee_id', $employee->id)
-                ->whereDate('work_date', $today)
-                ->first()
-            : null;
-
-        $workType = $schedule?->work_type instanceof WorkType ? $schedule->work_type : WorkType::WFA;
+        $baseWorkType = $employee?->work_type ?? WorkType::WFA;
+        $remoteRequest = $employee ? RemoteWorkRequest::approvedFor($employee->id, $today) : null;
+        $workType = $remoteRequest ? $remoteRequest->work_type : $baseWorkType;
 
         $officeLocations = $workType->requiresGeofencing()
             ? OfficeLocation::where('is_active', true)->get(['id', 'name', 'latitude', 'longitude', 'radius_meters'])
@@ -226,7 +243,8 @@ class Attendance extends Component
         $faceDescriptor = $employee?->face_descriptor;
 
         return view('livewire.employee.attendance', compact(
-            'employee', 'attendance', 'history', 'workType', 'officeLocations', 'faceDescriptor', 'isAdminPanelUser'
+            'employee', 'attendance', 'history', 'workType', 'baseWorkType',
+            'remoteRequest', 'officeLocations', 'faceDescriptor', 'isAdminPanelUser'
         ));
     }
 }

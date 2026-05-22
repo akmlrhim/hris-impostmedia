@@ -8,21 +8,27 @@ use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Employee\Index as AdminEmployee;
 use App\Livewire\Admin\Employee\Show as AdminEmployeeShow;
 use App\Livewire\Admin\Holiday as AdminHoliday;
+use App\Livewire\Admin\Leave as AdminLeave;
 use App\Livewire\Admin\OfficeLocation as AdminOfficeLocation;
 use App\Livewire\Admin\Payroll\Index as AdminPayroll;
 use App\Livewire\Admin\Payroll\Payslip as AdminPayslip;
 use App\Livewire\Admin\Payroll\Show as AdminPayrollShow;
 use App\Livewire\Admin\Profile as AdminProfileEdit;
+use App\Livewire\Admin\RemoteWork as AdminRemoteWork;
 use App\Livewire\Admin\Shift as AdminShift;
 use App\Livewire\Admin\UserManagement as AdminUserManagement;
 use App\Livewire\Auth\Login;
+use App\Livewire\Employee\AnnouncementShow as MobileAnnouncementShow;
 use App\Livewire\Employee\Attendance as MobileAttendance;
 use App\Livewire\Employee\Directory as MobileDirectory;
 use App\Livewire\Employee\Home as MobileHome;
+use App\Livewire\Employee\Leave as MobileLeave;
 use App\Livewire\Employee\Payslip\Index as MobilePayslip;
 use App\Livewire\Employee\Payslip\Show as MobilePayslipShow;
 use App\Livewire\Employee\Profile\Edit as MobileProfileEdit;
+use App\Livewire\Employee\Profile\Face as MobileProfileFace;
 use App\Livewire\Employee\Profile\Index as MobileProfile;
+use App\Livewire\Employee\RemoteWork as MobileRemoteWork;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +71,8 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/employees/{employee}', AdminEmployeeShow::class)->name('employees.show')->middleware('can:manage_employees');
 
         Route::get('/attendance', AdminAttendance::class)->name('attendance')->middleware('can:manage_attendance');
+        Route::get('/remote-work', AdminRemoteWork::class)->name('remote-work')->middleware('can:manage_attendance');
+        Route::get('/leave', AdminLeave::class)->name('leave')->middleware('can:manage_leave');
 
         Route::get('/shift', AdminShift::class)->name('shift')->middleware('can:manage_shifts');
         Route::get('/payroll', AdminPayroll::class)->name('payroll')->middleware('can:manage_payroll');
@@ -93,6 +101,10 @@ Route::middleware('auth')
         Route::get('/payslip/{payroll}', MobilePayslipShow::class)->name('payslip.show');
         Route::get('/profile', MobileProfile::class)->name('profile');
         Route::get('/profile/edit', MobileProfileEdit::class)->name('profile.edit');
+        Route::get('/profile/face', MobileProfileFace::class)->name('profile.face');
+        Route::get('/announcements/{announcement}', MobileAnnouncementShow::class)->name('announcements.show');
+        Route::get('/remote-work', MobileRemoteWork::class)->name('remote-work');
+        Route::get('/leave', MobileLeave::class)->name('leave');
     });
 
 // --- Private file streaming (auth-gated) ---

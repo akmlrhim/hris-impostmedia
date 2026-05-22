@@ -21,15 +21,48 @@
       <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 text-sm">
         @php
           $nav = [
-              ['label' => 'Dashboard',       'route' => 'admin.dashboard',        'icon' => 'home',       'gate' => null],
-              ['label' => 'Karyawan',        'route' => 'admin.employees',        'icon' => 'users',      'gate' => 'manage_employees'],
-              ['label' => 'Data Absensi',    'route' => 'admin.attendance',       'icon' => 'clock',      'gate' => 'manage_attendance'],
-              ['label' => 'Shift & Jadwal',  'route' => 'admin.shift',            'icon' => 'layers',     'gate' => 'manage_shifts'],
-              ['label' => 'Payroll',         'route' => 'admin.payroll',          'icon' => 'wallet',     'gate' => 'manage_payroll'],
-              ['label' => 'Hari Libur',      'route' => 'admin.holidays',         'icon' => 'flag',       'gate' => 'manage_holidays'],
-              ['label' => 'Pengumuman',      'route' => 'admin.announcements',    'icon' => 'megaphone',  'gate' => 'manage_announcements'],
-              ['label' => 'Lokasi Kantor',   'route' => 'admin.office-locations', 'icon' => 'map-pin',    'gate' => 'manage_office_locations'],
+              ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'home', 'gate' => null],
+              ['label' => 'Karyawan', 'route' => 'admin.employees', 'icon' => 'users', 'gate' => 'manage_employees'],
+              [
+                  'label' => 'Data Absensi',
+                  'route' => 'admin.attendance',
+                  'icon' => 'clock',
+                  'gate' => 'manage_attendance',
+              ],
+              [
+                  'label' => 'Pengajuan WFA',
+                  'route' => 'admin.remote-work',
+                  'icon' => 'laptop',
+                  'gate' => 'manage_attendance',
+              ],
+              [
+                  'label' => 'Cuti & Izin',
+                  'route' => 'admin.leave',
+                  'icon' => 'calendar',
+                  'gate' => 'manage_leave',
+              ],
+              ['label' => 'Shift', 'route' => 'admin.shift', 'icon' => 'layers', 'gate' => 'manage_shifts'],
+              ['label' => 'Payroll', 'route' => 'admin.payroll', 'icon' => 'wallet', 'gate' => 'manage_payroll'],
+              ['label' => 'Hari Libur', 'route' => 'admin.holidays', 'icon' => 'flag', 'gate' => 'manage_holidays'],
+              [
+                  'label' => 'Pengumuman',
+                  'route' => 'admin.announcements',
+                  'icon' => 'megaphone',
+                  'gate' => 'manage_announcements',
+              ],
+              [
+                  'label' => 'Lokasi Kantor',
+                  'route' => 'admin.office-locations',
+                  'icon' => 'map-pin',
+                  'gate' => 'manage_office_locations',
+              ],
           ];
+          $pendingWfa = auth()->user()?->can('manage_attendance')
+              ? \App\Models\RemoteWorkRequest::where('status', 'pending')->count()
+              : 0;
+          $pendingLeave = auth()->user()?->can('manage_leave')
+              ? \App\Models\LeaveRequest::where('status', 'pending')->count()
+              : 0;
           $myEmployee = auth()->user()?->employee;
           $myTodayAttendance = $myEmployee
               ? \App\Models\Attendance::where('employee_id', $myEmployee->id)
@@ -39,12 +72,22 @@
         @endphp
 
         @foreach ($nav as $item)
-          @if (! $item['gate'] || auth()->user()?->can($item['gate']))
+          @if (!$item['gate'] || auth()->user()?->can($item['gate']))
             @php $isActive = request()->routeIs($item['route'].'*'); @endphp
             <a wire:navigate href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
               class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ $isActive ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
               <x-icon :name="$item['icon']" class="w-5 h-5 shrink-0" />
-              <span>{{ $item['label'] }}</span>
+              <span class="flex-1">{{ $item['label'] }}</span>
+              @if ($item['route'] === 'admin.remote-work' && $pendingWfa > 0)
+                <span class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
+                  {{ $pendingWfa }}
+                </span>
+              @endif
+              @if ($item['route'] === 'admin.leave' && $pendingLeave > 0)
+                <span class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
+                  {{ $pendingLeave }}
+                </span>
+              @endif
             </a>
           @endif
         @endforeach
@@ -66,54 +109,8 @@
           </div>
         @endcan
 
-        {{-- Absensi Saya — for admin panel users who are also employees --}}
-        <div class="pt-3 mt-2 border-t border-slate-200 space-y-1">
-          <p class="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Saya</p>
-
-          <a wire:navigate href="{{ route('mobile.attendance') }}"
-            class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('mobile.attendance') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <x-icon name="scan-face" class="w-5 h-5 shrink-0" />
-            <div class="flex-1 min-w-0">
-              <span class="font-medium">Absensi Saya</span>
-              @if ($myTodayAttendance?->check_out_at)
-                <p class="text-[10px] leading-tight text-emerald-600">Selesai {{ $myTodayAttendance->check_in_at->format('H:i') }}–{{ $myTodayAttendance->check_out_at->format('H:i') }}</p>
-              @elseif ($myTodayAttendance?->check_in_at)
-                <p class="text-[10px] leading-tight text-amber-600">Check-in {{ $myTodayAttendance->check_in_at->format('H:i') }}</p>
-              @elseif ($myEmployee)
-                <p class="text-[10px] leading-tight text-slate-400">Belum absen hari ini</p>
-              @else
-                <p class="text-[10px] leading-tight text-slate-400">Buka halaman absensi</p>
-              @endif
-            </div>
-            @if ($myTodayAttendance?->check_out_at)
-              <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-            @elseif ($myTodayAttendance?->check_in_at)
-              <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
-            @elseif ($myEmployee)
-              <span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span>
-            @endif
-          </a>
-
-          <a wire:navigate href="{{ route('mobile.home') }}"
-            class="flex items-center gap-3 px-3 py-2 rounded-lg transition text-slate-600 hover:bg-slate-100 hover:text-slate-900">
-            <x-icon name="smartphone" class="w-5 h-5 shrink-0" />
-            <span>Tampilan Mobile</span>
-          </a>
-        </div>
       </nav>
 
-      <a wire:navigate href="{{ route('admin.profile') }}"
-        class="p-4 border-t border-slate-200 hover:bg-slate-100 transition flex items-center gap-3 {{ request()->routeIs('admin.profile') ? 'bg-slate-100' : '' }}">
-        <div
-          class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-semibold shrink-0">
-          {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-slate-900 truncate">{{ auth()->user()?->name }}</p>
-          <p class="text-xs text-slate-500 truncate">{{ auth()->user()?->role?->label() }}</p>
-        </div>
-        <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 shrink-0" />
-      </a>
     </aside>
 
     {{-- Content --}}
@@ -127,7 +124,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-
+          <div x-data="{ title: '' }" x-init="title = document.title.split(' | ')[0] ?? '';
+          document.addEventListener('livewire:navigate', () => {
+              $nextTick(() => { title = document.title.split(' | ')[0] ?? ''; });
+          });">
+            <h1 class="text-sm font-semibold text-slate-800 hidden sm:block" x-text="title"></h1>
+          </div>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
           <button class="relative p-2 rounded-lg hover:bg-slate-100">
@@ -156,6 +158,12 @@
                 class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
                 <x-icon name="user" class="w-4 h-4" /> Profil Saya
               </a>
+              @if (auth()->user()?->employee)
+                <a wire:navigate href="{{ route('mobile.home') }}"
+                  class="flex items-center gap-2 px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">
+                  <x-icon name="smartphone" class="w-4 h-4" /> Beralih ke Mode Karyawan
+                </a>
+              @endif
               <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"

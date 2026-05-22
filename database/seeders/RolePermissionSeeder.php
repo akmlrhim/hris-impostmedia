@@ -10,7 +10,7 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Admin has all access via Gate::before — no DB entries needed for Admin.
+        // Admin has all access via Gate::before - no DB entries needed for Admin.
         // Only HR permissions are stored; Employee has no admin panel access.
         $defaults = [
             UserRole::HR->value => [
@@ -20,6 +20,7 @@ class RolePermissionSeeder extends Seeder
                 'manage_shifts',
                 'manage_holidays',
                 'manage_announcements',
+                'manage_leave',
             ],
         ];
 

@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(npm uninstall *)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(New-Item -ItemType File -Path \"e:\\\\laragon\\\\www\\\\hris_im\\\\resources\\\\views\\\\livewire\\\\employee\\\\announcement-show.blade.php\" -Force)",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"created\")",
+      "Bash(curl -sL \"https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js\" -o \"e:/laragon/www/hris_im/public/face-api.min.js\")",
+      "Bash(Remove-Item \"e:\\\\laragon\\\\www\\\\hris_im\\\\resources\\\\views\\\\panduan-instalasi.blade.php\")"
     ]
   }
 }

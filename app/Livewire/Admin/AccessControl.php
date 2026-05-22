@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Title('Hak Akses')]
 #[Layout('components.layouts.admin')]
 class AccessControl extends Component
 {

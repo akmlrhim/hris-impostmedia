@@ -16,7 +16,7 @@
                 {{ $employee->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
             </button>
             <a wire:navigate href="{{ route('admin.employees', ['edit' => $employee->getRouteKey()]) }}" class="btn-primary">
-                <x-icon name="cog" class="w-4 h-4" /> Edit
+                Edit
             </a>
         </div>
     </div>
@@ -40,12 +40,6 @@
                         <span class="badge bg-emerald-100 text-emerald-700">Aktif</span>
                     @endif
                 </div>
-                <p class="text-sm text-slate-600">
-                    {{ $employee->position?->name ?? 'Tanpa posisi' }}
-                    @if ($employee->position?->level)
-                        · {{ $employee->position->level->name }}
-                    @endif
-                </p>
                 <p class="text-sm text-slate-500 mt-0.5">{{ $employee->user?->email }}</p>
                 <div class="flex flex-wrap gap-2 mt-2">
                     <span class="badge bg-{{ $employee->employment_status?->color() }}-100 text-{{ $employee->employment_status?->color() }}-700">
@@ -91,7 +85,7 @@
                     $identity = [
                         'NIK Karyawan' => $employee->employee_number,
                         'Nama Panggilan' => $employee->nickname,
-                        'Jenis Kelamin' => $employee->gender === 'male' ? 'Laki-laki' : ($employee->gender === 'female' ? 'Perempuan' : '—'),
+                        'Jenis Kelamin' => $employee->gender === 'male' ? 'Laki-laki' : ($employee->gender === 'female' ? 'Perempuan' : '-'),
                         'Tanggal Lahir' => $employee->date_of_birth?->translatedFormat('d M Y'),
                         'Tempat Lahir' => $employee->place_of_birth,
                         'Agama' => $employee->religion,
@@ -100,7 +94,7 @@
                 @foreach ($identity as $k => $v)
                     <div class="flex justify-between gap-3 py-2">
                         <dt class="text-slate-500">{{ $k }}</dt>
-                        <dd class="text-slate-900 font-medium text-right">{{ $v ?: '—' }}</dd>
+                        <dd class="text-slate-900 font-medium text-right">{{ $v ?: '-' }}</dd>
                     </div>
                 @endforeach
             </dl>
@@ -123,7 +117,7 @@
                 @foreach ($contact as $k => $v)
                     <div class="flex justify-between gap-3 py-2">
                         <dt class="text-slate-500 shrink-0">{{ $k }}</dt>
-                        <dd class="text-slate-900 font-medium text-right">{{ $v ?: '—' }}</dd>
+                        <dd class="text-slate-900 font-medium text-right">{{ $v ?: '-' }}</dd>
                     </div>
                 @endforeach
             </dl>
@@ -144,7 +138,7 @@
                 @foreach ($salary as $k => $v)
                     <div class="flex justify-between gap-3 py-2">
                         <dt class="text-slate-500">{{ $k }}</dt>
-                        <dd class="text-slate-900 font-medium text-right">{{ $v ?: '—' }}</dd>
+                        <dd class="text-slate-900 font-medium text-right">{{ $v ?: '-' }}</dd>
                     </div>
                 @endforeach
             </dl>

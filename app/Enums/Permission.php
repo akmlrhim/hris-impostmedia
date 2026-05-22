@@ -11,6 +11,8 @@ enum Permission: string
     case ManageHolidays = 'manage_holidays';
     case ManageAnnouncements = 'manage_announcements';
     case ManageOfficeLocations = 'manage_office_locations';
+    case ManageRemoteWork = 'manage_remote_work';
+    case ManageLeave = 'manage_leave';
     case ManageUsers = 'manage_users';
 
     public function label(): string
@@ -23,6 +25,8 @@ enum Permission: string
             self::ManageHolidays => 'Kelola Hari Libur',
             self::ManageAnnouncements => 'Kelola Pengumuman',
             self::ManageOfficeLocations => 'Kelola Lokasi Kantor',
+            self::ManageRemoteWork => 'Kelola Pengajuan WFA/WFH',
+            self::ManageLeave => 'Kelola Pengajuan Cuti & Izin',
             self::ManageUsers => 'Kelola Pengguna & Hak Akses',
         };
     }
@@ -37,11 +41,13 @@ enum Permission: string
             self::ManageHolidays => 'Mengelola hari libur nasional dan internal',
             self::ManageAnnouncements => 'Membuat dan menerbitkan pengumuman',
             self::ManageOfficeLocations => 'Mengelola lokasi kantor dan radius geofencing',
+            self::ManageRemoteWork => 'Menyetujui atau menolak pengajuan WFA/WFH karyawan',
+            self::ManageLeave => 'Menyetujui atau menolak pengajuan cuti dan izin karyawan',
             self::ManageUsers => 'Mengelola akun pengguna dan konfigurasi hak akses (Super Admin)',
         };
     }
 
-    /** Permissions that can be toggled per role (excludes ManageUsers — Admin only). */
+    /** Permissions that can be toggled per role (excludes ManageUsers - Admin only). */
     public static function configurable(): array
     {
         return array_values(array_filter(self::cases(), fn ($p) => $p !== self::ManageUsers));

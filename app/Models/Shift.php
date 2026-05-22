@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'code', 'name', 'start_time', 'end_time', 'break_start', 'break_end',
-    'late_tolerance_minutes', 'early_leave_tolerance_minutes',
-    'is_overnight', 'is_active',
+    'late_tolerance_minutes', 'is_overnight', 'is_active',
 ])]
 class Shift extends Model
 {

@@ -22,7 +22,9 @@ class Show extends Component
     public function render(): mixed
     {
         $earnings = $this->payroll->items->where('type', 'earning');
+        $deductions = $this->payroll->items->where('type', 'deduction');
 
-        return view('livewire.employee.payslip.show', compact('earnings'));
+        return view('livewire.employee.payslip.show', compact('earnings', 'deductions'))
+            ->title('Slip Gaji - '.$this->payroll->period->code);
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Title('Profil Saya')]
 #[Layout('components.layouts.admin')]
 class Profile extends Component
 {

@@ -1,4 +1,4 @@
-const CACHE = 'hris-im-v2';
+const CACHE = 'hris-im-v5';
 
 const PRECACHE = [
 	'/offline',
@@ -7,23 +7,31 @@ const PRECACHE = [
 	'/icons/icon-512.png',
 ];
 
-// Static asset extensions to cache aggressively
 const STATIC_EXT = /\.(css|js|woff2?|ttf|otf|png|jpg|jpeg|webp|svg|ico)$/i;
+
+// Safely put a response in cache — clone first, catch errors silently
+function tryCachePut(request, response) {
+	if (!response || response.status === 0) return;
+	try {
+		const clone = response.clone();
+		caches.open(CACHE).then((c) => c.put(request, clone).catch(() => {}));
+	} catch (_) {}
+}
 
 self.addEventListener('install', (e) => {
 	e.waitUntil(
-		caches.open(CACHE).then((c) => c.addAll(PRECACHE).catch(() => null))
+		caches.open(CACHE).then((c) => c.addAll(PRECACHE).catch(() => {}))
 	);
 	self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
 	e.waitUntil(
+		// Hapus SEMUA cache lama tanpa terkecuali
 		caches.keys().then((keys) =>
-			Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-		)
+			Promise.all(keys.map((k) => caches.delete(k)))
+		).then(() => self.clients.claim())
 	);
-	self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
@@ -32,22 +40,19 @@ self.addEventListener('fetch', (e) => {
 
 	const url = new URL(request.url);
 
-	// Never intercept Livewire internal requests
+	// Never intercept Livewire requests
 	if (url.pathname.startsWith('/livewire/')) return;
 
-	// Static assets — cache first, then network
+	// Static assets (same origin) — cache first, then network
 	if (STATIC_EXT.test(url.pathname) && url.origin === self.location.origin) {
 		e.respondWith(
-			caches.match(request).then(
-				(cached) =>
-					cached ||
-					fetch(request).then((res) => {
-						if (res.ok) {
-							caches.open(CACHE).then((c) => c.put(request, res.clone()));
-						}
-						return res;
-					})
-			)
+			caches.match(request).then((cached) => {
+				if (cached) return cached;
+				return fetch(request).then((res) => {
+					if (res && res.ok) tryCachePut(request, res);
+					return res;
+				}).catch(() => new Response('', { status: 503 }));
+			})
 		);
 		return;
 	}
@@ -55,20 +60,24 @@ self.addEventListener('fetch', (e) => {
 	// Navigation — network first, fall back to offline page
 	if (request.mode === 'navigate') {
 		e.respondWith(
-			fetch(request).catch(() => caches.match('/offline'))
+			fetch(request).catch(() =>
+				caches.match('/offline').then((r) => r || new Response('Offline', { status: 503 }))
+			)
 		);
 		return;
 	}
 
-	// Everything else — network first, cache as fallback
-	e.respondWith(
-		fetch(request)
-			.then((res) => {
-				if (res.ok && url.origin === self.location.origin) {
-					caches.open(CACHE).then((c) => c.put(request, res.clone()));
-				}
-				return res;
-			})
-			.catch(() => caches.match(request))
-	);
+	// Other same-origin requests — network first, cache as fallback
+	if (url.origin === self.location.origin) {
+		e.respondWith(
+			fetch(request)
+				.then((res) => {
+					if (res && res.ok) tryCachePut(request, res);
+					return res;
+				})
+				.catch(() =>
+					caches.match(request).then((r) => r || new Response('', { status: 503 }))
+				)
+		);
+	}
 });

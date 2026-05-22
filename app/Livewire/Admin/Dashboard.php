@@ -9,6 +9,7 @@ use App\Models\Holiday;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Title('Dashboard')]
 #[Layout('components.layouts.admin')]
 class Dashboard extends Component
 {

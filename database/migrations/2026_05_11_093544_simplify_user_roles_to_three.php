@@ -5,20 +5,16 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-	/**
-	 * Run the migrations.
-	 */
-	public function up(): void
-	{
-		// super_admin → admin (Admin is now the highest role)
-		DB::table('users')->where('role', 'super_admin')->update(['role' => 'admin']);
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // Bersihkan role_permissions lama yang tidak relevan
+        DB::table('role_permissions')
+            ->whereIn('role', ['super_admin', 'manager'])
+            ->delete();
+    }
 
-		DB::table('users')->where('role', 'manager')->update(['role' => 'hr']);
-
-		DB::table('role_permissions')
-			->whereIn('role', ['super_admin', 'manager'])
-			->delete();
-	}
-
-	public function down(): void {}
+    public function down(): void {}
 };

@@ -4,9 +4,11 @@ namespace App\Livewire\Employee\Payslip;
 
 use App\Models\Payroll;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
+#[Title('Slip Gaji')]
 class Index extends Component
 {
     public function render(): mixed

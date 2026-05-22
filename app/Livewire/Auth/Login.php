@@ -2,15 +2,17 @@
 
 namespace App\Livewire\Auth;
 
-use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 #[Layout('components.layouts.auth')]
+#[Title('Masuk')]
 class Login extends Component
 {
     #[Validate('required|email')]
@@ -20,6 +22,15 @@ class Login extends Component
     public string $password = '';
 
     public bool $remember = false;
+
+    public bool $showPanelSelector = false;
+
+    public function mount(): void
+    {
+        if (Auth::check()) {
+            $this->handleAlreadyAuthenticated();
+        }
+    }
 
     public function login(): void
     {
@@ -39,7 +50,10 @@ class Login extends Component
             ]);
         }
 
-        if (! Auth::user()->is_active) {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (! $user->is_active) {
             Auth::logout();
             throw ValidationException::withMessages([
                 'email' => 'Akun Anda tidak aktif.',
@@ -49,11 +63,36 @@ class Login extends Component
         RateLimiter::clear($key);
         request()->session()->regenerate();
 
-        $role = Auth::user()->role;
+        $this->handleAlreadyAuthenticated();
+    }
+
+    public function choosePanel(string $panel): void
+    {
+        if (! Auth::check()) {
+            return;
+        }
+
         $this->redirect(
-            $role instanceof UserRole && $role->isAdminPanel()
-                ? route('admin.dashboard')
-                : route('mobile.home'),
+            $panel === 'employee' ? route('mobile.home') : route('admin.dashboard'),
+            navigate: false,
+        );
+    }
+
+    private function handleAlreadyAuthenticated(): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $isAdminPanel = $user->isAdminPanel();
+        $hasEmployee = $user->employee !== null;
+
+        if ($isAdminPanel && $hasEmployee) {
+            $this->showPanelSelector = true;
+
+            return;
+        }
+
+        $this->redirect(
+            $isAdminPanel ? route('admin.dashboard') : route('mobile.home'),
             navigate: false,
         );
     }

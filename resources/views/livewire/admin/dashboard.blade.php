@@ -29,8 +29,7 @@
           </div>
         </div>
 
-        <a wire:navigate href="{{ route('mobile.attendance') }}" class="btn-primary shrink-0 text-sm gap-2">
-          <x-icon name="scan-face" class="w-4 h-4" />
+        <a wire:navigate href="{{ route('mobile.attendance') }}" class="btn-primary shrink-0 text-sm">
           @if (! $myAttendance?->check_in_at) Absen Sekarang
           @elseif (! $myAttendance?->check_out_at) Check-out
           @else Lihat Detail
@@ -42,37 +41,9 @@
 
   {{-- Stats grid --}}
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    @php
-      $cards = [
-          [
-              'label' => 'Total Karyawan',
-              'value' => $stats['total_employees'],
-              'color' => 'bg-blue-500',
-              'icon' => 'users',
-          ],
-          [
-              'label' => 'Hadir Hari Ini',
-              'value' => $stats['present_today'],
-              'color' => 'bg-emerald-500',
-              'icon' => 'check',
-          ],
-          ['label' => 'Absen', 'value' => $stats['absent_today'], 'color' => 'bg-red-500', 'icon' => 'x'],
-      ];
-    @endphp
-
-    @foreach ($cards as $c)
-      <div class="card p-4">
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ $c['label'] }}</p>
-            <p class="text-2xl font-bold text-black mt-1">{{ $c['value'] }}</p>
-          </div>
-          <div class="w-9 h-9 rounded-lg {{ $c['color'] }} flex items-center justify-center text-white">
-            <x-icon :name="$c['icon']" class="w-5 h-5" />
-          </div>
-        </div>
-      </div>
-    @endforeach
+    <x-stat-card label="Total Karyawan" :value="$stats['total_employees']" icon="users" color="bg-blue-500" />
+    <x-stat-card label="Hadir Hari Ini" :value="$stats['present_today']" icon="check" color="bg-emerald-500" />
+    <x-stat-card label="Absen" :value="$stats['absent_today']" icon="x" color="bg-red-500" />
   </div>
 
   <div class="grid grid-cols-1 gap-6">

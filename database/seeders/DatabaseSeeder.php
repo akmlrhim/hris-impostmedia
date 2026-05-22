@@ -2,19 +2,23 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AttendanceStatus;
 use App\Enums\EmploymentStatus;
+use App\Enums\RemoteWorkStatus;
 use App\Enums\UserRole;
+use App\Enums\WorkType;
 use App\Models\Announcement;
 use App\Models\Attendance;
 use App\Models\AttendanceLog;
 use App\Models\Employee;
 use App\Models\Holiday;
-use App\Models\JobLevel;
-use App\Models\JobPosition;
+use App\Models\OfficeLocation;
 use App\Models\Payroll;
 use App\Models\PayrollComponent;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
+use App\Models\RemoteWorkRequest;
+use App\Models\RolePermission;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\WorkSchedule;
@@ -28,59 +32,51 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function (): void {
-            $positionMap = $this->seedOrganization();
             $this->seedShifts();
+            $this->seedOfficeLocations();
             $this->seedPayrollComponents();
+            $this->seedRolePermissions();
 
-            $employees = $this->seedUsersAndEmployees($positionMap);
-            $this->seedWorkSchedules($employees);
+            $data = $this->seedUsersAndEmployees();
+            $this->seedWorkSchedules($data['employees']);
             $this->seedHolidays();
-            $this->seedAttendanceAndLogs($employees);
-            $this->seedPayrollData($employees);
-            $this->seedAnnouncements();
+            $this->seedAttendance($data['employees']);
+            $this->seedRemoteWorkRequests($data['employees'], $data['hrUser']);
+            $this->seedPayrollData($data['employees'], $data['adminUser']);
+            $this->seedAnnouncements($data['adminUser']);
         });
-    }
-
-    private function seedOrganization(): array
-    {
-        $levels = [
-            ['code' => 'STAFF', 'name' => 'Staff', 'rank' => 1],
-            ['code' => 'SPV', 'name' => 'Supervisor', 'rank' => 2],
-            ['code' => 'MGR', 'name' => 'Manager', 'rank' => 3],
-            ['code' => 'DIR', 'name' => 'Director', 'rank' => 4],
-        ];
-
-        $levelMap = [];
-        foreach ($levels as $level) {
-            $levelMap[$level['code']] = JobLevel::firstOrCreate(['code' => $level['code']], $level);
-        }
-
-        $positions = [
-            ['code' => 'DEV', 'name' => 'Software Developer', 'level' => 'STAFF'],
-            ['code' => 'IT-MGR', 'name' => 'IT Manager', 'level' => 'MGR'],
-            ['code' => 'HR-OFF', 'name' => 'HR Officer', 'level' => 'STAFF'],
-            ['code' => 'HR-MGR', 'name' => 'HR Manager', 'level' => 'MGR'],
-            ['code' => 'ACC', 'name' => 'Accountant', 'level' => 'STAFF'],
-            ['code' => 'MKT', 'name' => 'Marketing Officer', 'level' => 'STAFF'],
-        ];
-
-        $positionMap = [];
-        foreach ($positions as $position) {
-            $positionMap[$position['code']] = JobPosition::firstOrCreate(
-                ['code' => $position['code']],
-                ['name' => $position['name'], 'job_level_id' => $levelMap[$position['level']]->id]
-            );
-        }
-
-        return $positionMap;
     }
 
     private function seedShifts(): void
     {
         $shifts = [
-            ['code' => 'REG', 'name' => 'Regular 09-18', 'start_time' => '09:00', 'end_time' => '18:00', 'break_start' => '12:00', 'break_end' => '13:00'],
-            ['code' => 'EARLY', 'name' => 'Early 07-16', 'start_time' => '07:00', 'end_time' => '16:00', 'break_start' => '12:00', 'break_end' => '13:00'],
-            ['code' => 'LATE', 'name' => 'Late 13-22', 'start_time' => '13:00', 'end_time' => '22:00', 'break_start' => '18:00', 'break_end' => '19:00'],
+            [
+                'code' => 'REG',
+                'name' => 'Regular 09-18',
+                'start_time' => '09:00',
+                'end_time' => '18:00',
+                'break_start' => '12:00',
+                'break_end' => '13:00',
+                'late_tolerance_minutes' => 15,
+            ],
+            [
+                'code' => 'EARLY',
+                'name' => 'Early 07-16',
+                'start_time' => '07:00',
+                'end_time' => '16:00',
+                'break_start' => '12:00',
+                'break_end' => '13:00',
+                'late_tolerance_minutes' => 10,
+            ],
+            [
+                'code' => 'LATE',
+                'name' => 'Late 13-22',
+                'start_time' => '13:00',
+                'end_time' => '22:00',
+                'break_start' => '18:00',
+                'break_end' => '19:00',
+                'late_tolerance_minutes' => 15,
+            ],
         ];
 
         foreach ($shifts as $shift) {
@@ -88,10 +84,27 @@ class DatabaseSeeder extends Seeder
         }
     }
 
+    private function seedOfficeLocations(): void
+    {
+        OfficeLocation::firstOrCreate(
+            ['name' => 'Kantor Pusat Jakarta'],
+            [
+                'address' => 'Jl. Sudirman No. 100, Jakarta Pusat',
+                'latitude' => -6.2088,
+                'longitude' => 106.8456,
+                'radius_meters' => 200,
+                'is_active' => true,
+            ]
+        );
+    }
+
     private function seedPayrollComponents(): void
     {
         $components = [
-            ['code' => 'BASIC', 'name' => 'Gaji Pokok', 'type' => 'earning'],
+            ['code' => 'BASIC', 'name' => 'Gaji Pokok', 'type' => 'earning', 'is_taxable' => true],
+            ['code' => 'BONUS', 'name' => 'Bonus', 'type' => 'earning', 'is_taxable' => true],
+            ['code' => 'TRANSPORT', 'name' => 'Tunjangan Transport', 'type' => 'earning', 'is_taxable' => false],
+            ['code' => 'PPH21', 'name' => 'PPh 21', 'type' => 'deduction', 'is_taxable' => false],
         ];
 
         foreach ($components as $component) {
@@ -99,203 +112,299 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    private function seedUsersAndEmployees(array $positionMap): array
+    private function seedRolePermissions(): void
     {
+        $hrPermissions = [
+            'manage_employees',
+            'manage_attendance',
+            'manage_payroll',
+            'manage_holidays',
+            'manage_shifts',
+            'manage_announcements',
+            'manage_remote_work',
+            'manage_office_locations',
+        ];
+
+        foreach ($hrPermissions as $permission) {
+            RolePermission::firstOrCreate([
+                'role' => UserRole::HR->value,
+                'permission' => $permission,
+            ]);
+        }
+    }
+
+    private function seedUsersAndEmployees(): array
+    {
+        // Admin - memiliki roles: admin + employee (demo multi-role & panel karyawan)
         $adminUser = User::firstOrCreate(['email' => 'admin@company.test'], [
-            'name' => 'Super Admin',
+            'name' => 'Ahmad Fauzi',
             'password' => Hash::make('password'),
-            'role' => UserRole::SuperAdmin,
+            'roles' => [UserRole::Admin->value, UserRole::Employee->value],
             'email_verified_at' => now(),
         ]);
 
+        // HR - memiliki roles: hr + employee (bisa kelola + absen sendiri)
         $hrUser = User::firstOrCreate(['email' => 'hr@company.test'], [
-            'name' => 'HR Manager',
+            'name' => 'Hana Pertiwi',
             'password' => Hash::make('password'),
-            'role' => UserRole::HR,
+            'roles' => [UserRole::HR->value, UserRole::Employee->value],
             'email_verified_at' => now(),
         ]);
 
-        $managerUser = User::firstOrCreate(['email' => 'manager@company.test'], [
-            'name' => 'IT Manager',
-            'password' => Hash::make('password'),
-            'role' => UserRole::Manager,
-            'email_verified_at' => now(),
-        ]);
-
-        $financeUser = User::firstOrCreate(['email' => 'finance@company.test'], [
-            'name' => 'Finance Admin',
-            'password' => Hash::make('password'),
-            'role' => UserRole::Admin,
-            'email_verified_at' => now(),
-        ]);
-
+        // Karyawan biasa - hanya role employee
         $budiUser = User::firstOrCreate(['email' => 'budi@company.test'], [
             'name' => 'Budi Santoso',
             'password' => Hash::make('password'),
-            'role' => UserRole::Employee,
+            'roles' => [UserRole::Employee->value],
             'email_verified_at' => now(),
         ]);
 
         $sitiUser = User::firstOrCreate(['email' => 'siti@company.test'], [
-            'name' => 'Siti Nurhaliza',
+            'name' => 'Siti Rahayu',
             'password' => Hash::make('password'),
-            'role' => UserRole::Employee,
+            'roles' => [UserRole::Employee->value],
             'email_verified_at' => now(),
         ]);
+
+        $ekoUser = User::firstOrCreate(['email' => 'eko@company.test'], [
+            'name' => 'Eko Prasetyo',
+            'password' => Hash::make('password'),
+            'roles' => [UserRole::Employee->value],
+            'email_verified_at' => now(),
+        ]);
+
+        $rizkiUser = User::firstOrCreate(['email' => 'rizki@company.test'], [
+            'name' => 'Rizki Maulana',
+            'password' => Hash::make('password'),
+            'roles' => [UserRole::Employee->value],
+            'email_verified_at' => now(),
+        ]);
+
+        $adminEmployee = Employee::firstOrCreate(
+            ['user_id' => $adminUser->id],
+            [
+                'employee_number' => 'EMP-0001',
+                'full_name' => 'Ahmad Fauzi',
+                'nickname' => 'Ahmad',
+                'gender' => 'male',
+                'date_of_birth' => '1985-03-15',
+                'place_of_birth' => 'Jakarta',
+                'religion' => 'Islam',
+                'phone' => '08111234567',
+                'address' => 'Jl. Gatot Subroto No. 5',
+                'city' => 'Jakarta',
+                'province' => 'DKI Jakarta',
+                'postal_code' => '12930',
+                'employment_status' => EmploymentStatus::Permanent,
+                'work_type' => WorkType::WFO,
+                'join_date' => '2018-01-10',
+                'bank_name' => 'BCA',
+                'bank_account_number' => '1234000001',
+                'bank_account_holder' => 'Ahmad Fauzi',
+                'basic_salary' => 20000000,
+                'is_active' => true,
+            ]
+        );
 
         $hrEmployee = Employee::firstOrCreate(
             ['user_id' => $hrUser->id],
             [
-                'job_position_id' => $positionMap['HR-MGR']->id,
                 'employee_number' => 'EMP-0002',
-                'full_name' => 'Hannah Rahma',
-                'nickname' => 'Hannah',
+                'full_name' => 'Hana Pertiwi',
+                'nickname' => 'Hana',
                 'gender' => 'female',
-                'date_of_birth' => '1990-11-08',
+                'date_of_birth' => '1990-07-22',
+                'place_of_birth' => 'Bandung',
                 'religion' => 'Islam',
-                'phone' => '081298765432',
+                'phone' => '08121234568',
                 'address' => 'Jl. Kenanga No. 24',
                 'city' => 'Jakarta',
+                'province' => 'DKI Jakarta',
+                'postal_code' => '10450',
                 'employment_status' => EmploymentStatus::Permanent,
-                'join_date' => '2022-07-01',
+                'work_type' => WorkType::WFA,
+                'join_date' => '2020-03-01',
                 'bank_name' => 'Mandiri',
-                'bank_account_number' => '0987654321',
-                'bank_account_holder' => 'Hannah Rahma',
-                'ptkp_status' => 'K/1',
-                'basic_salary' => 12000000,
-            ]
-        );
-
-        $managerEmployee = Employee::firstOrCreate(
-            ['user_id' => $managerUser->id],
-            [
-                'job_position_id' => $positionMap['IT-MGR']->id,
-                'employee_number' => 'EMP-0003',
-                'full_name' => 'Anton Wijaya',
-                'nickname' => 'Anton',
-                'gender' => 'male',
-                'date_of_birth' => '1988-02-14',
-                'religion' => 'Islam',
-                'phone' => '081345678901',
-                'address' => 'Jl. Melati No. 8',
-                'city' => 'Bandung',
-                'employment_status' => EmploymentStatus::Permanent,
-                'join_date' => '2021-03-15',
-                'bank_name' => 'BNI',
-                'bank_account_number' => '1122334455',
-                'bank_account_holder' => 'Anton Wijaya',
-                'ptkp_status' => 'K/0',
-                'basic_salary' => 15000000,
-            ]
-        );
-
-        $financeEmployee = Employee::firstOrCreate(
-            ['user_id' => $financeUser->id],
-            [
-                'job_position_id' => $positionMap['ACC']->id,
-                'employee_number' => 'EMP-0004',
-                'full_name' => 'Fitri Andini',
-                'nickname' => 'Fitri',
-                'gender' => 'female',
-                'date_of_birth' => '1992-05-20',
-                'religion' => 'Islam',
-                'phone' => '081212345678',
-                'address' => 'Jl. Dahlia No. 12',
-                'city' => 'Surabaya',
-                'employment_status' => EmploymentStatus::Permanent,
-                'join_date' => '2023-02-10',
-                'bank_name' => 'BRI',
-                'bank_account_number' => '5566778899',
-                'bank_account_holder' => 'Fitri Andini',
-                'ptkp_status' => 'TK/0',
-                'basic_salary' => 9500000,
+                'bank_account_number' => '1234000002',
+                'bank_account_holder' => 'Hana Pertiwi',
+                'basic_salary' => 14000000,
+                'is_active' => true,
             ]
         );
 
         $budiEmployee = Employee::firstOrCreate(
             ['user_id' => $budiUser->id],
             [
-                'job_position_id' => $positionMap['DEV']->id,
-                'manager_id' => $managerEmployee->id,
-                'employee_number' => 'EMP-0001',
+                'manager_id' => $adminEmployee->id,
+                'employee_number' => 'EMP-0003',
                 'full_name' => 'Budi Santoso',
                 'nickname' => 'Budi',
                 'gender' => 'male',
                 'date_of_birth' => '1995-04-12',
+                'place_of_birth' => 'Yogyakarta',
                 'religion' => 'Islam',
-                'phone' => '081234567890',
+                'phone' => '08131234569',
                 'address' => 'Jl. Mawar No. 10',
                 'city' => 'Jakarta',
+                'province' => 'DKI Jakarta',
+                'postal_code' => '12870',
                 'employment_status' => EmploymentStatus::Permanent,
-                'join_date' => '2023-01-15',
-                'bank_name' => 'BCA',
-                'bank_account_number' => '1234567890',
+                'work_type' => WorkType::WFO,
+                'join_date' => '2021-06-01',
+                'bank_name' => 'BNI',
+                'bank_account_number' => '1234000003',
                 'bank_account_holder' => 'Budi Santoso',
-                'ptkp_status' => 'TK/0',
-                'basic_salary' => 8000000,
+                'basic_salary' => 9000000,
+                'is_active' => true,
             ]
         );
 
         $sitiEmployee = Employee::firstOrCreate(
             ['user_id' => $sitiUser->id],
             [
-                'job_position_id' => $positionMap['MKT']->id,
                 'manager_id' => $hrEmployee->id,
-                'employee_number' => 'EMP-0005',
-                'full_name' => 'Siti Nurhaliza',
+                'employee_number' => 'EMP-0004',
+                'full_name' => 'Siti Rahayu',
                 'nickname' => 'Siti',
                 'gender' => 'female',
-                'date_of_birth' => '1996-08-18',
+                'date_of_birth' => '1998-11-05',
+                'place_of_birth' => 'Surabaya',
                 'religion' => 'Islam',
-                'phone' => '081987654321',
-                'address' => 'Jl. Melati No. 15',
+                'phone' => '08141234570',
+                'address' => 'Jl. Melati No. 7',
                 'city' => 'Jakarta',
+                'province' => 'DKI Jakarta',
+                'postal_code' => '13410',
                 'employment_status' => EmploymentStatus::Permanent,
-                'join_date' => '2024-01-05',
+                'work_type' => WorkType::WFH,
+                'join_date' => '2022-09-01',
+                'bank_name' => 'BRI',
+                'bank_account_number' => '1234000004',
+                'bank_account_holder' => 'Siti Rahayu',
+                'basic_salary' => 8000000,
+                'is_active' => true,
+            ]
+        );
+
+        $ekoEmployee = Employee::firstOrCreate(
+            ['user_id' => $ekoUser->id],
+            [
+                'manager_id' => $adminEmployee->id,
+                'employee_number' => 'EMP-0005',
+                'full_name' => 'Eko Prasetyo',
+                'nickname' => 'Eko',
+                'gender' => 'male',
+                'date_of_birth' => '2000-08-18',
+                'place_of_birth' => 'Semarang',
+                'religion' => 'Islam',
+                'phone' => '08151234571',
+                'address' => 'Jl. Anggrek No. 3',
+                'city' => 'Depok',
+                'province' => 'Jawa Barat',
+                'postal_code' => '16412',
+                'employment_status' => EmploymentStatus::Contract,
+                'work_type' => WorkType::WFA,
+                'join_date' => '2024-01-15',
+                'contract_end_date' => now()->addMonths(6)->toDateString(),
                 'bank_name' => 'CIMB',
-                'bank_account_number' => '6677889900',
-                'bank_account_holder' => 'Siti Nurhaliza',
-                'ptkp_status' => 'TK/0',
-                'basic_salary' => 7000000,
+                'bank_account_number' => '1234000005',
+                'bank_account_holder' => 'Eko Prasetyo',
+                'basic_salary' => 6500000,
+                'is_active' => true,
+            ]
+        );
+
+        $rizkiEmployee = Employee::firstOrCreate(
+            ['user_id' => $rizkiUser->id],
+            [
+                'manager_id' => $adminEmployee->id,
+                'employee_number' => 'EMP-0006',
+                'full_name' => 'Rizki Maulana',
+                'nickname' => 'Rizki',
+                'gender' => 'male',
+                'date_of_birth' => '2002-02-28',
+                'place_of_birth' => 'Medan',
+                'religion' => 'Islam',
+                'phone' => '08161234572',
+                'address' => 'Jl. Dahlia No. 15',
+                'city' => 'Tangerang',
+                'province' => 'Banten',
+                'postal_code' => '15111',
+                'employment_status' => EmploymentStatus::Probation,
+                'work_type' => WorkType::WFO,
+                'join_date' => now()->subMonths(2)->toDateString(),
+                'probation_end_date' => now()->addMonth()->toDateString(),
+                'bank_name' => 'BSI',
+                'bank_account_number' => '1234000006',
+                'bank_account_holder' => 'Rizki Maulana',
+                'basic_salary' => 5500000,
+                'is_active' => true,
             ]
         );
 
         return [
-            'admin' => $adminUser,
-            'hr' => $hrEmployee,
-            'manager' => $managerEmployee,
-            'finance' => $financeEmployee,
-            'budi' => $budiEmployee,
-            'siti' => $sitiEmployee,
+            'employees' => [
+                'admin' => $adminEmployee,
+                'hr' => $hrEmployee,
+                'budi' => $budiEmployee,
+                'siti' => $sitiEmployee,
+                'eko' => $ekoEmployee,
+                'rizki' => $rizkiEmployee,
+            ],
+            'adminUser' => $adminUser,
+            'hrUser' => $hrUser,
         ];
     }
 
     private function seedWorkSchedules(array $employees): void
     {
-        $shift = Shift::where('code', 'REG')->first() ?? Shift::first();
-        if (! $shift) {
+        $regShift = Shift::where('code', 'REG')->first();
+        $earlyShift = Shift::where('code', 'EARLY')->first() ?? $regShift;
+
+        if (! $regShift) {
             return;
         }
 
-        foreach ($this->recentBusinessDays(7) as $date) {
-            WorkSchedule::firstOrCreate(
-                ['employee_id' => $employees['budi']->id, 'work_date' => $date],
-                ['shift_id' => $shift->id, 'day_type' => 'workday']
-            );
+        $days = $this->recentBusinessDays(10);
 
-            WorkSchedule::firstOrCreate(
-                ['employee_id' => $employees['siti']->id, 'work_date' => $date],
-                ['shift_id' => $shift->id, 'day_type' => 'workday']
-            );
+        $shiftMap = [
+            'admin' => $regShift,
+            'hr' => $regShift,
+            'budi' => $regShift,
+            'siti' => $regShift,
+            'eko' => $regShift,
+            'rizki' => $earlyShift,
+        ];
+
+        foreach ($shiftMap as $key => $shift) {
+            $emp = $employees[$key];
+            foreach ($days as $date) {
+                WorkSchedule::firstOrCreate(
+                    ['employee_id' => $emp->id, 'work_date' => $date],
+                    [
+                        'shift_id' => $shift->id,
+                        'day_type' => 'workday',
+                        'work_type' => $emp->work_type->value,
+                    ]
+                );
+            }
         }
     }
 
     private function seedHolidays(): void
     {
+        $year = now()->year;
         $holidays = [
-            ['date' => now()->startOfYear()->toDateString(), 'name' => 'Tahun Baru Masehi'],
-            ['date' => now()->month(5)->day(1)->toDateString(), 'name' => 'Hari Buruh'],
-            ['date' => now()->month(12)->day(25)->toDateString(), 'name' => 'Hari Natal'],
+            ['date' => "{$year}-01-01", 'name' => 'Tahun Baru Masehi', 'is_national' => true],
+            ['date' => "{$year}-01-29", 'name' => 'Tahun Baru Imlek', 'is_national' => true],
+            ['date' => "{$year}-03-29", 'name' => 'Hari Raya Nyepi', 'is_national' => true],
+            ['date' => "{$year}-04-18", 'name' => 'Wafat Yesus Kristus', 'is_national' => true],
+            ['date' => "{$year}-05-01", 'name' => 'Hari Buruh Internasional', 'is_national' => true],
+            ['date' => "{$year}-05-29", 'name' => 'Kenaikan Isa Al-Masih', 'is_national' => true],
+            ['date' => "{$year}-06-01", 'name' => 'Hari Lahir Pancasila', 'is_national' => true],
+            ['date' => "{$year}-08-17", 'name' => 'HUT Kemerdekaan RI', 'is_national' => true],
+            ['date' => "{$year}-12-25", 'name' => 'Hari Natal', 'is_national' => true],
+            ['date' => "{$year}-12-26", 'name' => 'Cuti Bersama Natal', 'is_national' => false],
         ];
 
         foreach ($holidays as $holiday) {
@@ -303,53 +412,207 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    private function seedAttendanceAndLogs(array $employees): void
+    private function seedAttendance(array $employees): void
     {
-        foreach ($this->recentBusinessDays(5) as $date) {
-            foreach (['budi', 'siti'] as $key) {
-                $employee = $employees[$key];
-                $checkIn = Carbon::parse("{$date} 09:05:00");
-                $checkOut = Carbon::parse("{$date} 17:50:00");
+        $days = $this->recentBusinessDays(7);
+        $dayCount = count($days);
+
+        // Pola absensi per karyawan: ['ci' => jam masuk, 'co' => jam keluar, 'late' => menit terlambat]
+        // null = tidak hadir
+        $patterns = [
+            'admin' => array_fill(0, $dayCount, ['ci' => '08:55', 'co' => '18:05', 'late' => 0]),
+            'hr' => [
+                ['ci' => '09:20', 'co' => '18:15', 'late' => 20],
+                ['ci' => '09:00', 'co' => '18:05', 'late' => 0],
+                ['ci' => '08:58', 'co' => '18:00', 'late' => 0],
+                ['ci' => '09:25', 'co' => '18:10', 'late' => 25],
+                ['ci' => '09:00', 'co' => '18:00', 'late' => 0],
+                ['ci' => '08:55', 'co' => '18:05', 'late' => 0],
+                ['ci' => '09:05', 'co' => '18:10', 'late' => 5],
+            ],
+            'budi' => [
+                ['ci' => '09:18', 'co' => '18:20', 'late' => 18],
+                ['ci' => '09:05', 'co' => '18:10', 'late' => 5],
+                ['ci' => '08:55', 'co' => '18:00', 'late' => 0],
+                ['ci' => '09:22', 'co' => '18:15', 'late' => 22],
+                ['ci' => '09:00', 'co' => '18:05', 'late' => 0],
+                ['ci' => '08:58', 'co' => '18:02', 'late' => 0],
+                ['ci' => '09:10', 'co' => '18:10', 'late' => 10],
+            ],
+            'siti' => [
+                ['ci' => '09:02', 'co' => '18:05', 'late' => 0],
+                ['ci' => '09:00', 'co' => '18:00', 'late' => 0],
+                null, // sakit
+                ['ci' => '09:05', 'co' => '18:10', 'late' => 5],
+                ['ci' => '09:00', 'co' => '18:05', 'late' => 0],
+                ['ci' => '08:55', 'co' => '18:00', 'late' => 0],
+                ['ci' => '09:00', 'co' => '18:00', 'late' => 0],
+            ],
+            'eko' => array_fill(0, $dayCount, ['ci' => '09:00', 'co' => '18:05', 'late' => 0]),
+            'rizki' => [
+                ['ci' => '07:55', 'co' => '16:10', 'late' => 0],
+                ['ci' => '07:50', 'co' => '16:05', 'late' => 0],
+                ['ci' => '08:10', 'co' => '16:05', 'late' => 10],
+                ['ci' => '07:55', 'co' => '16:00', 'late' => 0],
+                ['ci' => '07:58', 'co' => '16:10', 'late' => 0],
+                ['ci' => '07:50', 'co' => '16:05', 'late' => 0],
+                ['ci' => '08:05', 'co' => '16:00', 'late' => 5],
+            ],
+        ];
+
+        foreach ($patterns as $key => $dayPatterns) {
+            $employee = $employees[$key];
+
+            foreach ($days as $i => $date) {
+                $pattern = $dayPatterns[$i] ?? null;
+
+                if ($pattern === null) {
+                    continue;
+                }
+
+                $checkIn = Carbon::parse("{$date} {$pattern['ci']}:00");
+                $checkOut = Carbon::parse("{$date} {$pattern['co']}:00");
+                $workMinutes = (int) $checkIn->diffInMinutes($checkOut);
+                $status = $pattern['late'] > 0 ? AttendanceStatus::Late : AttendanceStatus::Present;
 
                 $attendance = Attendance::firstOrCreate(
                     ['employee_id' => $employee->id, 'attendance_date' => $date],
                     [
-                        'shift_id' => Shift::where('code', 'REG')->first()?->id,
                         'check_in_at' => $checkIn,
                         'check_out_at' => $checkOut,
-                        'status' => 'present',
-                        'late_minutes' => 5,
-                        'early_leave_minutes' => 0,
-                        'work_minutes' => 525,
+                        'status' => $status,
+                        'late_minutes' => $pattern['late'],
+                        'work_minutes' => $workMinutes,
                     ]
                 );
 
                 AttendanceLog::firstOrCreate(
                     ['attendance_id' => $attendance->id, 'event' => 'check_in'],
-                    [
-                        'employee_id' => $employee->id,
-                        'event_at' => $checkIn,
-                        'ip_address' => '192.168.1.10',
-                        'device_info' => 'Browser',
-                    ]
+                    ['employee_id' => $employee->id, 'event_at' => $checkIn, 'ip_address' => '127.0.0.1', 'device_info' => 'Web']
                 );
 
                 AttendanceLog::firstOrCreate(
                     ['attendance_id' => $attendance->id, 'event' => 'check_out'],
-                    [
-                        'employee_id' => $employee->id,
-                        'event_at' => $checkOut,
-                        'ip_address' => '192.168.1.10',
-                        'device_info' => 'Browser',
-                    ]
+                    ['employee_id' => $employee->id, 'event_at' => $checkOut, 'ip_address' => '127.0.0.1', 'device_info' => 'Web']
                 );
             }
         }
     }
 
-    private function seedPayrollData(array $employees): void
+    private function seedRemoteWorkRequests(array $employees, User $hrUser): void
     {
-        $period = PayrollPeriod::firstOrCreate(
+        // Siti: disetujui WFH minggu ini
+        RemoteWorkRequest::firstOrCreate(
+            ['employee_id' => $employees['siti']->id, 'start_date' => now()->startOfWeek()->toDateString()],
+            [
+                'end_date' => now()->endOfWeek()->toDateString(),
+                'work_type' => WorkType::WFH,
+                'reason' => 'Perbaikan AC kantor. Lebih efektif WFH untuk sementara.',
+                'status' => RemoteWorkStatus::Approved,
+                'reviewed_by' => $hrUser->id,
+                'reviewed_at' => now()->subDays(2),
+            ]
+        );
+
+        // Eko: disetujui WFA dua minggu
+        RemoteWorkRequest::firstOrCreate(
+            ['employee_id' => $employees['eko']->id, 'start_date' => now()->startOfWeek()->toDateString()],
+            [
+                'end_date' => now()->addWeek()->endOfWeek()->toDateString(),
+                'work_type' => WorkType::WFA,
+                'reason' => 'Urusan keluarga di luar kota, tetap bisa bekerja penuh.',
+                'status' => RemoteWorkStatus::Approved,
+                'reviewed_by' => $hrUser->id,
+                'reviewed_at' => now()->subDay(),
+            ]
+        );
+
+        // Budi: menunggu persetujuan (untuk demo fitur approval)
+        RemoteWorkRequest::firstOrCreate(
+            ['employee_id' => $employees['budi']->id, 'start_date' => now()->addWeek()->startOfWeek()->toDateString()],
+            [
+                'end_date' => now()->addWeek()->endOfWeek()->toDateString(),
+                'work_type' => WorkType::WFH,
+                'reason' => 'Renovasi apartemen, susah commute ke kantor minggu depan.',
+                'status' => RemoteWorkStatus::Pending,
+            ]
+        );
+    }
+
+    private function seedPayrollData(array $employees, User $adminUser): void
+    {
+        $components = PayrollComponent::all()->keyBy('code');
+
+        // ===== PERIODE LALU (PAID) - dengan variasi bonus & PPh 21 =====
+        $prevMonth = now()->subMonth();
+        $prevPeriod = PayrollPeriod::firstOrCreate(
+            ['year' => $prevMonth->year, 'month' => $prevMonth->month],
+            [
+                'code' => $prevMonth->format('Y-m'),
+                'start_date' => $prevMonth->copy()->startOfMonth()->toDateString(),
+                'end_date' => $prevMonth->copy()->endOfMonth()->toDateString(),
+                'payment_date' => $prevMonth->copy()->day(28)->toDateString(),
+                'status' => 'paid',
+                'processed_at' => $prevMonth->copy()->day(25),
+                'locked_at' => $prevMonth->copy()->day(27),
+            ]
+        );
+
+        // bonus = nominal tambahan; pph21_pct = persentase dari gaji kotor
+        $prevData = [
+            'admin' => ['bonus' => 5000000, 'transport' => 0, 'pph21_pct' => 5.0, 'present' => 22, 'absent' => 0],
+            'hr' => ['bonus' => 0, 'transport' => 500000, 'pph21_pct' => 3.0, 'present' => 22, 'absent' => 0],
+            'budi' => ['bonus' => 1500000, 'transport' => 300000, 'pph21_pct' => 0, 'present' => 21, 'absent' => 1],
+            'siti' => ['bonus' => 0, 'transport' => 200000, 'pph21_pct' => 2.5, 'present' => 20, 'absent' => 2],
+            'eko' => ['bonus' => 0, 'transport' => 0, 'pph21_pct' => 0, 'present' => 22, 'absent' => 0],
+            'rizki' => ['bonus' => 0, 'transport' => 0, 'pph21_pct' => 0, 'present' => 20, 'absent' => 2],
+        ];
+
+        foreach ($prevData as $key => $data) {
+            $employee = $employees[$key];
+            $basic = (float) $employee->basic_salary;
+            $bonus = (float) $data['bonus'];
+            $transport = (float) $data['transport'];
+            $totalEarnings = $basic + $bonus + $transport;
+            $pph21 = $data['pph21_pct'] > 0 ? round($totalEarnings * $data['pph21_pct'] / 100) : 0;
+
+            $payroll = Payroll::firstOrCreate(
+                ['payroll_period_id' => $prevPeriod->id, 'employee_id' => $employee->id],
+                [
+                    'basic_salary' => $basic,
+                    'total_earnings' => $totalEarnings,
+                    'total_deductions' => 0,
+                    'total_bpjs' => 0,
+                    'total_tax_pph21' => $pph21,
+                    'gross_salary' => $totalEarnings,
+                    'net_salary' => max(0, $totalEarnings - $pph21),
+                    'working_days' => 22,
+                    'present_days' => $data['present'],
+                    'absent_days' => $data['absent'],
+                    'leave_days' => 0,
+                    'overtime_minutes' => 0,
+                    'overtime_amount' => 0,
+                    'status' => 'paid',
+                ]
+            );
+
+            $this->createPayrollItem($payroll, $components, 'BASIC', $basic, 'earning');
+
+            if ($bonus > 0) {
+                $this->createPayrollItem($payroll, $components, 'BONUS', $bonus, 'earning');
+            }
+
+            if ($transport > 0) {
+                $this->createPayrollItem($payroll, $components, 'TRANSPORT', $transport, 'earning');
+            }
+
+            if ($pph21 > 0) {
+                $this->createPayrollItem($payroll, $components, 'PPH21', $pph21, 'deduction', $data['pph21_pct'].'% dari gaji kotor');
+            }
+        }
+
+        // ===== PERIODE INI (PROCESSED - siap di-review) =====
+        $currentPeriod = PayrollPeriod::firstOrCreate(
             ['year' => now()->year, 'month' => now()->month],
             [
                 'code' => now()->format('Y-m'),
@@ -357,30 +620,15 @@ class DatabaseSeeder extends Seeder
                 'end_date' => now()->endOfMonth()->toDateString(),
                 'payment_date' => now()->endOfMonth()->subDays(2)->toDateString(),
                 'status' => 'processed',
-                'processed_at' => now(),
-                'locked_at' => now(),
+                'processed_at' => now()->startOfMonth()->addDays(19),
             ]
         );
 
-        PayrollPeriod::firstOrCreate(
-            ['year' => now()->year, 'month' => now()->subMonth()->month],
-            [
-                'code' => now()->subMonth()->format('Y-m'),
-                'start_date' => now()->subMonth()->startOfMonth()->toDateString(),
-                'end_date' => now()->subMonth()->endOfMonth()->toDateString(),
-                'payment_date' => now()->subMonth()->endOfMonth()->subDays(2)->toDateString(),
-                'status' => 'draft',
-            ]
-        );
-
-        $components = PayrollComponent::all()->keyBy('code');
-
-        foreach (['budi', 'siti'] as $key) {
-            $employee = $employees[$key];
-            $basic = $employee->basic_salary;
+        foreach ($employees as $employee) {
+            $basic = (float) $employee->basic_salary;
 
             $payroll = Payroll::firstOrCreate(
-                ['payroll_period_id' => $period->id, 'employee_id' => $employee->id],
+                ['payroll_period_id' => $currentPeriod->id, 'employee_id' => $employee->id],
                 [
                     'basic_salary' => $basic,
                     'total_earnings' => $basic,
@@ -395,53 +643,64 @@ class DatabaseSeeder extends Seeder
                     'leave_days' => 0,
                     'overtime_minutes' => 0,
                     'overtime_amount' => 0,
-                    'status' => 'approved',
+                    'status' => 'draft',
                 ]
             );
 
-            $payrollItems = [
-                ['component' => $components['BASIC'] ?? null, 'amount' => $basic],
-            ];
-
-            foreach ($payrollItems as $item) {
-                if (! $item['component']) {
-                    continue;
-                }
-
-                PayrollItem::firstOrCreate(
-                    ['payroll_id' => $payroll->id, 'component_code' => $item['component']->code],
-                    [
-                        'component_id' => $item['component']->id,
-                        'component_name' => $item['component']->name,
-                        'type' => $item['component']->type,
-                        'amount' => $item['amount'],
-                    ]
-                );
-            }
+            $this->createPayrollItem($payroll, $components, 'BASIC', $basic, 'earning');
         }
     }
 
-    private function seedAnnouncements(): void
+    private function createPayrollItem(Payroll $payroll, $components, string $code, float $amount, string $type, ?string $notes = null): void
     {
-        Announcement::firstOrCreate(
-            ['title' => 'Selamat Datang di HRIS Impost Media'],
+        PayrollItem::firstOrCreate(
+            ['payroll_id' => $payroll->id, 'component_code' => $code],
             [
-                'content' => 'Gunakan akun demo untuk mengakses panel admin, cuti, dan payroll.',
-                'published_at' => now()->subDays(10),
-                'expires_at' => now()->addDays(20),
-                'is_pinned' => false,
+                'component_id' => $components[$code]?->id,
+                'component_name' => $components[$code]?->name ?? $code,
+                'type' => $type,
+                'amount' => $amount,
+                'notes' => $notes,
             ]
         );
+    }
 
-        Announcement::firstOrCreate(
-            ['title' => 'Jadwal Maintenance Terjadwal'],
+    private function seedAnnouncements(User $adminUser): void
+    {
+        $announcements = [
             [
-                'content' => 'Sistem akan menjalani maintenance ringan pada hari Minggu mendatang pukul 02:00.',
-                'published_at' => now()->subDays(1),
-                'expires_at' => now()->addDays(7),
+                'title' => 'Selamat Datang di HRIS Impost Media',
+                'content' => 'Sistem HRIS telah aktif. Admin dapat masuk ke panel admin maupun mode karyawan menggunakan akun yang sama. Gunakan akun demo berikut:'
+                    ."\n\n• admin@company.test - Admin (bisa login sebagai admin & karyawan)"
+                    ."\n• hr@company.test - HR Manager"
+                    ."\n• budi@company.test / siti@company.test / eko@company.test / rizki@company.test - Karyawan"
+                    ."\n\nSemua akun menggunakan password: password",
+                'published_at' => now()->subDays(30),
+                'expires_at' => now()->addMonths(6),
+                'is_pinned' => true,
+            ],
+            [
+                'title' => 'Kebijakan Absensi: Minimal 8 Jam Kerja',
+                'content' => 'Mulai bulan ini diberlakukan ketentuan minimal jam kerja 8 jam per hari. Jika melakukan checkout sebelum 8 jam, sistem akan menampilkan peringatan. Karyawan tetap dapat melakukan checkout dengan konfirmasi.',
+                'published_at' => now()->subDays(14),
+                'expires_at' => now()->addMonths(3),
                 'is_pinned' => false,
-            ]
-        );
+            ],
+            [
+                'title' => 'Cara Pengajuan WFH / WFA',
+                'content' => 'Karyawan yang ingin bekerja dari rumah (WFH) atau dari mana saja (WFA) wajib mengajukan permohonan melalui menu Pengajuan WFA di aplikasi. Pengajuan harus dilakukan minimal H-1 dan menunggu persetujuan HR.',
+                'published_at' => now()->subDays(7),
+                'expires_at' => now()->addDays(60),
+                'is_pinned' => false,
+            ],
+        ];
+
+        foreach ($announcements as $data) {
+            Announcement::firstOrCreate(
+                ['title' => $data['title']],
+                array_merge($data, ['author_id' => $adminUser->id, 'audience' => 'all'])
+            );
+        }
     }
 
     private function recentBusinessDays(int $count): array

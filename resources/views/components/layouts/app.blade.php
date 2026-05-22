@@ -46,6 +46,28 @@
 
   @livewireScripts
   @stack('scripts')
+
+  {{-- Paksa update service worker + hapus semua cache lama --}}
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(reg) { reg.update(); });
+      });
+      caches.keys().then(function(keys) {
+        keys.forEach(function(key) {
+          if (key !== 'hris-im-v5') caches.delete(key);
+        });
+      });
+    }
+  </script>
+
+  {{-- Pastikan browser tab title ter-update saat wire:navigate --}}
+  <script data-navigate-once>
+    document.addEventListener('livewire:navigated', () => {
+      const titleEl = document.querySelector('title');
+      if (titleEl) document.title = titleEl.textContent;
+    });
+  </script>
 </body>
 
 </html>

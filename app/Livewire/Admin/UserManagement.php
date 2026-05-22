@@ -3,14 +3,17 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\UserRole;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Title('Manajemen Pengguna')]
 #[Layout('components.layouts.admin')]
 class UserManagement extends Component
 {
@@ -20,7 +23,6 @@ class UserManagement extends Component
 
     public string $filterRole = '';
 
-    // Create / edit user form
     public bool $showForm = false;
 
     public ?int $editingId = null;
@@ -29,7 +31,8 @@ class UserManagement extends Component
 
     public string $email = '';
 
-    public string $role = '';
+    /** @var string[] */
+    public array $selectedRoles = [];
 
     public bool $is_active = true;
 
@@ -37,7 +40,6 @@ class UserManagement extends Component
 
     public string $password_confirmation = '';
 
-    // Change password form
     public bool $showPasswordForm = false;
 
     public ?int $passwordUserId = null;
@@ -45,6 +47,14 @@ class UserManagement extends Component
     public string $newPassword = '';
 
     public string $newPasswordConfirmation = '';
+
+    public bool $showLinkForm = false;
+
+    public ?int $linkingUserId = null;
+
+    public ?int $selectedEmployeeId = null;
+
+    public string $employeeSearch = '';
 
     public function mount(): void
     {
@@ -63,17 +73,17 @@ class UserManagement extends Component
 
     public function open(?int $id = null): void
     {
-        $this->reset(['name', 'email', 'role', 'is_active', 'password', 'password_confirmation', 'editingId']);
+        $this->reset(['name', 'email', 'selectedRoles', 'is_active', 'password', 'password_confirmation', 'editingId']);
         $this->resetValidation();
         $this->is_active = true;
-        $this->role = UserRole::Employee->value;
+        $this->selectedRoles = [UserRole::Employee->value];
 
         if ($id) {
             $user = User::findOrFail($id);
             $this->editingId = $id;
             $this->name = $user->name;
             $this->email = $user->email;
-            $this->role = $user->role?->value ?? UserRole::Employee->value;
+            $this->selectedRoles = $user->roles ?? [UserRole::Employee->value];
             $this->is_active = $user->is_active;
         }
 
@@ -87,7 +97,8 @@ class UserManagement extends Component
         $rules = [
             'name' => 'required|string|max:200',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->editingId)],
-            'role' => ['required', Rule::enum(UserRole::class)],
+            'selectedRoles' => 'required|array|min:1',
+            'selectedRoles.*' => [Rule::enum(UserRole::class)],
             'is_active' => 'boolean',
         ];
 
@@ -97,13 +108,13 @@ class UserManagement extends Component
 
         $this->validate($rules);
 
-        // Prevent demoting the last Admin
-        if ($this->editingId && $this->role !== UserRole::Admin->value) {
+        // Cegah menghapus admin terakhir
+        if ($this->editingId && ! in_array(UserRole::Admin->value, $this->selectedRoles, true)) {
             $current = User::find($this->editingId);
-            if ($current?->role === UserRole::Admin) {
-                $adminCount = User::where('role', UserRole::Admin->value)->count();
+            if ($current?->hasRole(UserRole::Admin)) {
+                $adminCount = User::whereJsonContains('roles', UserRole::Admin->value)->count();
                 if ($adminCount <= 1) {
-                    $this->addError('role', 'Tidak dapat mengubah peran Admin terakhir.');
+                    $this->addError('selectedRoles', 'Tidak dapat menghapus peran Admin dari satu-satunya admin.');
 
                     return;
                 }
@@ -113,7 +124,7 @@ class UserManagement extends Component
         $data = [
             'name' => $this->name,
             'email' => $this->email,
-            'role' => $this->role,
+            'roles' => array_values($this->selectedRoles),
             'is_active' => $this->is_active,
         ];
 
@@ -176,7 +187,7 @@ class UserManagement extends Component
 
         $user = User::findOrFail($id);
 
-        if ($user->role === UserRole::Admin && User::where('role', UserRole::Admin->value)->count() <= 1) {
+        if ($user->hasRole(UserRole::Admin) && User::whereJsonContains('roles', UserRole::Admin->value)->count() <= 1) {
             $this->dispatch('notify', type: 'warning', message: 'Tidak dapat menghapus Admin terakhir.');
 
             return;
@@ -186,6 +197,48 @@ class UserManagement extends Component
         $this->dispatch('notify', type: 'success', message: 'Pengguna dihapus.');
     }
 
+    public function openLinkForm(int $userId): void
+    {
+        $this->linkingUserId = $userId;
+        $this->selectedEmployeeId = null;
+        $this->employeeSearch = '';
+        $this->resetValidation();
+        $this->showLinkForm = true;
+    }
+
+    public function linkEmployee(): void
+    {
+        $this->validate(['selectedEmployeeId' => 'required|exists:employees,id']);
+
+        $user = User::findOrFail($this->linkingUserId);
+        $employee = Employee::findOrFail($this->selectedEmployeeId);
+
+        if ($employee->user_id && $employee->user_id !== $user->id) {
+            $this->addError('selectedEmployeeId', 'Karyawan ini sudah terhubung ke akun lain.');
+
+            return;
+        }
+
+        $employee->update(['user_id' => $user->id]);
+
+        $this->showLinkForm = false;
+        $this->dispatch('notify', type: 'success', message: "Akun {$user->name} berhasil dihubungkan ke {$employee->full_name}.");
+    }
+
+    public function unlinkEmployee(int $userId): void
+    {
+        $user = User::with('employee')->findOrFail($userId);
+
+        if (! $user->employee) {
+            return;
+        }
+
+        $employeeName = $user->employee->full_name;
+        $user->employee->update(['user_id' => null]);
+
+        $this->dispatch('notify', type: 'success', message: "Koneksi ke {$employeeName} berhasil dilepas.");
+    }
+
     public function render(): mixed
     {
         $users = User::query()
@@ -193,14 +246,23 @@ class UserManagement extends Component
                 $q->where('name', 'like', "%{$this->search}%")
                     ->orWhere('email', 'like', "%{$this->search}%");
             }))
-            ->when($this->filterRole, fn ($q) => $q->where('role', $this->filterRole))
+            ->when($this->filterRole, fn ($q) => $q->whereJsonContains('roles', $this->filterRole))
             ->with('employee:id,user_id,full_name,employee_number')
             ->orderBy('name')
             ->paginate(20);
 
+        $availableEmployees = Employee::whereNull('user_id')
+            ->when($this->employeeSearch, fn ($q) => $q->where(function ($q) {
+                $q->where('full_name', 'like', "%{$this->employeeSearch}%")
+                    ->orWhere('employee_number', 'like', "%{$this->employeeSearch}%");
+            }))
+            ->orderBy('full_name')
+            ->get(['id', 'employee_number', 'full_name']);
+
         return view('livewire.admin.user-management', [
             'users' => $users,
-            'roles' => UserRole::cases(),
+            'allRoles' => UserRole::cases(),
+            'availableEmployees' => $availableEmployees,
         ]);
     }
 }

@@ -21,18 +21,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('employee_salary_components', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('component_id')->constrained('payroll_components')->cascadeOnDelete();
-            $table->decimal('amount', 15, 2);
-            $table->date('effective_from');
-            $table->date('effective_to')->nullable();
-            $table->timestamps();
-
-            $table->index(['employee_id', 'effective_from']);
-        });
-
         Schema::create('payroll_periods', function (Blueprint $table) {
             $table->id();
             $table->string('code', 30)->unique();
@@ -94,7 +82,6 @@ return new class extends Migration
         Schema::dropIfExists('payroll_items');
         Schema::dropIfExists('payrolls');
         Schema::dropIfExists('payroll_periods');
-        Schema::dropIfExists('employee_salary_components');
         Schema::dropIfExists('payroll_components');
     }
 };

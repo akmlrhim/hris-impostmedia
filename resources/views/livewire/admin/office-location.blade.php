@@ -1,24 +1,20 @@
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-base font-semibold text-slate-900">Lokasi Kantor</h2>
-      <p class="text-sm text-slate-500">Kelola titik lokasi & radius geofencing untuk absensi WFO.</p>
-    </div>
-    <button wire:click="open" class="btn-primary">
-      <x-icon name="plus" class="w-4 h-4" /> Tambah Lokasi
-    </button>
-  </div>
+  <x-page-header title="Lokasi Kantor" description="Kelola titik lokasi & radius geofencing untuk absensi WFO.">
+    <x-slot:action>
+      <button wire:click="open" class="btn-primary">Tambah Lokasi</button>
+    </x-slot:action>
+  </x-page-header>
 
   <x-modal show="showForm" max-width="2xl" :title="$editingId ? 'Ubah Lokasi' : 'Tambah Lokasi'">
     <form wire:submit="save" class="space-y-4">
       <div>
         <label class="label">Nama Lokasi</label>
-        <input wire:model="name" class="input" placeholder="Kantor Pusat Jakarta">
+        <input wire:model="name" class="input" placeholder="Masukkan nama lokasi">
         @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
       </div>
       <div>
         <label class="label">Alamat</label>
-        <input wire:model="address" class="input" placeholder="Jl. ...">
+        <input wire:model="address" class="input" placeholder="Masukkan alamat lengkap">
         @error('address') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
       </div>
       <div class="grid grid-cols-2 gap-4">
@@ -35,7 +31,7 @@
       </div>
       <div>
         <label class="label">Radius (meter)</label>
-        <input type="number" wire:model="radius_meters" class="input" min="10" max="5000">
+        <input type="number" wire:model="radius_meters" class="input" min="10" max="5000" placeholder="Masukkan radius (meter)">
         <p class="text-[11px] text-slate-500 mt-1">Jarak maksimum dari titik koordinat yang masih dianggap WFO.</p>
         @error('radius_meters') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
       </div>
@@ -69,10 +65,7 @@
         <span class="text-sm text-slate-700">Lokasi aktif</span>
       </label>
 
-      <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
-        <button type="submit" class="btn-primary">Simpan</button>
-      </div>
+      <x-form-actions />
     </form>
   </x-modal>
 
@@ -93,7 +86,7 @@
           @forelse ($locations as $loc)
             <tr class="hover:bg-slate-50">
               <td class="px-5 py-3 font-medium">{{ $loc->name }}</td>
-              <td class="px-5 py-3 text-slate-600 max-w-xs truncate">{{ $loc->address ?: '—' }}</td>
+              <td class="px-5 py-3 text-slate-600 max-w-xs truncate">{{ $loc->address ?: '-' }}</td>
               <td class="px-5 py-3 font-mono text-xs text-slate-600">
                 {{ number_format($loc->latitude, 6) }}, {{ number_format($loc->longitude, 6) }}
               </td>
@@ -108,17 +101,16 @@
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-2">
                   <button wire:click="open({{ $loc->id }})"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-                    <x-icon name="pencil" class="w-3.5 h-3.5" /> Edit
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
+                    Edit
                   </button>
                   <button wire:click="toggleActive({{ $loc->id }})"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $loc->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
-                    <x-icon name="{{ $loc->is_active ? 'eye-off' : 'eye' }}" class="w-3.5 h-3.5" />
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $loc->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
                     {{ $loc->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                   </button>
                   <button wire:click="delete({{ $loc->id }})" wire:confirm="Hapus lokasi ini?"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                    <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                    Hapus
                   </button>
                 </div>
               </td>
@@ -138,7 +130,7 @@
   @if ($locations->isNotEmpty())
     <div class="card p-4 bg-blue-50 border border-blue-100 text-sm text-blue-800">
       <p class="font-medium mb-1">Cara penggunaan geofencing</p>
-      <p>Pada jadwal kerja karyawan, atur <strong>Work Type</strong> ke <strong>WFO</strong>. Sistem akan otomatis memvalidasi GPS karyawan saat absensi — check-in hanya diizinkan jika berada dalam radius salah satu lokasi aktif di atas.</p>
+      <p>Pada jadwal kerja karyawan, atur <strong>Work Type</strong> ke <strong>WFO</strong>. Sistem akan otomatis memvalidasi GPS karyawan saat absensi - check-in hanya diizinkan jika berada dalam radius salah satu lokasi aktif di atas.</p>
     </div>
   @endif
 </div>

@@ -1,27 +1,23 @@
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-base font-semibold text-slate-900">Daftar Shift</h2>
-      <p class="text-sm text-slate-500">Kelola jam kerja & toleransi keterlambatan.</p>
-    </div>
-    <button wire:click="open" class="btn-primary">
-      <x-icon name="plus" class="w-4 h-4" /> Shift Baru
-    </button>
-  </div>
+  <x-page-header title="Daftar Shift" description="Kelola jam kerja & toleransi keterlambatan.">
+    <x-slot:action>
+      <button wire:click="open" class="btn-primary">Shift Baru</button>
+    </x-slot:action>
+  </x-page-header>
 
   <x-modal show="showForm" max-width="2xl" :title="$editingId ? 'Ubah Shift' : 'Shift Baru'">
     <form wire:submit="save" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="label">Kode</label>
-          <input wire:model="code" class="input" maxlength="30" placeholder="REG">
+          <input wire:model="code" class="input" maxlength="30" placeholder="Masukkan kode shift">
           @error('code')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
         </div>
         <div>
           <label class="label">Nama</label>
-          <input wire:model="name" class="input" placeholder="Reguler 09-18">
+          <input wire:model="name" class="input" placeholder="Masukkan nama shift">
           @error('name')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
@@ -40,17 +36,14 @@
         </div>
         <div>
           <label class="label">Istirahat Selesai</label>
-          <input type="time" onclick="this.showPicker() wire:model="break_end" class="input">
+          <input type="time" onclick="this.showPicker()" wire:model="break_end" class="input">
         </div>
         <div class="md:col-span-2">
           <label class="label">Toleransi Terlambat (menit)</label>
-          <input type="number" wire:model="late_tolerance_minutes" class="input" min="0">
+          <input type="number" wire:model="late_tolerance_minutes" class="input" min="0" placeholder="Masukkan toleransi (menit)">
         </div>
       </div>
-      <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
-        <button type="submit" class="btn-primary">Simpan</button>
-      </div>
+      <x-form-actions />
     </form>
   </x-modal>
 
@@ -86,12 +79,12 @@
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-2">
                   <button wire:click="open({{ $s->id }})"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-                    <x-icon name="pencil" class="w-3.5 h-3.5" /> Edit
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
+                    Edit
                   </button>
                   <button wire:click="delete({{ $s->id }})" wire:confirm="Hapus shift ini?"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                    <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                    Hapus
                   </button>
                 </div>
               </td>

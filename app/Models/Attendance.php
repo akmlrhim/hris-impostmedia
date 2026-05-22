@@ -9,12 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'employee_id', 'shift_id', 'attendance_date',
+    'employee_id', 'attendance_date',
     'check_in_at', 'check_out_at',
     'check_in_latitude', 'check_in_longitude', 'check_out_latitude', 'check_out_longitude',
     'check_in_photo_path', 'check_out_photo_path',
     'check_in_address', 'check_out_address',
-    'status', 'late_minutes', 'early_leave_minutes', 'work_minutes', 'notes',
+    'status', 'late_minutes', 'work_minutes', 'notes',
 ])]
 class Attendance extends Model
 {
@@ -31,11 +31,6 @@ class Attendance extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
-    }
-
-    public function shift(): BelongsTo
-    {
-        return $this->belongsTo(Shift::class);
     }
 
     public function logs(): HasMany

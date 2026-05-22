@@ -1,13 +1,9 @@
 <div class="space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-base font-semibold text-slate-900">Konfigurasi Hak Akses</h2>
-      <p class="text-sm text-slate-500">Tentukan fitur apa yang dapat diakses oleh peran HR.</p>
-    </div>
-    <button wire:click="save" class="btn-primary">
-      <x-icon name="check" class="w-4 h-4" /> Simpan Perubahan
-    </button>
-  </div>
+  <x-page-header title="Konfigurasi Hak Akses" description="Tentukan fitur apa yang dapat diakses oleh peran HR.">
+    <x-slot:action>
+      <button wire:click="save" class="btn-primary">Simpan Perubahan</button>
+    </x-slot:action>
+  </x-page-header>
 
   {{-- Role legend --}}
   <div class="flex flex-wrap gap-3 text-xs">
@@ -91,7 +87,7 @@
             </tr>
           @endforeach
 
-          {{-- manage_users row — Admin only, all others locked off --}}
+          {{-- manage_users row - Admin only, all others locked off --}}
           <tr class="bg-amber-50/30 hover:bg-amber-50/50 transition">
             <td class="px-5 py-4">
               <p class="font-medium text-slate-900 text-sm">{{ \App\Enums\Permission::ManageUsers->label() }}</p>
@@ -128,8 +124,6 @@
   </div>
 
   <div class="flex justify-end">
-    <button wire:click="save" class="btn-primary">
-      <x-icon name="check" class="w-4 h-4" /> Simpan Perubahan
-    </button>
+    <button wire:click="save" class="btn-primary">Simpan Perubahan</button>
   </div>
 </div>

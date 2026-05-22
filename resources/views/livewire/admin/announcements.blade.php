@@ -1,13 +1,9 @@
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-base font-semibold text-slate-900">Pengumuman</h2>
-      <p class="text-sm text-slate-500">Sebarkan informasi internal ke karyawan.</p>
-    </div>
-    <button wire:click="open" class="btn-primary">
-      <x-icon name="plus" class="w-4 h-4" /> Pengumuman Baru
-    </button>
-  </div>
+  <x-page-header title="Pengumuman" description="Sebarkan informasi internal ke karyawan.">
+    <x-slot:action>
+      <button wire:click="open" class="btn-primary">Pengumuman Baru</button>
+    </x-slot:action>
+  </x-page-header>
 
   <x-modal show="showForm" max-width="2xl" :title="$editingId ? 'Ubah Pengumuman' : 'Pengumuman Baru'">
     <form wire:submit="save" class="space-y-4" wire:key="announcement-form-{{ $editingId ?? 'new' }}">
@@ -43,10 +39,7 @@
           Publikasikan sekarang
         </label>
       </div>
-      <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
-        <button type="submit" class="btn-primary">Simpan</button>
-      </div>
+      <x-form-actions />
     </form>
   </x-modal>
 
@@ -76,12 +69,12 @@
           </div>
           <div class="flex flex-col gap-1.5 shrink-0">
             <button wire:click="open({{ $a->id }})"
-              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-              <x-icon name="pencil" class="w-3.5 h-3.5" /> Edit
+              class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
+              Edit
             </button>
             <button wire:click="delete({{ $a->id }})" wire:confirm="Hapus pengumuman?"
-              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-              <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
+              class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+              Hapus
             </button>
           </div>
         </div>

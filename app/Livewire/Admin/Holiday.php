@@ -3,11 +3,14 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Holiday as HolidayModel;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+#[Title('Hari Libur')]
 #[Layout('components.layouts.admin')]
 class Holiday extends Component
 {
@@ -28,6 +31,8 @@ class Holiday extends Component
 
     public function mount(): void
     {
+        Gate::authorize('manage_holidays');
+
         $this->year = (int) (request()->query('year') ?: now()->year);
     }
 

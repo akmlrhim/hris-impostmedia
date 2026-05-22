@@ -6,6 +6,7 @@ use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Payroll;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -16,7 +17,9 @@ class Show extends Component
 
     public function mount(Employee $employee): void
     {
-        $this->employee = $employee->load(['user', 'position.level', 'manager']);
+        Gate::authorize('manage_employees');
+
+        $this->employee = $employee->load(['user', 'manager']);
     }
 
     public function toggleActive(): void
@@ -52,6 +55,6 @@ class Show extends Component
         return view('livewire.admin.employee.show', compact(
             'attendanceStats',
             'recentPayrolls',
-        ));
+        ))->title($this->employee->full_name.' - Karyawan');
     }
 }

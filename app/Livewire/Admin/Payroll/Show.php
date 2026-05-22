@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Payroll;
 
 use App\Models\PayrollPeriod;
 use App\Services\Payroll\PayrollGenerator;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -16,6 +17,8 @@ class Show extends Component
 
     public function mount(PayrollPeriod $period): void
     {
+        Gate::authorize('manage_payroll');
+
         $this->period = $period;
     }
 
@@ -53,17 +56,22 @@ class Show extends Component
 
     public function render(): mixed
     {
-        $payrolls = $this->period->payrolls()
-            ->with(['employee.position'])
-            ->when($this->search, fn ($q) => $q->whereHas('employee', fn ($q) => $q->where('full_name', 'like', "%{$this->search}%")
-                ->orWhere('employee_number', 'like', "%{$this->search}%")))
+        $allPayrolls = $this->period->payrolls()
+            ->with(['employee'])
+            ->orderBy('id')
             ->get();
 
+        $payrolls = $this->search
+            ? $allPayrolls->filter(fn ($p) => str_contains(strtolower($p->employee->full_name), strtolower($this->search))
+                || str_contains(strtolower($p->employee->employee_number), strtolower($this->search)))
+            : $allPayrolls;
+
         $totals = [
-            'gross' => $payrolls->sum('gross_salary'),
-            'net' => $payrolls->sum('net_salary'),
+            'gross' => $allPayrolls->sum('gross_salary'),
+            'net' => $allPayrolls->sum('net_salary'),
         ];
 
-        return view('livewire.admin.payroll.show', compact('payrolls', 'totals'));
+        return view('livewire.admin.payroll.show', compact('payrolls', 'allPayrolls', 'totals'))
+            ->title('Payroll '.$this->period->code);
     }
 }

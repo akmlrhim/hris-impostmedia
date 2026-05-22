@@ -17,7 +17,6 @@
           <tr class="text-left text-xs border border-slate-200 font-semibold text-slate-600 uppercase tracking-wide">
             <th class="px-5 py-3">Karyawan</th>
             <th class="px-5 py-3">Tanggal</th>
-            <th class="px-5 py-3">Shift</th>
             <th class="px-5 py-3">Check-in</th>
             <th class="px-5 py-3">Check-out</th>
             <th class="px-5 py-3">Terlambat</th>
@@ -29,14 +28,13 @@
             <tr class="hover:bg-slate-50">
               <td class="px-5 py-3">
                 <p class="font-medium text-slate-900">{{ $att->employee->full_name }}</p>
-                <p class="text-xs text-slate-500">{{ $att->employee->position?->name }}</p>
+                <p class="text-xs text-slate-500">{{ $att->employee->employee_number }}</p>
               </td>
               <td class="px-5 py-3">{{ $att->attendance_date->format('d M Y') }}</td>
-              <td class="px-5 py-3">{{ $att->shift?->name ?? '—' }}</td>
               <td class="px-5 py-3">{{ $att->check_in_at?->format('H:i') ?? '—' }}</td>
               <td class="px-5 py-3">{{ $att->check_out_at?->format('H:i') ?? '—' }}</td>
               <td class="px-5 py-3">
-                {{ $att->late_minutes > 0 ? $att->late_minutes . ' mnt' : '—' }}
+                {{ $att->late_minutes > 0 ? $att->late_minutes . ' mnt' : '-' }}
               </td>
               <td class="px-5 py-3">
                 <span class="badge bg-{{ $att->status?->color() }}-100 text-{{ $att->status?->color() }}-700">
@@ -46,7 +44,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="7" class="px-5 py-12 text-center text-slate-500">
+              <td colspan="6" class="px-5 py-12 text-center text-slate-500">
                 Tidak ada data absensi.
               </td>
             </tr>

@@ -1,22 +1,16 @@
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-base font-semibold text-slate-900">Periode Payroll</h2>
-      <p class="text-sm text-slate-500">Generate & kelola perhitungan gaji bulanan.</p>
-    </div>
-    <div class="flex flex-wrap gap-2">
-      <button wire:click="openForm" class="btn-primary">
-        <x-icon name="plus" class="w-4 h-4" /> Generate Periode
-      </button>
-    </div>
-  </div>
+  <x-page-header title="Periode Payroll" description="Generate & kelola perhitungan gaji bulanan.">
+    <x-slot:action>
+      <button wire:click="openForm" class="btn-primary">Generate Periode</button>
+    </x-slot:action>
+  </x-page-header>
 
   <x-modal show="showForm" max-width="2xl" title="Generate Periode Payroll">
     <form wire:submit="createPeriod" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="label">Tahun</label>
-          <input type="number" wire:model="year" min="2020" max="2099" class="input">
+          <input type="number" wire:model="year" min="2020" max="2099" class="input" placeholder="{{ now()->year }}">
           @error('year')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
@@ -87,14 +81,14 @@
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-2">
                   <a wire:navigate href="{{ route('admin.payroll.show', $p) }}"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
-                    <x-icon name="eye" class="w-3.5 h-3.5" /> Detail
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
+                    Detail
                   </a>
                   @if (!$p->locked_at)
                     <button wire:click="delete({{ $p->id }})"
                       wire:confirm="Hapus periode ini? Semua slip gaji terkait akan ikut terhapus."
-                      class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                      <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
+                      class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                      Hapus
                     </button>
                   @endif
                 </div>

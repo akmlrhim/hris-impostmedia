@@ -29,6 +29,7 @@ return new class extends Migration
             $table->foreignId('shift_id')->constrained();
             $table->date('work_date');
             $table->string('day_type', 20)->default('workday');
+            $table->string('work_type', 10)->default('wfa');
             $table->text('notes')->nullable();
             $table->timestamps();
 

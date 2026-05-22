@@ -1,6 +1,4 @@
-@push('head')
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-@endpush
+<x-face-api />
 
 <div
   x-data="attendanceCamera({
@@ -8,8 +6,6 @@
     officeLocations: @json($officeLocations->values()),
     faceDescriptor: @json($faceDescriptor),
     hasFaceEnrolled: {{ $faceDescriptor ? 'true' : 'false' }},
-    hasCheckedIn: {{ $attendance?->check_in_at ? 'true' : 'false' }},
-    hasCheckedOut: {{ $attendance?->check_out_at ? 'true' : 'false' }},
   })"
   x-init="init()"
   @attendance-recorded.window="onAttendanceRecorded()"
@@ -22,10 +18,8 @@
       <x-icon name="arrow-left" class="w-5 h-5" />
     </a>
     <div class="flex-1">
-      <h1 class="text-lg font-bold text-slate-900">Absensi Saya</h1>
-      @if ($isAdminPanelUser)
-        <p class="text-xs text-slate-400 leading-none mt-0.5">{{ auth()->user()?->role?->label() }}</p>
-      @endif
+      <h1 class="text-lg font-bold text-slate-900">Absensi</h1>
+      <p class="text-xs text-slate-400 mt-0.5">{{ now()->translatedFormat('l, d F Y') }}</p>
     </div>
     @if ($employee)
       <span class="badge text-xs px-2 py-0.5
@@ -37,47 +31,145 @@
 
   <div class="px-5 pt-4 space-y-4 pb-32">
 
+    {{-- ===== STATE 1: Tidak ada data karyawan ===== --}}
     @if (! $employee)
-      {{-- No employee record linked --}}
-      <div class="card p-6 text-center space-y-3 mt-4">
-        <div class="w-14 h-14 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto">
-          <x-icon name="alert-triangle" class="w-7 h-7" />
+      <div class="card p-6 text-center space-y-4 mt-4">
+        <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto">
+          <x-icon name="alert-triangle" class="w-8 h-8" />
         </div>
         <div>
           <p class="font-semibold text-slate-900">Akun belum terhubung ke data karyawan</p>
-          <p class="text-sm text-slate-500 mt-1">
-            Agar dapat melakukan absensi, akun Anda perlu dihubungkan ke profil karyawan.<br>
-            Hubungi Super Admin atau HR untuk mengatur ini.
-          </p>
+          <p class="text-sm text-slate-500 mt-1">Hubungi Admin atau HR untuk menghubungkan akun Anda ke profil karyawan.</p>
         </div>
         @if ($isAdminPanelUser)
-          <a wire:navigate href="{{ route('admin.employees') }}" class="btn-primary inline-flex text-sm">
-            <x-icon name="users" class="w-4 h-4" /> Kelola Karyawan
+          <a wire:navigate href="{{ route('admin.employees') }}" class="btn-primary text-sm">
+            Kelola Karyawan
           </a>
         @endif
       </div>
 
-    @else
-
-    {{-- Date & Clock --}}
-    <div class="card p-4 text-center">
-      <p class="text-sm text-slate-500">{{ now()->translatedFormat('l, d F Y') }}</p>
-      <p x-data="{ now: new Date() }" x-init="setInterval(() => now = new Date(), 1000)"
-        x-text="now.toLocaleTimeString('id-ID')"
-        class="text-4xl font-bold text-slate-900 mt-1"></p>
-    </div>
-
-    {{-- Already completed today --}}
-    @if ($attendance?->check_out_at)
-      <div class="card p-5 bg-emerald-50 border border-emerald-100 space-y-1 text-emerald-800 text-sm">
-        <p class="font-semibold text-base">Absensi hari ini selesai</p>
-        <p>Check-in: <strong>{{ $attendance->check_in_at->format('H:i') }}</strong></p>
-        <p>Check-out: <strong>{{ $attendance->check_out_at->format('H:i') }}</strong></p>
-        <p>Total kerja: <strong>{{ floor($attendance->work_minutes / 60) }}j {{ $attendance->work_minutes % 60 }}m</strong></p>
+    @elseif (! $faceDescriptor)
+      <div class="card p-4 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
+          @if ($employee->avatar_path)
+            <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
+          @else
+            {{ strtoupper(substr($employee->full_name, 0, 1)) }}
+          @endif
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900">{{ $employee->nickname ?? $employee->full_name }}</p>
+          <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
+        </div>
       </div>
 
+      <div class="card p-6 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto">
+          <x-icon name="scan-face" class="w-8 h-8" />
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900">Data wajah belum terdaftar</p>
+          <p class="text-sm text-slate-500 mt-1">Anda perlu mendaftarkan wajah terlebih dahulu sebelum dapat melakukan absensi.</p>
+        </div>
+        <a wire:navigate href="{{ route('mobile.profile.edit') }}" class="btn-primary w-full">
+          Daftarkan Wajah Sekarang
+        </a>
+      </div>
+
+    @elseif ($attendance?->check_out_at)
+      <div class="card p-4 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
+          @if ($employee->avatar_path)
+            <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
+          @else
+            {{ strtoupper(substr($employee->full_name, 0, 1)) }}
+          @endif
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900">{{ $employee->nickname ?? $employee->full_name }}</p>
+          <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
+        </div>
+      </div>
+
+      <div class="card p-6 text-center space-y-4 bg-emerald-50 border-emerald-100">
+        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+          <x-icon name="check-circle" class="w-9 h-9" />
+        </div>
+        <div>
+          <p class="font-bold text-emerald-800 text-lg">Absensi Selesai</p>
+          <p class="text-sm text-emerald-700 mt-1">Selamat beristirahat, {{ $employee->nickname ?? explode(' ', $employee->full_name)[0] }}!</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="bg-white rounded-xl p-3 border border-emerald-100">
+            <p class="text-[11px] text-slate-500 mb-0.5">Masuk</p>
+            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_in_at->format('H:i') }}</p>
+          </div>
+          <div class="bg-white rounded-xl p-3 border border-emerald-100">
+            <p class="text-[11px] text-slate-500 mb-0.5">Keluar</p>
+            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_out_at->format('H:i') }}</p>
+          </div>
+        </div>
+        <p class="text-xs text-emerald-700">
+          Durasi kerja: <strong>{{ floor($attendance->work_minutes / 60) }}j {{ $attendance->work_minutes % 60 }}m</strong>
+        </p>
+      </div>
+
+    {{-- ===== STATE 4: Proses absensi (check-in / check-out) ===== --}}
     @else
-      {{-- Camera preview --}}
+
+      {{-- Info karyawan + jam --}}
+      <div class="card p-4 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
+          @if ($employee->avatar_path)
+            <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
+          @else
+            {{ strtoupper(substr($employee->full_name, 0, 1)) }}
+          @endif
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-slate-900">{{ $employee->nickname ?? $employee->full_name }}</p>
+          <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
+        </div>
+        <div class="text-right">
+          <p x-data="{ t: '' }" x-init="setInterval(() => t = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'}), 1000)"
+            x-text="t || new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'})"
+            class="font-mono text-xl font-bold text-slate-900 tabular-nums">
+          </p>
+        </div>
+      </div>
+
+      {{-- Step indicator --}}
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 flex-1">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+            {{ $attendance?->check_in_at ? 'bg-emerald-500 text-white' : 'bg-brand-600 text-white' }}">
+            @if ($attendance?->check_in_at) ✓ @else 1 @endif
+          </div>
+          <span class="text-xs font-medium {{ $attendance?->check_in_at ? 'text-emerald-600' : 'text-slate-900' }}">
+            Check-in {{ $attendance?->check_in_at ? '('.$attendance->check_in_at->format('H:i').')' : '' }}
+          </span>
+        </div>
+        <div class="flex-1 h-px bg-slate-200"></div>
+        <div class="flex items-center gap-1.5 flex-1 justify-end">
+          <span class="text-xs font-medium {{ $attendance?->check_in_at ? 'text-slate-900' : 'text-slate-400' }}">
+            Check-out
+          </span>
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+            {{ $attendance?->check_in_at ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-400' }}">
+            2
+          </div>
+        </div>
+      </div>
+
+      {{-- Jika WFA override oleh remote request --}}
+      @if ($remoteRequest && $baseWorkType->requiresGeofencing())
+        <div class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-purple-800 text-xs flex items-start gap-2">
+          <x-icon name="check-circle" class="w-4 h-4 shrink-0 mt-0.5 text-purple-500" />
+          <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong> disetujui - GPS tidak wajib hari ini.</span>
+        </div>
+      @endif
+
+      {{-- Kamera --}}
       <div class="card overflow-hidden">
         <div class="relative bg-slate-900 aspect-video flex items-center justify-center">
           <video x-ref="video" autoplay playsinline muted
@@ -87,7 +179,7 @@
           </video>
           <canvas x-ref="canvas" class="hidden"></canvas>
 
-          {{-- Loading overlay --}}
+          {{-- Loading --}}
           <div x-show="!cameraReady" class="absolute inset-0 flex flex-col items-center justify-center text-white gap-2">
             <svg class="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -96,7 +188,7 @@
             <p class="text-sm" x-text="loadingMsg"></p>
           </div>
 
-          {{-- Face detection box --}}
+          {{-- Face box --}}
           <div x-show="cameraReady && faceBox" x-cloak
             class="absolute border-2 rounded pointer-events-none transition-all duration-100"
             :class="faceStatus === 'matched' ? 'border-emerald-400' : (faceStatus === 'no-match' ? 'border-red-400' : 'border-yellow-400')"
@@ -105,21 +197,21 @@
 
           {{-- Face label --}}
           <div x-show="cameraReady && faceBox" x-cloak
-            class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-medium text-white"
-            :class="faceStatus === 'matched' ? 'bg-emerald-500/80' : (faceStatus === 'no-match' ? 'bg-red-500/80' : 'bg-yellow-500/80')"
+            class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold text-white"
+            :class="faceStatus === 'matched' ? 'bg-emerald-500/90' : (faceStatus === 'no-match' ? 'bg-red-500/90' : 'bg-amber-500/90')"
             x-text="faceLabel">
           </div>
         </div>
 
         {{-- Status strip --}}
         <div class="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
-          {{-- Face status --}}
           <div class="p-3 flex items-center gap-2">
             <div class="w-2 h-2 rounded-full"
               :class="{
                 'bg-slate-300': faceStatus === 'loading',
                 'bg-yellow-400': faceStatus === 'no-face',
-                'bg-emerald-500': faceStatus === 'matched' || faceStatus === 'no-enrolled',
+                'bg-emerald-500': faceStatus === 'matched',
+                'bg-amber-400': faceStatus === 'no-enrolled',
                 'bg-red-500': faceStatus === 'no-match',
               }">
             </div>
@@ -128,14 +220,11 @@
               <p class="text-xs font-medium text-slate-700 leading-snug" x-text="faceStatusText"></p>
             </div>
           </div>
-
-          {{-- GPS / Geofence status --}}
           <div class="p-3 flex items-center gap-2">
             <div class="w-2 h-2 rounded-full"
               :class="{
                 'bg-slate-300': gpsStatus === 'loading',
-                'bg-emerald-500': geofenceOk,
-                'bg-yellow-400': gpsStatus === 'ok' && !needsGeofence,
+                'bg-emerald-500': geofenceOk || (gpsStatus === 'ok' && !needsGeofence),
                 'bg-red-500': gpsStatus === 'ok' && needsGeofence && !geofenceOk,
                 'bg-red-400': gpsStatus === 'error',
               }">
@@ -148,348 +237,120 @@
         </div>
       </div>
 
-      {{-- Check-in done banner --}}
+      {{-- Info check-in jika sudah check-in --}}
       @if ($attendance?->check_in_at)
-        <div class="p-3 rounded-xl bg-emerald-50 text-emerald-800 text-sm flex items-center gap-2">
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm flex items-center gap-2">
           <x-icon name="check" class="w-4 h-4 shrink-0" />
-          Check-in pukul <strong>{{ $attendance->check_in_at->format('H:i') }}</strong>
-          @if ($attendance->late_minutes > 0)
-            — terlambat {{ $attendance->late_minutes }} mnt
-          @endif
+          <span>Masuk pukul <strong>{{ $attendance->check_in_at->format('H:i') }}</strong>
+            @if ($attendance->late_minutes > 0) - terlambat {{ $attendance->late_minutes }} mnt @endif
+          </span>
         </div>
       @endif
 
-      {{-- Action button --}}
-      @if (! $attendance?->check_in_at)
-        <button
-          @click="doCheckIn()"
-          :disabled="!canProceed || processing"
-          class="w-full bg-emerald-600 text-white rounded-xl py-4 font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition active:scale-95">
-          <template x-if="!processing">
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>Check-in</span>
+      {{-- Peringatan checkout dini --}}
+      @if ($showEarlyCheckoutWarning)
+        @php
+          $workedH = intdiv($workedMinutes, 60);
+          $workedM = $workedMinutes % 60;
+          $remainingMinutes = max(0, 480 - $workedMinutes);
+          $remainH = intdiv($remainingMinutes, 60);
+          $remainM = $remainingMinutes % 60;
+        @endphp
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+              <x-icon name="clock" class="w-5 h-5 text-amber-600" />
             </div>
-          </template>
-          <template x-if="processing">
-            <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-            </svg>
-          </template>
-        </button>
-
-        <p x-show="!canProceed && cameraReady" x-cloak class="text-xs text-center text-slate-500">
-          <span x-show="faceStatus === 'no-face'">Pastikan wajah Anda terlihat di kamera</span>
-          <span x-show="faceStatus === 'no-match'">Wajah tidak dikenali. Coba lagi atau hubungi admin.</span>
-          <span x-show="needsGeofence && !geofenceOk && gpsStatus !== 'loading'">Anda di luar radius kantor yang ditentukan.</span>
-        </p>
-
-      @else
-        <button
-          @click="doCheckOut()"
-          :disabled="!canProceed || processing"
-          class="w-full bg-rose-600 text-white rounded-xl py-4 font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition active:scale-95">
-          <template x-if="!processing">
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7"/>
-              </svg>
-              <span>Check-out</span>
-            </div>
-          </template>
-          <template x-if="processing">
-            <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-            </svg>
-          </template>
-        </button>
-      @endif
-
-      {{-- No face enrolled notice --}}
-      @if (! $faceDescriptor)
-        <div class="p-3 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 text-xs flex items-start gap-2">
-          <x-icon name="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5" />
-          <span>Wajah belum terdaftar. Daftarkan wajah di <a wire:navigate href="{{ route('mobile.profile.edit') }}" class="underline font-medium">halaman profil</a> untuk verifikasi biometrik.</span>
-        </div>
-      @endif
-    @endif {{-- end check_out_at --}}
-
-    @endif {{-- end employee check --}}
-
-    {{-- History --}}
-    <div class="mt-2">
-      <h3 class="text-sm font-semibold text-slate-900 mb-3">Riwayat 10 Hari Terakhir</h3>
-      <div class="space-y-2">
-        @forelse ($history as $h)
-          <div class="card p-3 flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-slate-900">{{ $h->attendance_date->translatedFormat('d M Y') }}</p>
-              <p class="text-xs text-slate-500">
-                {{ $h->check_in_at?->format('H:i') ?? '—' }} → {{ $h->check_out_at?->format('H:i') ?? '—' }}
+              <p class="text-sm font-semibold text-amber-900">Jam Kerja Belum Cukup</p>
+              <p class="text-xs text-amber-700 mt-0.5">
+                Anda baru bekerja
+                <strong>{{ $workedH > 0 ? $workedH.'j ' : '' }}{{ $workedM }}m</strong>
+                dari minimal <strong>8 jam</strong>.
+                @if ($remainH > 0 || $remainM > 0)
+                  Sisa <strong>{{ $remainH > 0 ? $remainH.'j ' : '' }}{{ $remainM }}m</strong> lagi.
+                @endif
               </p>
             </div>
-            <span class="badge bg-{{ $h->status?->color() }}-100 text-{{ $h->status?->color() }}-700">
-              {{ $h->status?->label() }}
-            </span>
           </div>
-        @empty
-          <p class="text-sm text-slate-500 text-center py-6">Belum ada riwayat.</p>
-        @endforelse
+          <div class="flex gap-2">
+            <button wire:click="cancelEarlyCheckout" class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-white border border-amber-200 text-amber-800 active:bg-amber-100 transition">
+              Batal
+            </button>
+            <button @click="doCheckOut()" :disabled="processing"
+              class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-amber-500 text-white active:bg-amber-600 disabled:opacity-50 transition">
+              <span x-show="!processing">Tetap Check-out</span>
+              <span x-show="processing" class="flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                Memproses…
+              </span>
+            </button>
+          </div>
+        </div>
+      @endif
+
+      {{-- Tombol aksi --}}
+      @if (! $attendance?->check_in_at)
+        <button @click="doCheckIn()" :disabled="!canProceed || processing"
+          class="w-full bg-emerald-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
+          <span x-show="!processing">Check-in Sekarang</span>
+          <span x-show="processing" class="flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            Memproses…
+          </span>
+        </button>
+      @elseif (! $showEarlyCheckoutWarning)
+        <button @click="doCheckOut()" :disabled="!canProceed || processing"
+          class="w-full bg-rose-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
+          <span x-show="!processing">Check-out Sekarang</span>
+          <span x-show="processing" class="flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            Memproses…
+          </span>
+        </button>
+      @endif
+
+      {{-- Pesan panduan --}}
+      <p x-show="!canProceed && cameraReady" x-cloak class="text-xs text-center text-slate-500 -mt-1">
+        <span x-show="faceStatus === 'no-face'">Arahkan wajah ke kamera agar terdeteksi</span>
+        <span x-show="faceStatus === 'no-match'">Wajah tidak cocok - pastikan pencahayaan cukup atau hubungi admin</span>
+        <span x-show="needsGeofence && !geofenceOk && gpsStatus !== 'loading'">Anda berada di luar radius kantor</span>
+      </p>
+
+    @endif {{-- end state check --}}
+
+    {{-- Riwayat --}}
+    @if ($history->isNotEmpty())
+      <div class="mt-2">
+        <h3 class="text-sm font-semibold text-slate-900 mb-3">Riwayat Terakhir</h3>
+        <div class="space-y-2">
+          @foreach ($history as $h)
+            <div class="card p-3 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-slate-900">{{ $h->attendance_date->translatedFormat('d M Y') }}</p>
+                <p class="text-xs text-slate-500">
+                  {{ $h->check_in_at?->format('H:i') ?? '—' }} → {{ $h->check_out_at?->format('H:i') ?? '—' }}
+                </p>
+              </div>
+              <span class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
+                {{ $h->status?->label() ?? '—' }}
+              </span>
+            </div>
+          @endforeach
+        </div>
       </div>
-    </div>
+    @endif
+
   </div>
 </div>
 
-@push('scripts')
-<script>
-function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEnrolled, hasCheckedIn, hasCheckedOut }) {
-    return {
-        // Camera
-        stream: null,
-        cameraReady: false,
-        loadingMsg: 'Memuat kamera…',
-
-        // Face
-        modelsLoaded: false,
-        faceStatus: 'loading', // loading | no-face | matched | no-match | no-enrolled
-        faceBox: null,
-        faceBoxCss: { left: '0', top: '0', width: '0', height: '0' },
-        lastDescriptor: null,
-        detectionTimer: null,
-
-        // GPS
-        gpsStatus: 'loading', // loading | ok | error
-        geofenceOk: false,
-        latitude: null,
-        longitude: null,
-        address: '',
-
-        // Action
-        processing: false,
-
-        get needsGeofence() {
-            return workType === 'wfo';
-        },
-
-        get faceLabel() {
-            const map = {
-                loading: 'Memuat…',
-                'no-face': 'Arahkan wajah ke kamera',
-                matched: 'Wajah Cocok ✓',
-                'no-match': 'Wajah Tidak Dikenali',
-                'no-enrolled': 'Wajah Terdeteksi',
-            };
-            return map[this.faceStatus] ?? '';
-        },
-
-        get faceStatusText() {
-            const map = {
-                loading: 'Memuat model…',
-                'no-face': 'Tidak terdeteksi',
-                matched: 'Terverifikasi',
-                'no-match': 'Tidak cocok',
-                'no-enrolled': 'Terdeteksi (belum terdaftar)',
-            };
-            return map[this.faceStatus] ?? '';
-        },
-
-        get gpsStatusText() {
-            if (this.gpsStatus === 'loading') return 'Mendapatkan lokasi…';
-            if (this.gpsStatus === 'error') return 'Gagal';
-            if (!this.needsGeofence) return 'Diperoleh';
-            return this.geofenceOk ? 'Dalam radius' : 'Di luar radius';
-        },
-
-        get canProceed() {
-            const faceOk = this.faceStatus === 'matched' || this.faceStatus === 'no-enrolled';
-            const locationOk = !this.needsGeofence || this.geofenceOk;
-            return faceOk && locationOk;
-        },
-
-        async init() {
-            await this.startCamera();
-            this.getLocation();
-            await this.loadModels();
-            if (this.modelsLoaded) {
-                this.startDetection();
-            }
-        },
-
-        async startCamera() {
-            this.loadingMsg = 'Memuat kamera…';
-            try {
-                this.stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-                });
-                const video = this.$refs.video;
-                video.srcObject = this.stream;
-                await new Promise(resolve => video.onloadedmetadata = resolve);
-                video.play();
-                this.cameraReady = true;
-            } catch (e) {
-                this.loadingMsg = 'Kamera tidak dapat diakses.';
-                console.error('Camera error', e);
-            }
-        },
-
-        async loadModels() {
-            this.loadingMsg = 'Memuat model AI…';
-            const MODEL_URL = window.FACE_API_MODEL_URL;
-            try {
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                ]);
-                this.modelsLoaded = true;
-                this.faceStatus = 'no-face';
-            } catch (e) {
-                console.error('Model load error', e);
-                this.faceStatus = 'no-enrolled';
-            }
-        },
-
-        startDetection() {
-            this.detectionTimer = setInterval(() => this.detectFace(), 1200);
-        },
-
-        async detectFace() {
-            const video = this.$refs.video;
-            if (!video || !this.modelsLoaded || !this.cameraReady) return;
-
-            const detection = await faceapi
-                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 }))
-                .withFaceLandmarks(true)
-                .withFaceDescriptor();
-
-            if (!detection) {
-                this.faceBox = null;
-                this.faceStatus = 'no-face';
-                return;
-            }
-
-            this.updateFaceBox(detection.detection.box, video);
-
-            if (!hasFaceEnrolled || !faceDescriptor) {
-                this.faceStatus = 'no-enrolled';
-                this.lastDescriptor = detection.descriptor;
-                return;
-            }
-
-            const stored = new Float32Array(faceDescriptor);
-            const distance = faceapi.euclideanDistance(stored, detection.descriptor);
-            this.faceStatus = distance < 0.5 ? 'matched' : 'no-match';
-            if (this.faceStatus === 'matched') {
-                this.lastDescriptor = detection.descriptor;
-            }
-        },
-
-        updateFaceBox(box, video) {
-            this.faceBox = box;
-            const vw = video.offsetWidth;
-            const vh = video.offsetHeight;
-            const scaleX = vw / video.videoWidth;
-            const scaleY = vh / video.videoHeight;
-            // Mirror horizontally because video is CSS-flipped
-            const mirroredX = vw - (box.x + box.width) * scaleX;
-            this.faceBoxCss = {
-                left: mirroredX + 'px',
-                top: (box.y * scaleY) + 'px',
-                width: (box.width * scaleX) + 'px',
-                height: (box.height * scaleY) + 'px',
-            };
-        },
-
-        getLocation() {
-            if (!navigator.geolocation) {
-                this.gpsStatus = 'error';
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    this.latitude = pos.coords.latitude;
-                    this.longitude = pos.coords.longitude;
-                    this.address = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-                    this.gpsStatus = 'ok';
-                    this.checkGeofence();
-                    this.$wire.set('latitude', this.latitude);
-                    this.$wire.set('longitude', this.longitude);
-                    this.$wire.set('address', this.address);
-                },
-                () => { this.gpsStatus = 'error'; },
-                { enableHighAccuracy: true, timeout: 12000 }
-            );
-        },
-
-        checkGeofence() {
-            if (!this.needsGeofence) { this.geofenceOk = true; return; }
-            this.geofenceOk = officeLocations.some(o =>
-                this.haversine(this.latitude, this.longitude, o.latitude, o.longitude) <= o.radius_meters
-            );
-        },
-
-        haversine(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) ** 2
-                + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-            return R * 2 * Math.asin(Math.sqrt(a));
-        },
-
-        captureFrame() {
-            const video = this.$refs.video;
-            const canvas = this.$refs.canvas;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            // Flip to match natural orientation (undo CSS mirror)
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0);
-            return canvas.toDataURL('image/jpeg', 0.75);
-        },
-
-        async doCheckIn() {
-            this.processing = true;
-            try {
-                const photo = this.captureFrame();
-                await this.$wire.set('checkInPhoto', photo);
-                await this.$wire.call('checkIn');
-            } finally {
-                this.processing = false;
-            }
-        },
-
-        async doCheckOut() {
-            this.processing = true;
-            try {
-                const photo = this.captureFrame();
-                await this.$wire.set('checkOutPhoto', photo);
-                await this.$wire.call('checkOut');
-            } finally {
-                this.processing = false;
-            }
-        },
-
-        onAttendanceRecorded() {
-            clearInterval(this.detectionTimer);
-            if (this.stream) {
-                this.stream.getTracks().forEach(t => t.stop());
-            }
-        },
-
-        destroy() {
-            clearInterval(this.detectionTimer);
-            if (this.stream) {
-                this.stream.getTracks().forEach(t => t.stop());
-            }
-        },
-    };
-}
-</script>
-@endpush
+@include('livewire.employee.partials.attendance-script')

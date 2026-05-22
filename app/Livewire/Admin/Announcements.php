@@ -3,11 +3,14 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Announcement;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Title('Pengumuman')]
 #[Layout('components.layouts.admin')]
 class Announcements extends Component
 {
@@ -77,6 +80,11 @@ class Announcements extends Component
     {
         Announcement::findOrFail($id)->delete();
         $this->dispatch('notify', type: 'success', message: 'Pengumuman dihapus.');
+    }
+
+    public function mount(): void
+    {
+        Gate::authorize('manage_announcements');
     }
 
     public function render(): mixed

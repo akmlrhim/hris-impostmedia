@@ -3,9 +3,11 @@
 namespace App\Livewire\Employee\Profile;
 
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
+#[Title('Profil')]
 class Index extends Component
 {
     public function logout(): void

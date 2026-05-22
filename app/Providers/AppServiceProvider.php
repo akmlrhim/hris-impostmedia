@@ -18,34 +18,36 @@ class AppServiceProvider extends ServiceProvider
     {
         Carbon::setLocale('id');
 
-        // Admin has full access to all gates
+        // Admin role mendapat akses penuh ke semua gate
         Gate::before(function (User $user) {
-            if ($user->role === UserRole::Admin) {
+            if ($user->hasRole(UserRole::Admin)) {
                 return true;
             }
         });
 
-        // manage_users is Admin only — Gate::before handles it above
+        // manage_users hanya Admin - ditangani Gate::before di atas
         Gate::define(Permission::ManageUsers->value, fn () => false);
 
-        // All other permissions are configurable per role via the database
+        // Semua permission lain dicek dari role_permissions berdasarkan semua role yang dimiliki
         foreach (Permission::configurable() as $permission) {
             Gate::define($permission->value, function (User $user) use ($permission) {
                 static $cache = [];
 
-                if (! ($user->role instanceof UserRole)) {
-                    return false;
+                foreach ($user->getRoleObjects() as $role) {
+                    $key = "{$role->value}:{$permission->value}";
+
+                    if (! array_key_exists($key, $cache)) {
+                        $cache[$key] = RolePermission::where('role', $role->value)
+                            ->where('permission', $permission->value)
+                            ->exists();
+                    }
+
+                    if ($cache[$key]) {
+                        return true;
+                    }
                 }
 
-                $key = "{$user->role->value}:{$permission->value}";
-
-                if (! array_key_exists($key, $cache)) {
-                    $cache[$key] = RolePermission::where('role', $user->role->value)
-                        ->where('permission', $permission->value)
-                        ->exists();
-                }
-
-                return $cache[$key];
+                return false;
             });
         }
     }

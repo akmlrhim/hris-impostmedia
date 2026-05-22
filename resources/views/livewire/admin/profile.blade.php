@@ -19,14 +19,14 @@
     <div class="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <label class="label">Nama Lengkap</label>
-        <input wire:model="name" class="input">
+        <input wire:model="name" class="input" placeholder="Masukkan nama lengkap">
         @error('name')
           <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
         @enderror
       </div>
       <div>
         <label class="label">Email</label>
-        <input type="email" wire:model="email" class="input">
+        <input type="email" wire:model="email" class="input" placeholder="Masukkan alamat email">
         @error('email')
           <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
         @enderror
@@ -50,50 +50,10 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="sm:col-span-2">
-        <label class="label">Kata Sandi Saat Ini</label>
-        <div class="relative" x-data="{ show: false }">
-          <input :type="show ? 'text' : 'password'" wire:model="current_password" class="input pr-10"
-            autocomplete="current-password">
-          <button type="button" @click="show = !show" tabindex="-1"
-            class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
-            :aria-label="show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'">
-            <x-icon name="eye" class="w-5 h-5" x-show="!show" />
-            <x-icon name="eye-off" class="w-5 h-5" x-show="show" x-cloak />
-          </button>
-        </div>
-        @error('current_password')
-          <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-        @enderror
+        <x-password-input name="current_password" label="Kata Sandi Saat Ini" />
       </div>
-      <div>
-        <label class="label">Kata Sandi Baru</label>
-        <div class="relative" x-data="{ show: false }">
-          <input :type="show ? 'text' : 'password'" wire:model="new_password" class="input pr-10"
-            autocomplete="new-password">
-          <button type="button" @click="show = !show" tabindex="-1"
-            class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
-            :aria-label="show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'">
-            <x-icon name="eye" class="w-5 h-5" x-show="!show" />
-            <x-icon name="eye-off" class="w-5 h-5" x-show="show" x-cloak />
-          </button>
-        </div>
-        @error('new_password')
-          <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-        @enderror
-      </div>
-      <div>
-        <label class="label">Konfirmasi Kata Sandi Baru</label>
-        <div class="relative" x-data="{ show: false }">
-          <input :type="show ? 'text' : 'password'" wire:model="new_password_confirmation" class="input pr-10"
-            autocomplete="new-password">
-          <button type="button" @click="show = !show" tabindex="-1"
-            class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
-            :aria-label="show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'">
-            <x-icon name="eye" class="w-5 h-5" x-show="!show" />
-            <x-icon name="eye-off" class="w-5 h-5" x-show="show" x-cloak />
-          </button>
-        </div>
-      </div>
+      <x-password-input name="new_password" label="Kata Sandi Baru" autocomplete="new-password" />
+      <x-password-input name="new_password_confirmation" label="Konfirmasi Kata Sandi Baru" autocomplete="new-password" />
     </div>
 
     <div class="flex justify-end">

@@ -5,11 +5,14 @@ namespace App\Livewire\Admin\Payroll;
 use App\Models\PayrollPeriod;
 use App\Services\Payroll\PayrollGenerator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Title('Payroll')]
 #[Layout('components.layouts.admin')]
 class Index extends Component
 {
@@ -27,6 +30,8 @@ class Index extends Component
 
     public function mount(): void
     {
+        Gate::authorize('manage_payroll');
+
         $this->year = (int) now()->year;
         $this->month = (int) now()->month;
         $this->payment_date = now()->endOfMonth()->toDateString();

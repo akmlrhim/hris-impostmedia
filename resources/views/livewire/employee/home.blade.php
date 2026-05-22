@@ -4,13 +4,13 @@
     <div class="flex items-center justify-between">
       <div>
         <p class="text-sm text-brand-100">Halo,</p>
-        <h1 class="text-xl font-bold">{{ $employee?->nickname ?? ($employee?->full_name ?? auth()->user()->name) }} 👋</h1>
-        <p class="text-sm text-brand-100 mt-1">{{ $employee?->position?->name ?? '—' }}</p>
+        <h1 class="text-xl font-bold">{{ $employee?->nickname ?? ($employee?->full_name ?? auth()->user()->name) }} 👋
+        </h1>
       </div>
       <a wire:navigate href="{{ route('mobile.profile') }}"
         class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden ring-2 ring-white/30">
         @if ($employee?->avatar_path)
-          <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
+				budi@company.test   <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
         @else
           <x-icon name="user" class="w-5 h-5 text-white" />
         @endif
@@ -45,7 +45,6 @@
       </div>
 
       <a wire:navigate href="{{ route('mobile.attendance') }}" class="btn-primary w-full mt-4">
-        <x-icon name="map-pin" class="w-4 h-4" />
         {{ $todayAttendance?->check_in_at && !$todayAttendance->check_out_at ? 'Check-out Sekarang' : 'Check-in Sekarang' }}
       </a>
     </div>
@@ -71,10 +70,27 @@
                 'bg' => 'bg-emerald-100',
                 'fg' => 'text-emerald-600',
             ],
+            [
+                'route' => 'mobile.leave',
+                'label' => 'Cuti & Izin',
+                'icon' => 'calendar',
+                'bg' => 'bg-blue-100',
+                'fg' => 'text-blue-600',
+            ],
         ];
+        if ($isWfo) {
+            $menus[] = [
+                'route' => 'mobile.remote-work',
+                'label' => 'Ajukan WFA',
+                'icon' => 'laptop',
+                'bg' => 'bg-purple-100',
+                'fg' => 'text-purple-600',
+            ];
+        }
       @endphp
       @foreach ($menus as $m)
-        <a wire:navigate href="{{ Route::has($m['route']) ? route($m['route']) : '#' }}" class="flex flex-col items-center gap-2">
+        <a wire:navigate href="{{ Route::has($m['route']) ? route($m['route']) : '#' }}"
+          class="flex flex-col items-center gap-2">
           <div class="w-12 h-12 rounded-2xl {{ $m['bg'] }} flex items-center justify-center {{ $m['fg'] }}">
             <x-icon :name="$m['icon']" class="w-5 h-5" />
           </div>
@@ -118,18 +134,20 @@
     </div>
     <div class="space-y-3">
       @forelse ($announcements as $a)
-        <div class="card p-4">
+        <a wire:navigate href="{{ route('mobile.announcements.show', $a) }}"
+          class="card p-4 block active:scale-[0.99] transition">
           <div class="flex items-start gap-3">
             @if ($a->is_pinned)
-              <span class="badge bg-amber-100 text-amber-700">📌</span>
+              <span class="badge bg-amber-100 text-amber-700 shrink-0">📌</span>
             @endif
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
               <p class="font-semibold text-slate-900 text-sm">{{ $a->title }}</p>
               <p class="text-xs text-slate-500 mt-0.5">{{ $a->published_at?->diffForHumans() }}</p>
               <div class="prose-announcement text-xs mt-2 line-clamp-2">{!! $a->content !!}</div>
+              <p class="text-xs text-brand-600 font-medium mt-2">Baca selengkapnya →</p>
             </div>
           </div>
-        </div>
+        </a>
       @empty
         <div class="card p-6 text-center text-sm text-slate-500">
           Belum ada pengumuman.

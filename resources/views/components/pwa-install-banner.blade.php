@@ -6,7 +6,7 @@
             // Detect iOS (Safari doesn't fire beforeinstallprompt)
             this.ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 
-            // Already running as installed PWA — hide banner
+            // Already running as installed PWA - hide banner
             if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
 
             // Don't show if dismissed within last 14 days
@@ -17,6 +17,10 @@
                 // Show iOS tip after 3 seconds
                 setTimeout(() => { this.show = true; }, 3000);
             } else {
+                // Prompt may have fired before Alpine init — check immediately
+                if (window.pwaCanInstall && window.pwaCanInstall()) {
+                    this.show = true;
+                }
                 window.addEventListener('pwa:installable', () => { this.show = true; });
             }
 

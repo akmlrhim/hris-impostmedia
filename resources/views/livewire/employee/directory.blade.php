@@ -21,12 +21,6 @@
                        placeholder="Cari nama, panggilan, atau no. telepon…"
                        class="input pl-9">
             </div>
-            <select wire:model.live="position" class="input">
-                <option value="">Semua Posisi</option>
-                @foreach ($positions as $p)
-                    <option value="{{ $p->id }}">{{ $p->name }}</option>
-                @endforeach
-            </select>
         </div>
     </div>
 
@@ -44,7 +38,6 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-slate-900 text-sm truncate">{{ $emp->full_name }}</p>
-                        <p class="text-xs text-slate-500 truncate">{{ $emp->position?->name ?? '—' }}</p>
                         <div class="flex items-center gap-2 mt-1.5">
                             @if ($emp->phone)
                                 <a href="tel:{{ $emp->phone }}"
