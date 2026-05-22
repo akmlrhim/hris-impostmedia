@@ -18,7 +18,7 @@
                     {{ \Carbon\Carbon::create()->month($payroll->period->month)->translatedFormat('F') }} {{ $payroll->period->year }}
                 </p>
                 @if ($payroll->period->payment_date)
-                    <p class="text-xs text-slate-500 mt-0.5">Dibayar: {{ $payroll->period->payment_date->format('d M Y') }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Dibayar: {{ $payroll->period->payment_date->translatedFormat('d M Y') }}</p>
                 @endif
             </div>
 

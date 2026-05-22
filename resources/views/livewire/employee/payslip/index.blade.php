@@ -14,7 +14,7 @@
 						{{ \Carbon\Carbon::create()->month($p->period->month)->translatedFormat('F') }} {{ $p->period->year }}
 					</p>
 					<p class="text-xs text-slate-500 mt-0.5">
-						Dibayar: {{ $p->period->payment_date?->format('d M Y') ?? '—' }}
+						Dibayar: {{ $p->period->payment_date?->translatedFormat('d M Y') ?? '-' }}
 					</p>
 					<p class="text-base font-bold text-emerald-600 mt-1">
 						{{ rupiah($p->net_salary) }}

@@ -76,6 +76,12 @@ class Leave extends Component
         $this->dispatch('notify', type: 'success', message: 'Pengajuan ditolak.');
     }
 
+    public function delete(int $id): void
+    {
+        LeaveRequest::findOrFail($id)->delete();
+        $this->dispatch('notify', type: 'success', message: 'Pengajuan cuti/izin dihapus.');
+    }
+
     public function render(): mixed
     {
         $requests = LeaveRequest::with(['employee', 'reviewer'])

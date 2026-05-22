@@ -9,8 +9,8 @@
 				@endif
 			</div>
 			<h1 class="text-xl font-bold mt-3">{{ $employee?->full_name ?? auth()->user()->name }}</h1>
-			<p class="text-sm text-brand-100">{{ $employee?->employment_status?->label() ?? '—' }}</p>
-			<p class="text-xs text-brand-200 mt-0.5">NIK: {{ $employee?->employee_number ?? '—' }}</p>
+			<p class="text-sm text-brand-100">{{ $employee?->employment_status?->label() ?? '-' }}</p>
+			<p class="text-xs text-brand-200 mt-0.5">NIK: {{ $employee?->employee_number ?? '-' }}</p>
 		</div>
 	</div>
 
@@ -19,9 +19,9 @@
 			@php
 				$rows = [
 					['label' => 'Email', 'value' => auth()->user()->email],
-					['label' => 'Status Karyawan', 'value' => $employee?->employment_status?->label() ?? '—'],
-					['label' => 'Tanggal Bergabung', 'value' => $employee?->join_date?->translatedFormat('d M Y') ?? '—'],
-					['label' => 'Telepon', 'value' => $employee?->phone ?? '—'],
+					['label' => 'Status Karyawan', 'value' => $employee?->employment_status?->label() ?? '-'],
+					['label' => 'Tanggal Bergabung', 'value' => $employee?->join_date?->translatedFormat('d M Y') ?? '-'],
+					['label' => 'Telepon', 'value' => $employee?->phone ?? '-'],
 				];
 			@endphp
 			@foreach ($rows as $r)

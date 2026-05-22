@@ -1,6 +1,4 @@
-@push('scripts')
-<script>
-function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEnrolled }) {
+window.attendanceCamera = function ({ workType, officeLocations, faceDescriptor, hasFaceEnrolled }) {
     return {
         stream: null,
         cameraReady: false,
@@ -55,9 +53,8 @@ function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEn
         },
 
         get canProceed() {
-            const faceOk = this.faceStatus === 'matched';
             const locationOk = !this.needsGeofence || this.geofenceOk;
-            return faceOk && locationOk;
+            return this.cameraReady && locationOk;
         },
 
         async init() {
@@ -73,14 +70,51 @@ function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEn
             this.loadingMsg = 'Memuat kamera…';
             try {
                 this.stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
                 });
                 const video = this.$refs.video;
+                if (!video) {
+                    this.loadingMsg = 'Elemen video tidak ditemukan.';
+                    return;
+                }
+                video.muted = true;
+                video.setAttribute('playsinline', '');
                 video.srcObject = this.stream;
-                await new Promise(resolve => video.onloadedmetadata = resolve);
-                video.play();
-                this.cameraReady = true;
+
+                await new Promise((resolve) => {
+                    if (video.readyState >= 1) return resolve();
+                    video.onloadedmetadata = () => resolve();
+                });
+
+                try {
+                    await video.play();
+                } catch (playErr) {
+                    this.loadingMsg = 'Ketuk layar untuk memulai kamera.';
+                    const resume = async () => {
+                        try { await video.play(); } catch (_) {}
+                        document.removeEventListener('click', resume);
+                        document.removeEventListener('touchstart', resume);
+                    };
+                    document.addEventListener('click', resume, { once: true });
+                    document.addEventListener('touchstart', resume, { once: true });
+                }
+
+                await new Promise((resolve) => {
+                    if (video.videoWidth > 0 && !video.paused) return resolve();
+                    const onPlaying = () => {
+                        video.removeEventListener('playing', onPlaying);
+                        resolve();
+                    };
+                    video.addEventListener('playing', onPlaying);
+                    setTimeout(resolve, 2000);
+                });
+
+                this.cameraReady = video.videoWidth > 0;
+                if (!this.cameraReady) {
+                    this.loadingMsg = 'Kamera tidak menghasilkan gambar. Coba refresh halaman.';
+                }
             } catch (e) {
+                console.error('[camera]', e);
                 this.loadingMsg = 'Kamera tidak dapat diakses. Izinkan akses kamera.';
             }
         },
@@ -144,14 +178,17 @@ function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEn
             const mirroredX = vw - (box.x + box.width) * scaleX;
             this.faceBoxCss = {
                 left: mirroredX + 'px',
-                top: (box.y * scaleY) + 'px',
-                width: (box.width * scaleX) + 'px',
-                height: (box.height * scaleY) + 'px',
+                top: box.y * scaleY + 'px',
+                width: box.width * scaleX + 'px',
+                height: box.height * scaleY + 'px',
             };
         },
 
         getLocation() {
-            if (!navigator.geolocation) { this.gpsStatus = 'error'; return; }
+            if (!navigator.geolocation) {
+                this.gpsStatus = 'error';
+                return;
+            }
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     this.latitude = pos.coords.latitude;
@@ -159,58 +196,99 @@ function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEn
                     this.address = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
                     this.gpsStatus = 'ok';
                     this.checkGeofence();
-                    this.$wire.set('latitude', this.latitude);
-                    this.$wire.set('longitude', this.longitude);
-                    this.$wire.set('address', this.address);
                 },
-                () => { this.gpsStatus = 'error'; },
-                { enableHighAccuracy: true, timeout: 12000 }
+                () => {
+                    this.gpsStatus = 'error';
+                },
+                { enableHighAccuracy: true, timeout: 12000 },
             );
         },
 
         checkGeofence() {
-            if (!this.needsGeofence) { this.geofenceOk = true; return; }
-            this.geofenceOk = officeLocations.some(o =>
-                this.haversine(this.latitude, this.longitude, o.latitude, o.longitude) <= o.radius_meters
+            if (!this.needsGeofence) {
+                this.geofenceOk = true;
+                return;
+            }
+            this.geofenceOk = officeLocations.some(
+                (o) => this.haversine(this.latitude, this.longitude, o.latitude, o.longitude) <= o.radius_meters,
             );
         },
 
         haversine(lat1, lon1, lat2, lon2) {
             const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) ** 2
-                + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+            const dLat = ((lat2 - lat1) * Math.PI) / 180;
+            const dLon = ((lon2 - lon1) * Math.PI) / 180;
+            const a =
+                Math.sin(dLat / 2) ** 2 +
+                Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
             return R * 2 * Math.asin(Math.sqrt(a));
         },
 
         captureFrame() {
             const video = this.$refs.video;
             const canvas = this.$refs.canvas;
+            if (!video || !canvas || !video.videoWidth) {
+                return null;
+            }
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0);
             return canvas.toDataURL('image/jpeg', 0.75);
         },
 
+        notify(message, type = 'error') {
+            if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+                window.Livewire.dispatch('notify', { message, type });
+            }
+        },
+
         async doCheckIn() {
+            if (this.processing) return;
+            if (!this.cameraReady) {
+                this.notify('Kamera belum siap. Tunggu sebentar.', 'warning');
+                return;
+            }
+            if (this.needsGeofence && !this.geofenceOk) {
+                this.notify('Anda berada di luar radius kantor.', 'error');
+                return;
+            }
             this.processing = true;
             try {
-                await this.$wire.set('checkInPhoto', this.captureFrame());
-                await this.$wire.call('checkIn');
+                const photo = this.captureFrame();
+                if (!photo) {
+                    this.notify('Gagal mengambil foto. Coba lagi.', 'error');
+                    return;
+                }
+                await this.$wire.checkIn(photo, this.latitude, this.longitude, this.address);
+            } catch (e) {
+                console.error('[checkIn]', e);
+                this.notify('Check-in gagal: ' + (e?.message || 'kesalahan jaringan'), 'error');
             } finally {
                 this.processing = false;
             }
         },
 
         async doCheckOut() {
+            if (this.processing) return;
+            if (!this.cameraReady) {
+                this.notify('Kamera belum siap. Tunggu sebentar.', 'warning');
+                return;
+            }
             this.processing = true;
             try {
-                await this.$wire.set('checkOutPhoto', this.captureFrame());
-                await this.$wire.call('checkOut');
+                const photo = this.captureFrame();
+                if (!photo) {
+                    this.notify('Gagal mengambil foto. Coba lagi.', 'error');
+                    return;
+                }
+                await this.$wire.checkOut(photo, this.latitude, this.longitude, this.address);
+            } catch (e) {
+                console.error('[checkOut]', e);
+                this.notify('Check-out gagal: ' + (e?.message || 'kesalahan jaringan'), 'error');
             } finally {
                 this.processing = false;
             }
@@ -218,14 +296,12 @@ function attendanceCamera({ workType, officeLocations, faceDescriptor, hasFaceEn
 
         onAttendanceRecorded() {
             clearInterval(this.detectionTimer);
-            if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+            if (this.stream) this.stream.getTracks().forEach((t) => t.stop());
         },
 
         destroy() {
             clearInterval(this.detectionTimer);
-            if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+            if (this.stream) this.stream.getTracks().forEach((t) => t.stop());
         },
     };
-}
-</script>
-@endpush
+};

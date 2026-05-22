@@ -63,8 +63,8 @@
           @forelse ($periods as $p)
             <tr class="hover:bg-slate-50">
               <td class="px-5 py-3 font-medium">{{ $p->code }}</td>
-              <td class="px-5 py-3">{{ $p->start_date->format('d M') }} – {{ $p->end_date->format('d M Y') }}</td>
-              <td class="px-5 py-3">{{ $p->payment_date?->format('d M Y') ?? '—' }}</td>
+              <td class="px-5 py-3">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</td>
+              <td class="px-5 py-3">{{ $p->payment_date?->translatedFormat('d M Y') ?? '-' }}</td>
               <td class="px-5 py-3 text-right">{{ $p->payrolls_count }}</td>
               <td class="px-5 py-3">
                 @php

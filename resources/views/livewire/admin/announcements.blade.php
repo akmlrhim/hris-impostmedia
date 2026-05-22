@@ -6,7 +6,17 @@
   </x-page-header>
 
   <x-modal show="showForm" max-width="2xl" :title="$editingId ? 'Ubah Pengumuman' : 'Pengumuman Baru'">
-    <form wire:submit="save" class="space-y-4" wire:key="announcement-form-{{ $editingId ?? 'new' }}">
+    <form
+      @submit.prevent="
+        const el = $el.querySelector('.ql-editor');
+        const html = el ? el.innerHTML : '';
+        const isEmpty = html === '<p><br></p>' || !html.trim();
+        await $wire.set('content', isEmpty ? '' : html);
+        $wire.save();
+      "
+      class="space-y-4"
+      wire:key="announcement-form-{{ $editingId ?? 'new' }}"
+    >
       <div>
         <label class="label">Judul</label>
         <input wire:model="title" placeholder="Masukkan judul pengumuman" class="input" maxlength="200">
@@ -60,12 +70,14 @@
             </div>
             <h3 class="font-semibold text-slate-900">{{ $a->title }}</h3>
             <p class="text-xs text-slate-500 mt-0.5">
-              Oleh {{ $a->author?->name ?? '—' }}
+              Oleh {{ $a->author?->name ?? '-' }}
               @if ($a->published_at)
                 · {{ $a->published_at->diffForHumans() }}
               @endif
             </p>
-            <div class="prose-announcement mt-2 line-clamp-3">{!! $a->content !!}</div>
+            <div class="ql-snow mt-2">
+              <div class="ql-editor ql-readonly line-clamp-3">{!! $a->content !!}</div>
+            </div>
           </div>
           <div class="flex flex-col gap-1.5 shrink-0">
             <button wire:click="open({{ $a->id }})"

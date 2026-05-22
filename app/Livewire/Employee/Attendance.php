@@ -17,34 +17,18 @@ use Livewire\Component;
 #[Title('Absensi')]
 class Attendance extends Component
 {
-    public ?float $latitude = null;
-
-    public ?float $longitude = null;
-
-    public ?string $address = null;
-
-    public ?string $checkInPhoto = null;
-
-    public ?string $checkOutPhoto = null;
-
     public bool $showEarlyCheckoutWarning = false;
 
     public int $workedMinutes = 0;
 
     private const MINIMUM_WORK_MINUTES = 480;
 
-    public function checkIn(): void
+    public function checkIn(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null): void
     {
         $employee = auth()->user()?->employee;
 
         if (! $employee) {
             $this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
-
-            return;
-        }
-
-        if (! $employee->face_descriptor) {
-            $this->dispatch('notify', message: 'Wajah belum terdaftar. Daftarkan wajah di halaman profil terlebih dahulu.', type: 'error');
 
             return;
         }
@@ -70,14 +54,14 @@ class Attendance extends Component
         }
 
         if ($workType->requiresGeofencing()) {
-            if (! $this->latitude || ! $this->longitude) {
+            if (! $latitude || ! $longitude) {
                 $this->dispatch('notify', message: 'GPS diperlukan untuk absensi WFO. Izinkan akses lokasi.', type: 'error');
 
                 return;
             }
 
             $offices = OfficeLocation::where('is_active', true)->get();
-            $withinRadius = $offices->contains(fn ($office) => $office->isWithinRadius($this->latitude, $this->longitude));
+            $withinRadius = $offices->contains(fn ($office) => $office->isWithinRadius($latitude, $longitude));
 
             if (! $withinRadius) {
                 $this->dispatch('notify', message: 'Anda berada di luar radius kantor. Absensi WFO tidak dapat diproses.', type: 'error');
@@ -86,13 +70,13 @@ class Attendance extends Component
             }
         }
 
-        $photoPath = $this->savePhoto($this->checkInPhoto, "ci_{$employee->id}_".now()->format('Ymd_His'));
+        $photoPath = $this->savePhoto($photo, "ci_{$employee->id}_".now()->format('Ymd_His'));
 
         $attendance->fill([
             'check_in_at' => now(),
-            'check_in_latitude' => $this->latitude,
-            'check_in_longitude' => $this->longitude,
-            'check_in_address' => $this->address,
+            'check_in_latitude' => $latitude,
+            'check_in_longitude' => $longitude,
+            'check_in_address' => $address,
             'check_in_photo_path' => $photoPath,
             'status' => AttendanceStatus::Present,
             'late_minutes' => 0,
@@ -103,30 +87,23 @@ class Attendance extends Component
             'employee_id' => $employee->id,
             'event' => 'check_in',
             'event_at' => now(),
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
             'photo_path' => $photoPath,
             'ip_address' => request()->ip(),
             'device_info' => substr(request()->userAgent() ?? '', 0, 255),
         ]);
 
-        $this->checkInPhoto = null;
         $this->dispatch('notify', message: 'Check-in berhasil!', type: 'success');
         $this->dispatch('attendance-recorded');
     }
 
-    public function checkOut(): void
+    public function checkOut(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null): void
     {
         $employee = auth()->user()?->employee;
 
         if (! $employee) {
             $this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
-
-            return;
-        }
-
-        if (! $employee->face_descriptor) {
-            $this->dispatch('notify', message: 'Wajah belum terdaftar. Daftarkan wajah di halaman profil terlebih dahulu.', type: 'error');
 
             return;
         }
@@ -158,13 +135,13 @@ class Attendance extends Component
 
         $this->showEarlyCheckoutWarning = false;
         $workMinutes = (int) $attendance->check_in_at->diffInMinutes(now());
-        $photoPath = $this->savePhoto($this->checkOutPhoto, "co_{$employee->id}_".now()->format('Ymd_His'));
+        $photoPath = $this->savePhoto($photo, "co_{$employee->id}_".now()->format('Ymd_His'));
 
         $attendance->update([
             'check_out_at' => now(),
-            'check_out_latitude' => $this->latitude,
-            'check_out_longitude' => $this->longitude,
-            'check_out_address' => $this->address,
+            'check_out_latitude' => $latitude,
+            'check_out_longitude' => $longitude,
+            'check_out_address' => $address,
             'check_out_photo_path' => $photoPath,
             'work_minutes' => (int) $workMinutes,
         ]);
@@ -174,14 +151,13 @@ class Attendance extends Component
             'employee_id' => $employee->id,
             'event' => 'check_out',
             'event_at' => now(),
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
             'photo_path' => $photoPath,
             'ip_address' => request()->ip(),
             'device_info' => substr(request()->userAgent() ?? '', 0, 255),
         ]);
 
-        $this->checkOutPhoto = null;
         $this->dispatch('notify', message: 'Check-out berhasil! Terima kasih.', type: 'success');
         $this->dispatch('attendance-recorded');
     }

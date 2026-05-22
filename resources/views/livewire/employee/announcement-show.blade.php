@@ -31,8 +31,8 @@
     <div class="border-t border-slate-100"></div>
 
     {{-- Content dari WYSIWYG editor --}}
-    <div class="prose-announcement">
-      {!! $announcement->content !!}
+    <div class="ql-snow">
+      <div class="ql-editor ql-readonly">{!! $announcement->content !!}</div>
     </div>
 
   </div>

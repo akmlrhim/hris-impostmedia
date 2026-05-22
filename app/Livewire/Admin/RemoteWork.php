@@ -69,6 +69,12 @@ class RemoteWork extends Component
         $this->dispatch('notify', type: 'success', message: 'Pengajuan ditolak.');
     }
 
+    public function delete(int $id): void
+    {
+        RemoteWorkRequest::findOrFail($id)->delete();
+        $this->dispatch('notify', type: 'success', message: 'Pengajuan WFA dihapus.');
+    }
+
     public function render(): mixed
     {
         $requests = RemoteWorkRequest::with(['employee', 'reviewer'])

@@ -72,7 +72,7 @@
         </div>
         <div class="card p-4">
             <p class="text-xs uppercase text-slate-500">Bergabung</p>
-            <p class="text-lg font-bold text-slate-900 mt-1">{{ $employee->join_date?->translatedFormat('M Y') ?? '—' }}</p>
+            <p class="text-lg font-bold text-slate-900 mt-1">{{ $employee->join_date?->translatedFormat('M Y') ?? '-' }}</p>
         </div>
     </div>
 

@@ -25,7 +25,7 @@
                 {{ $type === $lt->value
                     ? 'border-brand-500 bg-brand-50'
                     : 'border-slate-200 hover:border-slate-300' }}">
-              <input type="radio" wire:model="type" value="{{ $lt->value }}" class="sr-only">
+              <input type="radio" wire:model.live="type" value="{{ $lt->value }}" class="sr-only">
               <div class="w-9 h-9 rounded-full flex items-center justify-center
                 {{ $type === $lt->value ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-500' }}">
                 <x-icon :name="$lt->icon()" class="w-5 h-5" />
@@ -86,7 +86,7 @@
             <p class="text-xs text-slate-500 mt-0.5">
               {{ \Carbon\Carbon::parse($start_date)->translatedFormat('d M Y') }}
               @if ($start_date !== $end_date)
-                — {{ \Carbon\Carbon::parse($end_date)->translatedFormat('d M Y') }}
+                - {{\Carbon\Carbon::parse($end_date)->translatedFormat('d M Y') }}
               @endif
             </p>
           </div>
@@ -153,7 +153,7 @@
               <p class="text-xs text-slate-500 mt-1">
                 {{ $req->start_date->translatedFormat('d M Y') }}
                 @if (! $req->start_date->eq($req->end_date))
-                  — {{ $req->end_date->translatedFormat('d M Y') }}
+                  - {{$req->end_date->translatedFormat('d M Y') }}
                 @endif
               </p>
             </div>

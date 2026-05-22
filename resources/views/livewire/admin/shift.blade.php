@@ -72,7 +72,7 @@
                   {{ \Illuminate\Support\Str::limit($s->break_start, 5, '') }} –
                   {{ \Illuminate\Support\Str::limit($s->break_end, 5, '') }}
                 @else
-                  —
+                  -
                 @endif
               </td>
               <td class="px-5 py-3">{{ $s->late_tolerance_minutes }} mnt</td>

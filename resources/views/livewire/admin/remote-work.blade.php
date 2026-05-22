@@ -50,9 +50,9 @@
                 <p class="text-xs text-slate-500">{{ $req->employee->employee_number }}</p>
               </td>
               <td class="px-5 py-3 text-slate-600 text-xs">
-                {{ $req->start_date->format('d M Y') }}
+                {{ $req->start_date->translatedFormat('d M Y') }}
                 @if (! $req->start_date->eq($req->end_date))
-                  - {{ $req->end_date->format('d M Y') }}
+                  - {{ $req->end_date->translatedFormat('d M Y') }}
                 @endif
               </td>
               <td class="px-5 py-3 max-w-xs">
@@ -78,9 +78,13 @@
                     </button>
                   @else
                     <span class="text-xs text-slate-400">
-                      {{ $req->reviewer?->name ?? '—' }} · {{ $req->reviewed_at?->diffForHumans() }}
+                      {{ $req->reviewer?->name ?? '-' }} · {{ $req->reviewed_at?->diffForHumans() }}
                     </span>
                   @endif
+                  <button wire:click="delete({{ $req->id }})" wire:confirm="Hapus pengajuan WFA ini?"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                    Hapus
+                  </button>
                 </div>
               </td>
             </tr>

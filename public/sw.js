@@ -1,4 +1,4 @@
-const CACHE = 'hris-im-v5';
+const CACHE = 'hris-im-v6';
 
 const PRECACHE = [
 	'/offline',
@@ -40,8 +40,8 @@ self.addEventListener('fetch', (e) => {
 
 	const url = new URL(request.url);
 
-	// Never intercept Livewire requests
-	if (url.pathname.startsWith('/livewire/')) return;
+	// Never intercept Livewire requests (Livewire 4 uses randomized prefix like /livewire-XXXX/)
+	if (/^\/livewire(-[a-z0-9]+)?\//i.test(url.pathname)) return;
 
 	// Static assets (same origin) — cache first, then network
 	if (STATIC_EXT.test(url.pathname) && url.origin === self.location.origin) {

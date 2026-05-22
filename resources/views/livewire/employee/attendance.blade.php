@@ -1,15 +1,13 @@
-<x-face-api />
-
 <div
   x-data="attendanceCamera({
-    workType: '{{ $workType->value }}',
-    officeLocations: @json($officeLocations->values()),
-    faceDescriptor: @json($faceDescriptor),
-    hasFaceEnrolled: {{ $faceDescriptor ? 'true' : 'false' }},
+    workType: @js($workType->value),
+    officeLocations: @js($officeLocations->values()),
+    faceDescriptor: @js($faceDescriptor),
+    hasFaceEnrolled: @js((bool) $faceDescriptor),
   })"
-  x-init="init()"
   @attendance-recorded.window="onAttendanceRecorded()"
   wire:ignore.self>
+  <x-face-api />
 
   {{-- Header --}}
   <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 z-10">
@@ -46,34 +44,6 @@
             Kelola Karyawan
           </a>
         @endif
-      </div>
-
-    @elseif (! $faceDescriptor)
-      <div class="card p-4 flex items-center gap-3">
-        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
-          @if ($employee->avatar_path)
-            <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
-          @else
-            {{ strtoupper(substr($employee->full_name, 0, 1)) }}
-          @endif
-        </div>
-        <div>
-          <p class="font-semibold text-slate-900">{{ $employee->nickname ?? $employee->full_name }}</p>
-          <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
-        </div>
-      </div>
-
-      <div class="card p-6 text-center space-y-4">
-        <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto">
-          <x-icon name="scan-face" class="w-8 h-8" />
-        </div>
-        <div>
-          <p class="font-semibold text-slate-900">Data wajah belum terdaftar</p>
-          <p class="text-sm text-slate-500 mt-1">Anda perlu mendaftarkan wajah terlebih dahulu sebelum dapat melakukan absensi.</p>
-        </div>
-        <a wire:navigate href="{{ route('mobile.profile.edit') }}" class="btn-primary w-full">
-          Daftarkan Wajah Sekarang
-        </a>
       </div>
 
     @elseif ($attendance?->check_out_at)
@@ -161,6 +131,16 @@
         </div>
       </div>
 
+      {{-- Banner face belum terdaftar (informatif, bukan pemblokir) --}}
+      @if (! $faceDescriptor)
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 text-xs flex items-center gap-2">
+          <x-icon name="scan-face" class="w-4 h-4 shrink-0 text-amber-500" />
+          <span>Wajah belum terdaftar - verifikasi biometrik nonaktif.
+            <a wire:navigate href="{{ route('mobile.profile.edit') }}" class="underline font-medium">Daftarkan sekarang.</a>
+          </span>
+        </div>
+      @endif
+
       {{-- Jika WFA override oleh remote request --}}
       @if ($remoteRequest && $baseWorkType->requiresGeofencing())
         <div class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-purple-800 text-xs flex items-start gap-2">
@@ -174,7 +154,7 @@
         <div class="relative bg-slate-900 aspect-video flex items-center justify-center">
           <video x-ref="video" autoplay playsinline muted
             class="w-full h-full object-cover"
-            x-show="cameraReady"
+            :class="cameraReady ? 'opacity-100' : 'opacity-0'"
             style="transform: scaleX(-1);">
           </video>
           <canvas x-ref="canvas" class="hidden"></canvas>
@@ -320,11 +300,18 @@
       @endif
 
       {{-- Pesan panduan --}}
-      <p x-show="!canProceed && cameraReady" x-cloak class="text-xs text-center text-slate-500 -mt-1">
-        <span x-show="faceStatus === 'no-face'">Arahkan wajah ke kamera agar terdeteksi</span>
-        <span x-show="faceStatus === 'no-match'">Wajah tidak cocok - pastikan pencahayaan cukup atau hubungi admin</span>
-        <span x-show="needsGeofence && !geofenceOk && gpsStatus !== 'loading'">Anda berada di luar radius kantor</span>
-      </p>
+      <div x-show="!canProceed" x-cloak class="text-xs text-center text-slate-500 -mt-1 space-y-1">
+        <p x-show="!cameraReady">Menunggu kamera siap…</p>
+        <p x-show="cameraReady && needsGeofence && !geofenceOk && gpsStatus === 'error'" class="text-red-500">
+          GPS tidak dapat diakses. Izinkan akses lokasi.
+        </p>
+        <p x-show="cameraReady && needsGeofence && !geofenceOk && gpsStatus === 'ok'">
+          Anda berada di luar radius kantor. Absensi WFO memerlukan kehadiran fisik di kantor.
+        </p>
+        <p x-show="cameraReady && needsGeofence && !geofenceOk && gpsStatus === 'loading'">
+          Mendapatkan lokasi GPS…
+        </p>
+      </div>
 
     @endif {{-- end state check --}}
 
@@ -338,11 +325,11 @@
               <div>
                 <p class="text-sm font-medium text-slate-900">{{ $h->attendance_date->translatedFormat('d M Y') }}</p>
                 <p class="text-xs text-slate-500">
-                  {{ $h->check_in_at?->format('H:i') ?? '—' }} → {{ $h->check_out_at?->format('H:i') ?? '—' }}
+                  {{ $h->check_in_at?->format('H:i') ?? '-' }} > {{ $h->check_out_at?->format('H:i') ?? '-' }}
                 </p>
               </div>
               <span class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
-                {{ $h->status?->label() ?? '—' }}
+                {{ $h->status?->label() ?? '-' }}
               </span>
             </div>
           @endforeach
@@ -352,5 +339,3 @@
 
   </div>
 </div>
-
-@include('livewire.employee.partials.attendance-script')

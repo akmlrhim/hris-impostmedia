@@ -55,7 +55,7 @@
       });
       caches.keys().then(function(keys) {
         keys.forEach(function(key) {
-          if (key !== 'hris-im-v5') caches.delete(key);
+          if (key !== 'hris-im-v6') caches.delete(key);
         });
       });
     }

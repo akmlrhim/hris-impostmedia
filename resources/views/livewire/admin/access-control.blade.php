@@ -8,13 +8,13 @@
   {{-- Role legend --}}
   <div class="flex flex-wrap gap-3 text-xs">
     <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 font-medium">
-      <x-icon name="shield-check" class="w-3.5 h-3.5" /> Admin — Semua akses (tidak dapat diubah)
+      <x-icon name="shield-check" class="w-3.5 h-3.5" /> Admin - Semua akses (tidak dapat diubah)
     </div>
     <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-medium">
-      <x-icon name="sliders" class="w-3.5 h-3.5" /> HR — Dapat dikonfigurasi
+      <x-icon name="sliders" class="w-3.5 h-3.5" /> HR - Dapat dikonfigurasi
     </div>
     <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-500 font-medium">
-      <x-icon name="lock" class="w-3.5 h-3.5" /> Karyawan — Tidak ada akses panel (hanya mobile)
+      <x-icon name="lock" class="w-3.5 h-3.5" /> Karyawan - Tidak ada akses panel (hanya mobile)
     </div>
   </div>
 

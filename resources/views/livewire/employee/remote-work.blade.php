@@ -64,7 +64,7 @@
               <p class="text-xs text-slate-500 mt-0.5">
                 {{ \Carbon\Carbon::parse($start_date)->translatedFormat('d M Y') }}
                 @if ($start_date !== $end_date)
-                  — {{ \Carbon\Carbon::parse($end_date)->translatedFormat('d M Y') }}
+                  - {{ \Carbon\Carbon::parse($end_date)->translatedFormat('d M Y') }}
                 @endif
               </p>
             </div>
@@ -103,7 +103,7 @@
         <div>
           <p class="font-semibold text-slate-900">Fitur ini khusus karyawan WFO</p>
           <p class="text-sm text-slate-500 mt-1">
-            Tipe kerja Anda sudah <strong>{{ auth()->user()?->employee?->work_type?->label() }}</strong> —
+            Tipe kerja Anda sudah <strong>{{ auth()->user()?->employee?->work_type?->label() }}</strong> -
             tidak perlu pengajuan untuk absen dari luar kantor.
           </p>
         </div>
@@ -119,7 +119,7 @@
           </div>
           <div>
             <p class="text-sm font-semibold text-purple-900">WFA aktif hari ini</p>
-            <p class="text-xs text-purple-700 mt-0.5">Berlaku s/d {{ $todayApproved->end_date->format('d M Y') }} - absen tanpa radius kantor</p>
+            <p class="text-xs text-purple-700 mt-0.5">Berlaku s/d {{ $todayApproved->end_date->translatedFormat('d M Y') }} - absen tanpa radius kantor</p>
           </div>
         </div>
       @endif
@@ -137,9 +137,9 @@
                 </span>
               </div>
               <p class="text-xs text-slate-500 mt-1.5">
-                {{ $req->start_date->format('d M Y') }}
+                {{ $req->start_date->translatedFormat('d M Y') }}
                 @if (! $req->start_date->eq($req->end_date))
-                  - {{ $req->end_date->format('d M Y') }}
+                  - {{ $req->end_date->translatedFormat('d M Y') }}
                 @endif
               </p>
             </div>

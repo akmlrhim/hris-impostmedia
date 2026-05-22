@@ -10,7 +10,7 @@
             <x-icon name="scan-face" class="w-5 h-5" />
           </div>
           <div>
-            <p class="text-xs text-slate-500">Absensi Saya — {{ now()->translatedFormat('l, d F Y') }}</p>
+            <p class="text-xs text-slate-500">Absensi Saya - {{ now()->translatedFormat('l, d F Y') }}</p>
             @if ($myAttendance?->check_out_at)
               <p class="font-semibold text-emerald-700">
                 Selesai · {{ $myAttendance->check_in_at->format('H:i') }} – {{ $myAttendance->check_out_at->format('H:i') }}
@@ -60,7 +60,7 @@
             <div>
               <p class="font-medium text-black">{{ $att->employee->full_name }}</p>
               <p class="text-xs text-slate-500">
-                Check-in: {{ $att->check_in_at?->format('H:i') ?? '—' }}
+                Check-in: {{ $att->check_in_at?->format('H:i') ?? '-' }}
                 @if ($att->late_minutes > 0)
                   · <span class="text-red-600">Terlambat {{ $att->late_minutes }} mnt</span>
                 @endif

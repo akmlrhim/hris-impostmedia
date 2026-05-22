@@ -92,7 +92,9 @@ class Index extends Component
     {
         Gate::authorize('manage_employees');
 
-        if ($raw = request()->query('edit')) {
+        $editQuery = request()->query('edit');
+
+        if ($raw = $editQuery) {
             $id = (int) last(explode('_', (string) $raw));
             if ($id > 0) {
                 $this->open($id);
@@ -264,12 +266,23 @@ class Index extends Component
                 'bank_account_number' => $this->bank_account_number ?: null,
                 'bank_account_holder' => $this->bank_account_holder ?: null,
             ])->save();
-
         });
 
         $this->dispatch('notify', type: 'success', message: $this->editingId ? 'Karyawan diperbarui.' : 'Karyawan ditambahkan.');
         $this->showForm = false;
         $this->editingId = null;
+    }
+
+    public function delete(int $id): void
+    {
+        $emp = Employee::findOrFail($id);
+
+        if ($emp->avatar_path) {
+            Storage::disk('local')->delete($emp->avatar_path);
+        }
+
+        $emp->delete();
+        $this->dispatch('notify', type: 'success', message: 'Data karyawan dihapus.');
     }
 
     public function render(): mixed

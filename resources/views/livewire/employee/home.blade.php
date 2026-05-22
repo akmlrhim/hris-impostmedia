@@ -8,9 +8,10 @@
         </h1>
       </div>
       <a wire:navigate href="{{ route('mobile.profile') }}"
-        class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden ring-2 ring-white/30">
+        class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden ring-2 ring-white/30 shrink-0">
         @if ($employee?->avatar_path)
-				budi@company.test   <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
+          <img src="{{ route('files.avatar', $employee) }}" alt="{{ $employee->full_name }}"
+            class="w-full h-full object-cover">
         @else
           <x-icon name="user" class="w-5 h-5 text-white" />
         @endif
@@ -143,8 +144,10 @@
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-slate-900 text-sm">{{ $a->title }}</p>
               <p class="text-xs text-slate-500 mt-0.5">{{ $a->published_at?->diffForHumans() }}</p>
-              <div class="prose-announcement text-xs mt-2 line-clamp-2">{!! $a->content !!}</div>
-              <p class="text-xs text-brand-600 font-medium mt-2">Baca selengkapnya →</p>
+              <div class="ql-snow mt-2">
+                <div class="ql-editor ql-readonly text-xs line-clamp-2">{!! $a->content !!}</div>
+              </div>
+              <p class="text-xs text-brand-600 font-medium mt-2">Baca selengkapnya ›</p>
             </div>
           </div>
         </a>

@@ -21,6 +21,7 @@
             <th class="px-5 py-3">Check-out</th>
             <th class="px-5 py-3">Terlambat</th>
             <th class="px-5 py-3">Status</th>
+            <th class="px-5 py-3 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
@@ -30,9 +31,9 @@
                 <p class="font-medium text-slate-900">{{ $att->employee->full_name }}</p>
                 <p class="text-xs text-slate-500">{{ $att->employee->employee_number }}</p>
               </td>
-              <td class="px-5 py-3">{{ $att->attendance_date->format('d M Y') }}</td>
-              <td class="px-5 py-3">{{ $att->check_in_at?->format('H:i') ?? '—' }}</td>
-              <td class="px-5 py-3">{{ $att->check_out_at?->format('H:i') ?? '—' }}</td>
+              <td class="px-5 py-3">{{ $att->attendance_date->translatedFormat('d M Y') }}</td>
+              <td class="px-5 py-3">{{ $att->check_in_at?->format('H:i') ?? '-' }}</td>
+              <td class="px-5 py-3">{{ $att->check_out_at?->format('H:i') ?? '-' }}</td>
               <td class="px-5 py-3">
                 {{ $att->late_minutes > 0 ? $att->late_minutes . ' mnt' : '-' }}
               </td>
@@ -41,10 +42,16 @@
                   {{ $att->status?->label() }}
                 </span>
               </td>
+              <td class="px-5 py-3 text-right">
+                <button wire:click="delete({{ $att->id }})" wire:confirm="Hapus data absensi ini?"
+                  class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                  Hapus
+                </button>
+              </td>
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="px-5 py-12 text-center text-slate-500">
+              <td colspan="7" class="px-5 py-12 text-center text-slate-500">
                 Tidak ada data absensi.
               </td>
             </tr>

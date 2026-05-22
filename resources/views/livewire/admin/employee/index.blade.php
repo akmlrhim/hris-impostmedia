@@ -68,6 +68,10 @@
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
                   </button>
+                  <button wire:click="delete({{ $emp->id }})" wire:confirm="Hapus karyawan {{ $emp->full_name }}? Tindakan ini tidak bisa dibatalkan."
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                    Hapus
+                  </button>
                 </div>
               </td>
             </tr>

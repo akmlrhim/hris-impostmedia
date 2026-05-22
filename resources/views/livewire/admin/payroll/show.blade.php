@@ -8,8 +8,8 @@
       <div>
         <h2 class="text-base font-semibold text-slate-900">{{ $period->code }}</h2>
         <p class="text-sm text-slate-500">
-          {{ $period->start_date->format('d M') }} – {{ $period->end_date->format('d M Y') }}
-          · Pembayaran {{ $period->payment_date?->format('d M Y') ?? '—' }}
+          {{ $period->start_date->translatedFormat('d M') }} – {{ $period->end_date->translatedFormat('d M Y') }}
+          · Pembayaran {{ $period->payment_date?->translatedFormat('d M Y') ?? '-' }}
         </p>
       </div>
     </div>
@@ -111,13 +111,13 @@
     <div style="text-align:center; margin-bottom: 1.5rem; border-bottom: 2px solid #1e293b; padding-bottom: 1rem;">
       <h1 style="font-size: 18px; font-weight: 700; margin: 0;">Laporan Payroll</h1>
       <p style="margin: 4px 0 0; font-size: 13px; color: #475569;">
-        Periode: <strong>{{ $period->code }}</strong> —
-        {{ $period->start_date->format('d M') }} s/d {{ $period->end_date->format('d M Y') }}
+        Periode: <strong>{{ $period->code }}</strong> -
+        {{ $period->start_date->translatedFormat('d M') }} s/d {{ $period->end_date->translatedFormat('d M Y') }}
       </p>
       <p style="margin: 2px 0 0; font-size: 12px; color: #64748b;">
         Tanggal cetak: {{ now()->translatedFormat('d F Y, H:i') }}
         @if ($period->payment_date)
-          · Tgl Bayar: {{ $period->payment_date->format('d M Y') }}
+          · Tgl Bayar: {{ $period->payment_date->translatedFormat('d M Y') }}
         @endif
       </p>
     </div>

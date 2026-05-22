@@ -39,6 +39,12 @@ class Attendance extends Component
         $this->resetPage();
     }
 
+    public function delete(int $id): void
+    {
+        AttendanceModel::findOrFail($id)->delete();
+        $this->dispatch('notify', type: 'success', message: 'Data absensi dihapus.');
+    }
+
     public function render(): mixed
     {
         $attendances = AttendanceModel::with(['employee'])
