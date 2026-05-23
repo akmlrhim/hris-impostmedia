@@ -1,0 +1,88 @@
+name: Deploy to hris.impostmedia.com
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+
+      - name: Install Composer Dependencies (Runner)
+        run: composer install --no-interaction --prefer-dist --no-scripts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install NPM & Build Tailwind/Vite
+        run: |
+          npm install
+          npm run build
+
+      - name: Copy build ke server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "public/build"
+          target: "/home/u465920647/domains/impostmedia.com/public_html/hris.impostmedia.com/public"
+          strip_components: 1
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            APP=/home/u465920647/domains/impostmedia.com/public_html/hris.impostmedia.com
+
+            PHP=$(command -v php8.3 2>/dev/null \
+              || command -v php83 2>/dev/null \
+              || command -v php 2>/dev/null)
+
+            echo "Menggunakan PHP: $PHP ($($PHP -r 'echo PHP_VERSION;'))"
+            cd $APP
+
+            $PHP artisan down || true
+
+            git pull https://${{ secrets.GH_TOKEN }}@github.com/akmlrhim/hris-impostmedia.git main
+            git reset --hard FETCH_HEAD
+
+            COMPOSER_MEMORY_LIMIT=-1 composer install \
+              --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+            $PHP artisan migrate --force
+            $PHP artisan optimize:clear
+
+            set_env() {
+              local KEY="$1" VAL="$2"
+              grep -q "^${KEY}=" .env \
+                && sed -i "s|^${KEY}=.*|${KEY}=${VAL}|" .env \
+                || echo "${KEY}=${VAL}" >> .env
+            }
+
+            $PHP artisan config:cache
+            $PHP artisan route:cache
+            $PHP artisan event:cache
+            $PHP artisan view:cache
+
+            chmod -R 775 storage bootstrap/cache
+
+            $PHP artisan up
+            echo "Deploy sukses: $(date)"

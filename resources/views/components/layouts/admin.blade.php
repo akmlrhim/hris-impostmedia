@@ -137,10 +137,6 @@
           </div>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
-          <button class="relative p-2 rounded-lg hover:bg-slate-100">
-            <x-icon name="bell" class="w-5 h-5 text-slate-600" />
-            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
 
           <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" @click.outside="open = false"

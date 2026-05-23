@@ -1,4 +1,4 @@
-const CACHE = 'hris-im-v6';
+const CACHE = 'hris-im-v7';
 
 const PRECACHE = [
 	'/offline',

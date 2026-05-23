@@ -13,19 +13,19 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="HRIS IM">
-  <link rel="apple-touch-icon" href="/icons/icon-180.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png">
-  <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128.png">
-  <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96.png">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png?v=7">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png?v=7">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png?v=7">
+  <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128.png?v=7">
+  <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96.png?v=7">
 
-  <meta name="msapplication-TileImage" content="/icons/icon-144.png">
+  <meta name="msapplication-TileImage" content="/icons/icon-144.png?v=7">
   <meta name="msapplication-TileColor" content="#1e293b">
   <meta name="msapplication-tap-highlight" content="no">
 
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" data-navigate-permanent>
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png" data-navigate-permanent>
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" data-navigate-permanent>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=7" data-navigate-permanent>
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96.png?v=7" data-navigate-permanent>
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png?v=7" data-navigate-permanent>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,11 +51,13 @@
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(regs) {
-        regs.forEach(function(reg) { reg.update(); });
+        regs.forEach(function(reg) {
+          reg.update();
+        });
       });
       caches.keys().then(function(keys) {
         keys.forEach(function(key) {
-          if (key !== 'hris-im-v6') caches.delete(key);
+          if (key !== 'hris-im-v7') caches.delete(key);
         });
       });
     }
