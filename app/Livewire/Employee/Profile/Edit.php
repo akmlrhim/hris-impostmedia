@@ -34,6 +34,8 @@ class Edit extends Component
 
     public string $phone = '';
 
+    public string $nik = '';
+
     // Data pribadi
     public string $gender = '';
 
@@ -41,7 +43,17 @@ class Edit extends Component
 
     public string $place_of_birth = '';
 
-    public string $religion = '';
+    public string $address = '';
+
+    // Pendidikan
+    public string $last_education = '';
+
+    public string $major_school_university = '';
+
+    // Kontak Darurat
+    public string $emergency_contact_name = '';
+
+    public string $emergency_contact_number = '';
 
     // Bank
     public string $bank_name = '';
@@ -70,10 +82,15 @@ class Edit extends Component
             $this->full_name = (string) $employee->full_name;
             $this->nickname = (string) $employee->nickname;
             $this->phone = (string) $employee->phone;
+            $this->nik = (string) $employee->nik;
             $this->gender = (string) $employee->gender;
             $this->date_of_birth = $employee->date_of_birth?->format('Y-m-d');
             $this->place_of_birth = (string) $employee->place_of_birth;
-            $this->religion = (string) $employee->religion;
+            $this->address = (string) $employee->address;
+            $this->last_education = (string) $employee->last_education;
+            $this->major_school_university = (string) $employee->major_school_university;
+            $this->emergency_contact_name = (string) $employee->emergency_contact_name;
+            $this->emergency_contact_number = (string) $employee->emergency_contact_number;
             $this->bank_name = (string) $employee->bank_name;
             $this->bank_account_number = (string) $employee->bank_account_number;
             $this->bank_account_holder = (string) $employee->bank_account_holder;
@@ -114,10 +131,15 @@ class Edit extends Component
             'full_name' => 'nullable|string|max:200',
             'nickname' => 'nullable|string|max:80',
             'phone' => 'nullable|string|max:30',
+            'nik' => 'required|string|max:20',
             'gender' => 'nullable|in:male,female',
             'date_of_birth' => 'nullable|date|before:today',
             'place_of_birth' => 'nullable|string|max:100',
-            'religion' => 'nullable|string|max:30',
+            'address' => 'nullable|string',
+            'last_education' => 'required|string|max:100',
+            'major_school_university' => 'required|string|max:200',
+            'emergency_contact_name' => 'required|string|max:100',
+            'emergency_contact_number' => 'required|string|max:24',
             'bank_name' => 'nullable|string|max:60',
             'bank_account_number' => 'nullable|string|max:30',
             'bank_account_holder' => 'nullable|string|max:200',
@@ -134,10 +156,16 @@ class Edit extends Component
                     'full_name' => $this->full_name ?: $this->name,
                     'nickname' => $this->nickname ?: null,
                     'phone' => $this->phone ?: null,
+                    'nik' => $this->nik,
+                    'email' => $this->email,
                     'gender' => $this->gender ?: null,
                     'date_of_birth' => $this->date_of_birth ?: null,
                     'place_of_birth' => $this->place_of_birth ?: null,
-                    'religion' => $this->religion ?: null,
+                    'address' => $this->address ?: null,
+                    'last_education' => $this->last_education,
+                    'major_school_university' => $this->major_school_university,
+                    'emergency_contact_name' => $this->emergency_contact_name,
+                    'emergency_contact_number' => $this->emergency_contact_number,
                     'bank_name' => $this->bank_name ?: null,
                     'bank_account_number' => $this->bank_account_number ?: null,
                     'bank_account_holder' => $this->bank_account_holder ?: null,

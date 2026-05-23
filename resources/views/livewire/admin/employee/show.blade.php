@@ -40,15 +40,17 @@
                         <span class="badge bg-emerald-100 text-emerald-700">Aktif</span>
                     @endif
                 </div>
-                <p class="text-sm text-slate-500 mt-0.5">{{ $employee->user?->email }}</p>
+                <p class="text-sm text-slate-500 mt-0.5">{{ $employee->user?->email ?? $employee->email }}</p>
                 <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="badge bg-{{ $employee->employment_status?->color() }}-100 text-{{ $employee->employment_status?->color() }}-700">
-                        {{ $employee->employment_status?->label() }}
-                    </span>
-                    @if ($employee->join_date)
+                    @if ($employee->work_type)
+                        <span class="badge bg-{{ $employee->work_type->color() }}-100 text-{{ $employee->work_type->color() }}-700">
+                            {{ $employee->work_type->label() }}
+                        </span>
+                    @endif
+                    @if ($employee->contract_start_date)
                         <span class="text-xs text-slate-500">
-                            Bergabung {{ $employee->join_date->translatedFormat('d M Y') }}
-                            ({{ $employee->join_date->diffForHumans() }})
+                            Mulai kontrak {{ $employee->contract_start_date->translatedFormat('d M Y') }}
+                            ({{ $employee->contract_start_date->diffForHumans() }})
                         </span>
                     @endif
                 </div>
@@ -71,8 +73,8 @@
             <p class="text-lg font-bold text-slate-900 mt-1">{{ rupiah($employee->basic_salary) }}</p>
         </div>
         <div class="card p-4">
-            <p class="text-xs uppercase text-slate-500">Bergabung</p>
-            <p class="text-lg font-bold text-slate-900 mt-1">{{ $employee->join_date?->translatedFormat('M Y') ?? '-' }}</p>
+            <p class="text-xs uppercase text-slate-500">Mulai Kontrak</p>
+            <p class="text-lg font-bold text-slate-900 mt-1">{{ $employee->contract_start_date?->translatedFormat('M Y') ?? '-' }}</p>
         </div>
     </div>
 
@@ -83,12 +85,14 @@
             <dl class="divide-y divide-slate-100 text-sm">
                 @php
                     $identity = [
-                        'NIK Karyawan' => $employee->employee_number,
+                        'Nomor Karyawan' => $employee->employee_number,
+                        'NIK' => $employee->nik,
                         'Nama Panggilan' => $employee->nickname,
                         'Jenis Kelamin' => $employee->gender === 'male' ? 'Laki-laki' : ($employee->gender === 'female' ? 'Perempuan' : '-'),
                         'Tanggal Lahir' => $employee->date_of_birth?->translatedFormat('d M Y'),
                         'Tempat Lahir' => $employee->place_of_birth,
-                        'Agama' => $employee->religion,
+                        'Pendidikan Terakhir' => $employee->last_education,
+                        'Jurusan/Sekolah' => $employee->major_school_university,
                     ];
                 @endphp
                 @foreach ($identity as $k => $v)
@@ -106,12 +110,11 @@
             <dl class="divide-y divide-slate-100 text-sm">
                 @php
                     $contact = [
-                        'Email' => $employee->user?->email,
+                        'Email' => $employee->user?->email ?? $employee->email,
                         'Telepon' => $employee->phone,
                         'Alamat' => $employee->address,
-                        'Kota' => $employee->city,
-                        'Provinsi' => $employee->province,
-                        'Kode Pos' => $employee->postal_code,
+                        'Kontak Darurat' => $employee->emergency_contact_name,
+                        'No. Kontak Darurat' => $employee->emergency_contact_number,
                     ];
                 @endphp
                 @foreach ($contact as $k => $v)

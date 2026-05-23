@@ -22,7 +22,7 @@ class Show extends Component
     {
         Gate::authorize('manage_employees');
 
-        $this->employee = $employee->load(['user', 'manager']);
+        $this->employee = $employee->load('user');
     }
 
     public function toggleActive(): void

@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Employee;
 
 use App\Concerns\HandlesAdminActions;
-use App\Enums\EmploymentStatus;
 use App\Enums\UserRole;
 use App\Enums\WorkType;
 use App\Models\Employee;
@@ -30,7 +29,10 @@ class Index extends Component
     public string $search = '';
 
     #[Url]
-    public string $status = '';
+    public string $work_type_filter = '';
+
+    #[Url]
+    public string $active_filter = '';
 
     // --- Form modal state ---
     public bool $showForm = false;
@@ -48,31 +50,26 @@ class Index extends Component
 
     public string $phone = '';
 
+    public string $nik = '';
+
     public string $gender = 'male';
 
     public ?string $date_of_birth = null;
 
     public string $place_of_birth = '';
 
-    public string $religion = '';
-
     // Alamat
     public string $address = '';
 
-    public string $city = '';
+    // Pendidikan
+    public string $last_education = '';
 
-    public string $province = '';
-
-    public string $postal_code = '';
+    public string $major_school_university = '';
 
     // Penempatan
-    public string $employment_status = 'permanent';
-
     public string $work_type = 'wfa';
 
-    public ?string $join_date = null;
-
-    public ?string $probation_end_date = null;
+    public ?string $contract_start_date = null;
 
     public ?string $contract_end_date = null;
 
@@ -91,6 +88,11 @@ class Index extends Component
     public string $bank_account_number = '';
 
     public string $bank_account_holder = '';
+
+    // Kontak Darurat
+    public string $emergency_contact_name = '';
+
+    public string $emergency_contact_number = '';
 
     public function mount(): void
     {
@@ -111,7 +113,12 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function updatingStatus(): void
+    public function updatingWorkTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingActiveFilter(): void
     {
         $this->resetPage();
     }
@@ -125,33 +132,31 @@ class Index extends Component
             'nickname',
             'email',
             'phone',
+            'nik',
             'gender',
             'date_of_birth',
             'place_of_birth',
-            'religion',
             'address',
-            'city',
-            'province',
-            'postal_code',
-            'employment_status',
+            'last_education',
+            'major_school_university',
             'work_type',
-            'join_date',
-            'probation_end_date',
+            'contract_start_date',
             'contract_end_date',
             'is_active',
             'basic_salary',
             'bank_name',
             'bank_account_number',
             'bank_account_holder',
+            'emergency_contact_name',
+            'emergency_contact_number',
             'avatar',
             'existing_avatar_path',
         ]);
         $this->resetValidation();
         $this->gender = 'male';
-        $this->employment_status = 'permanent';
         $this->work_type = 'wfa';
         $this->is_active = true;
-        $this->join_date = now()->toDateString();
+        $this->contract_start_date = now()->toDateString();
 
         if ($id) {
             $emp = Employee::findOrFail($id);
@@ -159,27 +164,26 @@ class Index extends Component
             $this->employee_number = $emp->employee_number;
             $this->full_name = $emp->full_name;
             $this->nickname = (string) $emp->nickname;
-            $this->email = $emp->user?->email ?? '';
+            $this->email = $emp->user?->email ?? (string) $emp->email;
             $this->phone = (string) $emp->phone;
-            $this->gender = (string) $emp->gender;
+            $this->nik = (string) $emp->nik;
+            $this->gender = (string) ($emp->gender ?: 'male');
             $this->date_of_birth = $emp->date_of_birth?->format('Y-m-d');
             $this->place_of_birth = (string) $emp->place_of_birth;
-            $this->religion = (string) $emp->religion;
             $this->address = (string) $emp->address;
-            $this->city = (string) $emp->city;
-            $this->province = (string) $emp->province;
-            $this->postal_code = (string) $emp->postal_code;
+            $this->last_education = (string) $emp->last_education;
+            $this->major_school_university = (string) $emp->major_school_university;
             $this->existing_avatar_path = $emp->avatar_path;
-            $this->employment_status = $emp->employment_status?->value ?? 'permanent';
             $this->work_type = $emp->work_type?->value ?? 'wfa';
-            $this->join_date = $emp->join_date?->format('Y-m-d');
-            $this->probation_end_date = $emp->probation_end_date?->format('Y-m-d');
+            $this->contract_start_date = $emp->contract_start_date?->format('Y-m-d');
             $this->contract_end_date = $emp->contract_end_date?->format('Y-m-d');
             $this->is_active = (bool) $emp->is_active;
             $this->basic_salary = (float) $emp->basic_salary;
             $this->bank_name = (string) $emp->bank_name;
             $this->bank_account_number = (string) $emp->bank_account_number;
             $this->bank_account_holder = (string) $emp->bank_account_holder;
+            $this->emergency_contact_name = (string) $emp->emergency_contact_name;
+            $this->emergency_contact_number = (string) $emp->emergency_contact_number;
         }
 
         $this->showForm = true;
@@ -204,24 +208,23 @@ class Index extends Component
                 Rule::unique('users', 'email')->ignore($userId),
             ],
             'phone' => 'nullable|string|max:30',
+            'nik' => 'required|string|max:20',
             'gender' => 'required|in:male,female',
-            'date_of_birth' => 'nullable|date',
+            'date_of_birth' => 'nullable|date|before:today',
             'place_of_birth' => 'nullable|string|max:100',
-            'religion' => 'nullable|string|max:30',
             'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'province' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:10',
+            'last_education' => 'required|string|max:100',
+            'major_school_university' => 'required|string|max:200',
             'avatar' => 'nullable|image|max:2048',
-            'employment_status' => ['required', Rule::in(array_column(EmploymentStatus::cases(), 'value'))],
             'work_type' => ['required', Rule::in(array_column(WorkType::cases(), 'value'))],
-            'join_date' => 'required|date',
-            'probation_end_date' => 'nullable|date|after_or_equal:join_date',
-            'contract_end_date' => 'nullable|date|after_or_equal:join_date',
+            'contract_start_date' => 'nullable|date',
+            'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
             'basic_salary' => 'required|numeric|min:0',
             'bank_name' => 'nullable|string|max:60',
             'bank_account_number' => 'nullable|string|max:30',
             'bank_account_holder' => 'nullable|string|max:200',
+            'emergency_contact_name' => 'required|string|max:100',
+            'emergency_contact_number' => 'required|string|max:24',
         ]);
 
         $this->safeAction(function () {
@@ -256,25 +259,25 @@ class Index extends Component
                     'full_name' => $this->full_name,
                     'nickname' => $this->nickname ?: null,
                     'phone' => $this->phone ?: null,
+                    'nik' => $this->nik,
+                    'email' => $this->email,
                     'gender' => $this->gender,
                     'date_of_birth' => $this->date_of_birth ?: null,
                     'place_of_birth' => $this->place_of_birth ?: null,
-                    'religion' => $this->religion ?: null,
                     'address' => $this->address ?: null,
-                    'city' => $this->city ?: null,
-                    'province' => $this->province ?: null,
-                    'postal_code' => $this->postal_code ?: null,
+                    'last_education' => $this->last_education,
+                    'major_school_university' => $this->major_school_university,
                     'avatar_path' => $avatarPath,
-                    'employment_status' => $this->employment_status,
                     'work_type' => $this->work_type,
-                    'join_date' => $this->join_date,
-                    'probation_end_date' => $this->probation_end_date ?: null,
+                    'contract_start_date' => $this->contract_start_date ?: null,
                     'contract_end_date' => $this->contract_end_date ?: null,
                     'is_active' => $this->is_active,
                     'basic_salary' => $this->basic_salary,
                     'bank_name' => $this->bank_name ?: null,
                     'bank_account_number' => $this->bank_account_number ?: null,
                     'bank_account_holder' => $this->bank_account_holder ?: null,
+                    'emergency_contact_name' => $this->emergency_contact_name,
+                    'emergency_contact_number' => $this->emergency_contact_number,
                 ])->save();
             });
 
@@ -303,15 +306,16 @@ class Index extends Component
         $employees = Employee::query()
             ->when($this->search, fn ($q) => $q->where(function ($q) {
                 $q->where('full_name', 'like', "%{$this->search}%")
-                    ->orWhere('employee_number', 'like', "%{$this->search}%");
+                    ->orWhere('employee_number', 'like', "%{$this->search}%")
+                    ->orWhere('nik', 'like', "%{$this->search}%");
             }))
-            ->when($this->status, fn ($q) => $q->where('employment_status', $this->status))
+            ->when($this->work_type_filter !== '', fn ($q) => $q->where('work_type', $this->work_type_filter))
+            ->when($this->active_filter !== '', fn ($q) => $q->where('is_active', $this->active_filter === '1'))
             ->latest()
             ->paginate(15);
 
         return view('livewire.admin.employee.index', [
             'employees' => $employees,
-            'employmentStatuses' => EmploymentStatus::cases(),
             'workTypes' => WorkType::cases(),
         ]);
     }

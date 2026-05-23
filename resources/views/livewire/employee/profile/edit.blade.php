@@ -86,6 +86,15 @@
           <label class="label">Telepon</label>
           <input wire:model="phone" class="input" inputmode="tel" placeholder="Masukkan nomor telepon">
         </div>
+
+        <div>
+          <label class="label">NIK <span class="text-red-500">*</span></label>
+          <input wire:model="nik" class="input" inputmode="numeric" maxlength="20"
+            placeholder="Masukkan NIK (KTP)">
+          @error('nik')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+        </div>
       </div>
 
       {{-- Data pribadi --}}
@@ -116,16 +125,67 @@
         </div>
 
         <div>
-          <label class="label">Agama</label>
-          <select wire:model="religion" class="input">
+          <label class="label">Alamat</label>
+          <textarea wire:model="address" rows="2" class="input" placeholder="Masukkan alamat lengkap"></textarea>
+          @error('address')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+      </div>
+
+      {{-- Pendidikan --}}
+      <div class="card p-5 space-y-4">
+        <h3 class="text-sm font-semibold text-slate-900 -mb-1">Pendidikan</h3>
+
+        <div>
+          <label class="label">Pendidikan Terakhir <span class="text-red-500">*</span></label>
+          <select wire:model="last_education" class="input">
             <option value="">- Pilih -</option>
-            <option value="Islam">Islam</option>
-            <option value="Kristen">Kristen</option>
-            <option value="Katolik">Katolik</option>
-            <option value="Hindu">Hindu</option>
-            <option value="Budha">Budha</option>
-            <option value="Konghucu">Konghucu</option>
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA">SMA</option>
+            <option value="SMK">SMK</option>
+            <option value="D3">D3</option>
+            <option value="D4">D4</option>
+            <option value="S1">S1</option>
+            <option value="S2">S2</option>
+            <option value="S3">S3</option>
           </select>
+          @error('last_education')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+
+        <div>
+          <label class="label">Jurusan / Sekolah - Universitas <span class="text-red-500">*</span></label>
+          <input wire:model="major_school_university" class="input"
+            placeholder="Mis. Teknik Informatika - Universitas Indonesia">
+          @error('major_school_university')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+      </div>
+
+      {{-- Kontak Darurat --}}
+      <div class="card p-5 space-y-4">
+        <h3 class="text-sm font-semibold text-slate-900 -mb-1">Kontak Darurat</h3>
+
+        <div>
+          <label class="label">Nama Kontak Darurat <span class="text-red-500">*</span></label>
+          <input wire:model="emergency_contact_name" class="input"
+            placeholder="Mis. Nama orang tua / pasangan">
+          @error('emergency_contact_name')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+
+        <div>
+          <label class="label">No. Telepon Kontak Darurat <span class="text-red-500">*</span></label>
+          <input wire:model="emergency_contact_number" class="input" inputmode="tel"
+            placeholder="Masukkan nomor telepon">
+          @error('emergency_contact_number')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
         </div>
       </div>
 
