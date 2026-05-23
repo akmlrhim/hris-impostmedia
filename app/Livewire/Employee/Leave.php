@@ -27,30 +27,41 @@ class Leave extends Component
 
     public function mount(): void
     {
-        $this->start_date = now()->addDay()->toDateString();
-        $this->end_date = now()->addDay()->toDateString();
+        $this->resetDates();
         $this->type = LeaveType::Annual->value;
+    }
+
+    private function resetDates(): void
+    {
+        $start = now()->addDay()->setTime(9, 0);
+        $end = $start->copy()->setTime(17, 0);
+        $this->start_date = $start->format('Y-m-d\TH:i');
+        $this->end_date = $end->format('Y-m-d\TH:i');
     }
 
     public function openForm(): void
     {
         $this->reset(['reason']);
         $this->type = LeaveType::Annual->value;
-        $this->start_date = now()->addDay()->toDateString();
-        $this->end_date = now()->addDay()->toDateString();
+        $this->resetDates();
         $this->resetValidation();
         $this->showForm = true;
         $this->showConfirm = false;
     }
 
-    public function requestConfirm(): void
+    private function validationRules(): array
     {
-        $this->validate([
+        return [
             'type' => 'required|in:'.implode(',', array_column(LeaveType::cases(), 'value')),
-            'start_date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date|after_or_equal:'.now()->startOfDay()->toDateTimeString(),
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string|min:10|max:500',
-        ]);
+        ];
+    }
+
+    public function requestConfirm(): void
+    {
+        $this->validate($this->validationRules());
 
         $this->showConfirm = true;
     }
@@ -65,12 +76,7 @@ class Leave extends Component
             return;
         }
 
-        $this->validate([
-            'type' => 'required|in:'.implode(',', array_column(LeaveType::cases(), 'value')),
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'reason' => 'required|string|min:10|max:500',
-        ]);
+        $this->validate($this->validationRules());
 
         LeaveRequest::create([
             'employee_id' => $employee->id,

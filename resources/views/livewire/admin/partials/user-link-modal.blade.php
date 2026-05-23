@@ -36,7 +36,7 @@
     @enderror
 
     <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-      <button type="button" wire:click="$set('showLinkForm', false)" class="btn-secondary">Batal</button>
+      <button type="button" @click="$wire.set('showLinkForm', false, true)" class="btn-secondary">Batal</button>
       <button type="button" wire:click="linkEmployee" class="btn-primary">Hubungkan</button>
     </div>
   </div>

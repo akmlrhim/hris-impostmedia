@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Concerns\HandlesAdminActions;
 use App\Models\Announcement;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -14,7 +15,7 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class Announcements extends Component
 {
-    use WithPagination;
+    use HandlesAdminActions, WithPagination;
 
     public bool $showForm = false;
 
@@ -65,21 +66,28 @@ class Announcements extends Component
             'author_id' => auth()->id(),
         ];
 
-        if ($this->editingId) {
-            Announcement::findOrFail($this->editingId)->update($data);
-            $this->dispatch('notify', type: 'success', message: 'Pengumuman diperbarui.');
-        } else {
-            Announcement::create($data);
-            $this->dispatch('notify', type: 'success', message: 'Pengumuman ditambahkan.');
-        }
+        $this->safeAction(function () use ($data) {
+            if ($this->editingId) {
+                Announcement::findOrFail($this->editingId)->update($data);
+                $this->toast('success', 'Pengumuman diperbarui.');
+            } else {
+                Announcement::create($data);
+                $this->toast('success', 'Pengumuman ditambahkan.');
+            }
 
-        $this->showForm = false;
+            $this->showForm = false;
+        }, permission: 'manage_announcements', genericError: 'Gagal menyimpan pengumuman.');
     }
 
     public function delete(int $id): void
     {
-        Announcement::findOrFail($id)->delete();
-        $this->dispatch('notify', type: 'success', message: 'Pengumuman dihapus.');
+        $this->safeAction(function () use ($id) {
+            $ann = Announcement::findOrFail($id);
+            $title = $ann->title;
+            $ann->delete();
+            $this->logActivity('announcement.deleted', "Menghapus pengumuman: {$title}", null, ['id' => $id, 'title' => $title]);
+            $this->toast('success', 'Pengumuman dihapus.');
+        }, permission: 'manage_announcements', genericError: 'Gagal menghapus pengumuman.');
     }
 
     public function mount(): void

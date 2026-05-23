@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Employee;
 
+use App\Concerns\HandlesAdminActions;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Employee;
@@ -13,6 +14,8 @@ use Livewire\Component;
 #[Layout('components.layouts.admin')]
 class Show extends Component
 {
+    use HandlesAdminActions;
+
     public Employee $employee;
 
     public function mount(Employee $employee): void
@@ -24,9 +27,11 @@ class Show extends Component
 
     public function toggleActive(): void
     {
-        $this->employee->update(['is_active' => ! $this->employee->is_active]);
-        $this->employee->refresh();
-        $this->dispatch('notify', type: 'success', message: $this->employee->is_active ? 'Karyawan diaktifkan.' : 'Karyawan dinonaktifkan.');
+        $this->safeAction(function () {
+            $this->employee->update(['is_active' => ! $this->employee->is_active]);
+            $this->employee->refresh();
+            $this->toast('success', $this->employee->is_active ? 'Karyawan diaktifkan.' : 'Karyawan dinonaktifkan.');
+        }, permission: 'manage_employees', genericError: 'Gagal mengubah status karyawan.');
     }
 
     public function render(): mixed

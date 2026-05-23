@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Payroll;
 
+use App\Concerns\HandlesAdminActions;
 use App\Models\Payroll;
 use App\Models\PayrollItem;
 use Illuminate\Support\Facades\Gate;
@@ -12,6 +13,8 @@ use Livewire\Component;
 #[Layout('components.layouts.admin')]
 class Payslip extends Component
 {
+    use HandlesAdminActions;
+
     public Payroll $payroll;
 
     public bool $showItemForm = false;
@@ -49,6 +52,12 @@ class Payslip extends Component
 
     public function addItem(): void
     {
+        if ($this->payroll->period->locked_at) {
+            $this->toast('warning', 'Periode sudah dikunci, item tidak bisa diubah.');
+
+            return;
+        }
+
         $rules = [
             'itemType' => ['required', Rule::in(['earning', 'deduction'])],
             'itemName' => 'required|string|max:100',
@@ -63,50 +72,60 @@ class Payslip extends Component
 
         $this->validate($rules);
 
-        $grossSalary = (float) $this->payroll->gross_salary;
-        $notes = null;
+        $this->safeAction(function () {
+            $grossSalary = (float) $this->payroll->gross_salary;
+            $notes = null;
 
-        if ($this->itemCalcType === 'percent') {
-            $percent = (float) $this->itemPercent;
-            $this->itemAmount = round($grossSalary * $percent / 100, 2);
-            $notes = $percent.'% dari gaji kotor';
-        }
+            if ($this->itemCalcType === 'percent') {
+                $percent = (float) $this->itemPercent;
+                $this->itemAmount = round($grossSalary * $percent / 100, 2);
+                $notes = $percent.'% dari gaji kotor';
+            }
 
-        $code = strtoupper(str_replace(' ', '_', $this->itemName));
+            $code = strtoupper(str_replace(' ', '_', $this->itemName));
 
-        PayrollItem::create([
-            'payroll_id' => $this->payroll->id,
-            'component_code' => $code,
-            'component_name' => $this->itemName,
-            'type' => $this->itemType,
-            'amount' => $this->itemAmount,
-            'notes' => $notes,
-        ]);
+            PayrollItem::create([
+                'payroll_id' => $this->payroll->id,
+                'component_code' => $code,
+                'component_name' => $this->itemName,
+                'type' => $this->itemType,
+                'amount' => $this->itemAmount,
+                'notes' => $notes,
+            ]);
 
-        $this->recalculate();
-        $this->reset(['itemType', 'itemName', 'itemCalcType', 'itemPercent', 'itemAmount', 'showItemForm']);
-        $this->itemType = 'earning';
-        $this->itemCalcType = 'fixed';
-        $this->dispatch('notify', type: 'success', message: 'Item ditambahkan.');
+            $this->recalculate();
+            $this->reset(['itemType', 'itemName', 'itemCalcType', 'itemPercent', 'itemAmount', 'showItemForm']);
+            $this->itemType = 'earning';
+            $this->itemCalcType = 'fixed';
+            $this->toast('success', 'Item ditambahkan.');
+        }, permission: 'manage_payroll', genericError: 'Gagal menambah item.');
     }
 
     public function removeItem(int $itemId): void
     {
-        $item = PayrollItem::find($itemId);
+        $this->safeAction(function () use ($itemId) {
+            if ($this->payroll->period->locked_at) {
+                $this->toast('warning', 'Periode sudah dikunci, item tidak bisa dihapus.');
 
-        if (! $item || $item->payroll_id !== $this->payroll->id) {
-            return;
-        }
+                return;
+            }
 
-        if ($item->component_code === 'BASIC') {
-            $this->dispatch('notify', type: 'error', message: 'Gaji pokok tidak dapat dihapus.');
+            $item = PayrollItem::find($itemId);
 
-            return;
-        }
+            if (! $item || $item->payroll_id !== $this->payroll->id) {
+                return;
+            }
 
-        $item->delete();
-        $this->recalculate();
-        $this->dispatch('notify', type: 'success', message: 'Item dihapus.');
+            if ($item->component_code === 'BASIC') {
+                $this->toast('warning', 'Gaji pokok tidak dapat dihapus.');
+
+                return;
+            }
+
+            $item->delete();
+            $this->recalculate();
+            $this->toast('success', 'Item dihapus.');
+        }, permission: 'manage_payroll', genericError: 'Gagal menghapus item.');
     }
 
     private function recalculate(): void

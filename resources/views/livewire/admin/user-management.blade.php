@@ -1,7 +1,7 @@
 <div class="space-y-4">
   <x-page-header title="Manajemen Pengguna" description="Kelola akun pengguna dan peran sistem.">
     <x-slot:action>
-      <button wire:click="open" class="btn-primary">Tambah Pengguna</button>
+      <button type="button" @click="$wire.set('showForm', true, true); $wire.open()" class="btn-primary">Tambah Pengguna</button>
     </x-slot:action>
   </x-page-header>
 
@@ -82,7 +82,7 @@
                 @else
                   <div class="flex items-center gap-2">
                     <span class="text-xs text-slate-400 italic">Belum terhubung</span>
-                    <button wire:click="openLinkForm({{ $u->id }})"
+                    <button type="button" @click="$wire.set('showLinkForm', true, true); $wire.openLinkForm({{ $u->id }})"
                       class="shrink-0 px-2 py-0.5 rounded-md text-[11px] font-medium bg-brand-50 text-brand-600 hover:bg-brand-100 transition">
                       Hubungkan
                     </button>
@@ -98,11 +98,11 @@
               </td>
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-1.5">
-                  <button wire:click="open({{ $u->id }})"
+                  <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $u->id }})"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
                   </button>
-                  <button wire:click="openPasswordForm({{ $u->id }})"
+                  <button type="button" @click="$wire.set('showPasswordForm', true, true); $wire.openPasswordForm({{ $u->id }})"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 hover:bg-slate-100 transition">
                     Sandi
                   </button>

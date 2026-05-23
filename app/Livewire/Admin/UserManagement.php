@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Concerns\HandlesAdminActions;
 use App\Enums\UserRole;
 use App\Models\Employee;
 use App\Models\User;
@@ -17,7 +18,7 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class UserManagement extends Component
 {
-    use WithPagination;
+    use HandlesAdminActions, WithPagination;
 
     public string $search = '';
 
@@ -128,30 +129,42 @@ class UserManagement extends Component
             'is_active' => $this->is_active,
         ];
 
-        if ($isNew) {
-            $data['password'] = Hash::make($this->password);
-            User::create($data);
-            $this->dispatch('notify', type: 'success', message: 'Pengguna berhasil dibuat.');
-        } else {
-            User::findOrFail($this->editingId)->update($data);
-            $this->dispatch('notify', type: 'success', message: 'Pengguna berhasil diperbarui.');
-        }
+        $this->safeAction(function () use ($data, $isNew) {
+            if ($isNew) {
+                $data['password'] = Hash::make($this->password);
+                $user = User::create($data);
+                $this->logActivity('user.created', "Membuat pengguna {$user->name} ({$user->email})", $user, ['roles' => $user->roles]);
+                $this->toast('success', 'Pengguna berhasil dibuat.');
+            } else {
+                $user = User::findOrFail($this->editingId);
+                $user->update($data);
+                $this->logActivity('user.updated', "Mengubah pengguna {$user->name}", $user, ['roles' => $user->roles, 'is_active' => $user->is_active]);
+                $this->toast('success', 'Pengguna berhasil diperbarui.');
+            }
 
-        $this->showForm = false;
+            $this->showForm = false;
+        }, permission: 'manage_users', genericError: 'Gagal menyimpan pengguna.');
     }
 
     public function toggleActive(int $id): void
     {
-        $user = User::findOrFail($id);
+        $this->safeAction(function () use ($id) {
+            $user = User::findOrFail($id);
 
-        if ($user->id === auth()->id()) {
-            $this->dispatch('notify', type: 'warning', message: 'Tidak dapat menonaktifkan akun sendiri.');
+            if ($user->id === auth()->id()) {
+                $this->toast('warning', 'Tidak dapat menonaktifkan akun sendiri.');
 
-            return;
-        }
+                return;
+            }
 
-        $user->update(['is_active' => ! $user->is_active]);
-        $this->dispatch('notify', type: 'success', message: $user->is_active ? 'Akun diaktifkan.' : 'Akun dinonaktifkan.');
+            $user->update(['is_active' => ! $user->is_active]);
+            $this->logActivity(
+                $user->is_active ? 'user.activated' : 'user.deactivated',
+                ($user->is_active ? 'Mengaktifkan' : 'Menonaktifkan')." akun {$user->name}",
+                $user,
+            );
+            $this->toast('success', $user->is_active ? 'Akun diaktifkan.' : 'Akun dinonaktifkan.');
+        }, permission: 'manage_users', genericError: 'Gagal mengubah status pengguna.');
     }
 
     public function openPasswordForm(int $id): void
@@ -169,32 +182,38 @@ class UserManagement extends Component
             'newPassword' => 'required|string|min:8|confirmed:newPasswordConfirmation',
         ]);
 
-        User::findOrFail($this->passwordUserId)->update([
-            'password' => Hash::make($this->newPassword),
-        ]);
+        $this->safeAction(function () {
+            $user = User::findOrFail($this->passwordUserId);
+            $user->update(['password' => Hash::make($this->newPassword)]);
 
-        $this->showPasswordForm = false;
-        $this->dispatch('notify', type: 'success', message: 'Kata sandi berhasil diubah.');
+            $this->logActivity('user.password_changed', "Mengubah kata sandi pengguna {$user->name}", $user);
+            $this->showPasswordForm = false;
+            $this->toast('success', 'Kata sandi berhasil diubah.');
+        }, permission: 'manage_users', genericError: 'Gagal mengubah kata sandi.');
     }
 
     public function delete(int $id): void
     {
-        if ($id === auth()->id()) {
-            $this->dispatch('notify', type: 'warning', message: 'Tidak dapat menghapus akun sendiri.');
+        $this->safeAction(function () use ($id) {
+            if ($id === auth()->id()) {
+                $this->toast('warning', 'Tidak dapat menghapus akun sendiri.');
 
-            return;
-        }
+                return;
+            }
 
-        $user = User::findOrFail($id);
+            $user = User::findOrFail($id);
 
-        if ($user->hasRole(UserRole::Admin) && User::whereJsonContains('roles', UserRole::Admin->value)->count() <= 1) {
-            $this->dispatch('notify', type: 'warning', message: 'Tidak dapat menghapus Admin terakhir.');
+            if ($user->hasRole(UserRole::Admin) && User::whereJsonContains('roles', UserRole::Admin->value)->count() <= 1) {
+                $this->toast('warning', 'Tidak dapat menghapus Admin terakhir.');
 
-            return;
-        }
+                return;
+            }
 
-        $user->delete();
-        $this->dispatch('notify', type: 'success', message: 'Pengguna dihapus.');
+            $snapshot = ['id' => $user->id, 'name' => $user->name, 'email' => $user->email, 'roles' => $user->roles];
+            $user->delete();
+            $this->logActivity('user.deleted', "Menghapus pengguna {$snapshot['name']} ({$snapshot['email']})", null, $snapshot);
+            $this->toast('success', 'Pengguna dihapus.');
+        }, permission: 'manage_users', genericError: 'Gagal menghapus pengguna.');
     }
 
     public function openLinkForm(int $userId): void
@@ -210,33 +229,37 @@ class UserManagement extends Component
     {
         $this->validate(['selectedEmployeeId' => 'required|exists:employees,id']);
 
-        $user = User::findOrFail($this->linkingUserId);
-        $employee = Employee::findOrFail($this->selectedEmployeeId);
+        $this->safeAction(function () {
+            $user = User::findOrFail($this->linkingUserId);
+            $employee = Employee::findOrFail($this->selectedEmployeeId);
 
-        if ($employee->user_id && $employee->user_id !== $user->id) {
-            $this->addError('selectedEmployeeId', 'Karyawan ini sudah terhubung ke akun lain.');
+            if ($employee->user_id && $employee->user_id !== $user->id) {
+                $this->addError('selectedEmployeeId', 'Karyawan ini sudah terhubung ke akun lain.');
 
-            return;
-        }
+                return;
+            }
 
-        $employee->update(['user_id' => $user->id]);
+            $employee->update(['user_id' => $user->id]);
 
-        $this->showLinkForm = false;
-        $this->dispatch('notify', type: 'success', message: "Akun {$user->name} berhasil dihubungkan ke {$employee->full_name}.");
+            $this->showLinkForm = false;
+            $this->toast('success', "Akun {$user->name} berhasil dihubungkan ke {$employee->full_name}.");
+        }, permission: 'manage_users', genericError: 'Gagal menghubungkan karyawan.');
     }
 
     public function unlinkEmployee(int $userId): void
     {
-        $user = User::with('employee')->findOrFail($userId);
+        $this->safeAction(function () use ($userId) {
+            $user = User::with('employee')->findOrFail($userId);
 
-        if (! $user->employee) {
-            return;
-        }
+            if (! $user->employee) {
+                return;
+            }
 
-        $employeeName = $user->employee->full_name;
-        $user->employee->update(['user_id' => null]);
+            $employeeName = $user->employee->full_name;
+            $user->employee->update(['user_id' => null]);
 
-        $this->dispatch('notify', type: 'success', message: "Koneksi ke {$employeeName} berhasil dilepas.");
+            $this->toast('success', "Koneksi ke {$employeeName} berhasil dilepas.");
+        }, permission: 'manage_users', genericError: 'Gagal melepas koneksi karyawan.');
     }
 
     public function render(): mixed

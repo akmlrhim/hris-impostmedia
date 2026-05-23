@@ -2,17 +2,21 @@
 
 namespace App\Livewire\Admin;
 
+use App\Concerns\HandlesAdminActions;
 use App\Models\Shift as ShiftModel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Title('Manajemen Shift')]
 #[Layout('components.layouts.admin')]
 class Shift extends Component
 {
+    use HandlesAdminActions, WithPagination;
+
     public bool $showForm = false;
 
     public ?int $editingId = null;
@@ -66,28 +70,42 @@ class Shift extends Component
     {
         $data = $this->validate();
 
-        if ($this->editingId) {
-            ShiftModel::findOrFail($this->editingId)->update($data + [
-                'break_start' => $this->break_start,
-                'break_end' => $this->break_end,
-            ]);
-            $this->dispatch('notify', type: 'success', message: 'Shift diperbarui.');
-        } else {
-            ShiftModel::create($data + [
-                'break_start' => $this->break_start,
-                'break_end' => $this->break_end,
-            ]);
-            $this->dispatch('notify', type: 'success', message: 'Shift ditambahkan.');
-        }
+        $this->safeAction(function () use ($data) {
+            if ($this->editingId) {
+                ShiftModel::findOrFail($this->editingId)->update($data + [
+                    'break_start' => $this->break_start,
+                    'break_end' => $this->break_end,
+                ]);
+                $this->toast('success', 'Shift diperbarui.');
+            } else {
+                ShiftModel::create($data + [
+                    'break_start' => $this->break_start,
+                    'break_end' => $this->break_end,
+                ]);
+                $this->toast('success', 'Shift ditambahkan.');
+            }
 
-        $this->showForm = false;
-        $this->editingId = null;
+            $this->showForm = false;
+            $this->editingId = null;
+        }, permission: 'manage_shifts', genericError: 'Gagal menyimpan shift.');
     }
 
     public function delete(int $id): void
     {
-        ShiftModel::findOrFail($id)->delete();
-        $this->dispatch('notify', type: 'success', message: 'Shift dihapus.');
+        $this->safeAction(function () use ($id) {
+            $shift = ShiftModel::withCount('schedules')->findOrFail($id);
+
+            if ($shift->schedules_count > 0) {
+                $this->toast('warning', "Shift dipakai {$shift->schedules_count} jadwal kerja. Hapus jadwal terkait dulu.");
+
+                return;
+            }
+
+            $shiftSnapshot = $shift->only(['id', 'code', 'name']);
+            $shift->delete();
+            $this->logActivity('shift.deleted', "Menghapus shift {$shiftSnapshot['code']} ({$shiftSnapshot['name']})", null, $shiftSnapshot);
+            $this->toast('success', 'Shift dihapus.');
+        }, permission: 'manage_shifts', genericError: 'Gagal menghapus shift.');
     }
 
     public function mount(): void
@@ -98,7 +116,7 @@ class Shift extends Component
     public function render(): mixed
     {
         return view('livewire.admin.shift', [
-            'shifts' => ShiftModel::orderBy('code')->get(),
+            'shifts' => ShiftModel::orderBy('code')->paginate(15),
         ]);
     }
 }

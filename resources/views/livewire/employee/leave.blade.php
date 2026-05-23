@@ -8,7 +8,7 @@
       <h1 class="text-lg font-bold text-slate-900">Cuti & Izin</h1>
       <p class="text-xs text-slate-400 mt-0.5">Pengajuan cuti, izin sakit, dan izin</p>
     </div>
-    <button wire:click="openForm" class="btn-primary text-sm px-3 py-1.5">Ajukan</button>
+    <button type="button" @click="$wire.set('showForm', true, true); $wire.openForm()" class="btn-primary text-sm px-3 py-1.5">Ajukan</button>
   </div>
 
   {{-- Form modal --}}
@@ -16,41 +16,48 @@
     <form wire:submit="requestConfirm" class="space-y-4">
 
       {{-- Type selector --}}
-      <div>
+      <div x-data="{ tp: @entangle('type') }">
         <label class="label">Jenis Pengajuan <span class="text-red-500">*</span></label>
         <div class="grid grid-cols-3 gap-2 mt-1">
           @foreach (\App\Enums\LeaveType::cases() as $lt)
             <label wire:key="type-{{ $lt->value }}"
-              class="relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 cursor-pointer transition
-                {{ $type === $lt->value
-                    ? 'border-brand-500 bg-brand-50'
-                    : 'border-slate-200 hover:border-slate-300' }}">
-              <input type="radio" wire:model.live="type" value="{{ $lt->value }}" class="sr-only">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center
-                {{ $type === $lt->value ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-500' }}">
+              @click="tp = '{{ $lt->value }}'"
+              :class="tp === '{{ $lt->value }}'
+                ? 'border-brand-500 bg-brand-50'
+                : 'border-slate-200 hover:border-slate-300'"
+              class="relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150">
+              <input type="radio" x-model="tp" value="{{ $lt->value }}" class="sr-only">
+              <div :class="tp === '{{ $lt->value }}' ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-500'"
+                class="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-150">
                 <x-icon :name="$lt->icon()" class="w-5 h-5" />
               </div>
-              <span class="text-xs font-medium text-center leading-tight
-                {{ $type === $lt->value ? 'text-brand-700' : 'text-slate-600' }}">
+              <span :class="tp === '{{ $lt->value }}' ? 'text-brand-700' : 'text-slate-600'"
+                class="text-xs font-medium text-center leading-tight transition-colors duration-150">
                 {{ $lt->label() }}
               </span>
             </label>
           @endforeach
         </div>
-        @error('type') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        <div class="min-h-[18px] mt-1">
+          @error('type') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
       </div>
 
-      {{-- Date range --}}
-      <div class="grid grid-cols-2 gap-3">
+      {{-- Datetime range --}}
+      <div class="space-y-3">
         <div>
-          <label class="label">Tanggal Mulai <span class="text-red-500">*</span></label>
-          <input type="date" onclick="this.showPicker()" wire:model="start_date" class="input">
-          @error('start_date') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+          <label class="label">Mulai <span class="text-red-500">*</span></label>
+          <input type="datetime-local" onclick="this.showPicker()" wire:model="start_date" class="input">
+          <div class="min-h-[18px] mt-1">
+            @error('start_date') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
         </div>
         <div>
-          <label class="label">Tanggal Selesai <span class="text-red-500">*</span></label>
-          <input type="date" onclick="this.showPicker()" wire:model="end_date" class="input">
-          @error('end_date') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+          <label class="label">Selesai <span class="text-red-500">*</span></label>
+          <input type="datetime-local" onclick="this.showPicker()" wire:model="end_date" class="input">
+          <div class="min-h-[18px] mt-1">
+            @error('end_date') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
         </div>
       </div>
 
@@ -59,11 +66,13 @@
         <label class="label">Keterangan <span class="text-red-500">*</span></label>
         <textarea wire:model="reason" rows="3" class="input"
           placeholder="Jelaskan alasan pengajuan Anda (min. 10 karakter)"></textarea>
-        @error('reason') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        <div class="min-h-[18px] mt-1">
+          @error('reason') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
       </div>
 
       <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
+        <button type="button" @click="$wire.set('showForm', false, true)" class="btn-secondary">Batal</button>
         <button type="submit" class="btn-primary">Lanjutkan</button>
       </div>
     </form>
@@ -71,10 +80,13 @@
 
   {{-- Confirmation modal --}}
   <x-modal show="showConfirm" max-width="sm" title="Konfirmasi Pengajuan">
+    @php
+      $leaveType = \App\Enums\LeaveType::tryFrom($type);
+      $startDt = $start_date ? \Carbon\Carbon::parse($start_date) : null;
+      $endDt = $end_date ? \Carbon\Carbon::parse($end_date) : null;
+    @endphp
     <div class="space-y-4">
       <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-sm">
-        @php $leaveType = \App\Enums\LeaveType::tryFrom($type); @endphp
-
         <div class="flex items-center gap-3">
           @if ($leaveType)
             <div class="w-10 h-10 rounded-full bg-{{ $leaveType->color() }}-100 text-{{ $leaveType->color() }}-600 flex items-center justify-center shrink-0">
@@ -84,9 +96,8 @@
           <div>
             <p class="font-semibold text-slate-900">{{ $leaveType?->label() }}</p>
             <p class="text-xs text-slate-500 mt-0.5">
-              {{ \Carbon\Carbon::parse($start_date)->translatedFormat('d M Y') }}
-              @if ($start_date !== $end_date)
-                - {{\Carbon\Carbon::parse($end_date)->translatedFormat('d M Y') }}
+              @if ($startDt && $endDt)
+                {{ $startDt->translatedFormat('d M Y H:i') }} – {{ $endDt->translatedFormat('d M Y H:i') }}
               @endif
             </p>
           </div>
@@ -103,7 +114,7 @@
       </p>
 
       <div class="flex gap-2">
-        <button type="button" wire:click="$set('showConfirm', false)" class="btn-secondary flex-1">
+        <button type="button" @click="$wire.set('showConfirm', false, true)" class="btn-secondary flex-1">
           Ubah Data
         </button>
         <button type="button" wire:click="submit" wire:loading.attr="disabled" class="btn-primary flex-1">
@@ -151,10 +162,8 @@
                 </span>
               </div>
               <p class="text-xs text-slate-500 mt-1">
-                {{ $req->start_date->translatedFormat('d M Y') }}
-                @if (! $req->start_date->eq($req->end_date))
-                  - {{$req->end_date->translatedFormat('d M Y') }}
-                @endif
+                {{ $req->start_date->translatedFormat('d M Y H:i') }}
+                – {{ $req->end_date->translatedFormat('d M Y H:i') }}
               </p>
             </div>
           </div>

@@ -100,6 +100,9 @@
         </tbody>
       </table>
     </div>
+    @if ($payrolls->hasPages())
+      <div class="px-5 py-3 border-t border-slate-100">{{ $payrolls->links() }}</div>
+    @endif
   </div>
 </div>
 

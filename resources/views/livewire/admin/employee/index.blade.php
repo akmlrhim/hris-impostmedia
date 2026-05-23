@@ -1,7 +1,7 @@
 <div class="space-y-4">
   <x-page-header title="Daftar Karyawan" description="Kelola data seluruh karyawan.">
     <x-slot:action>
-      <button wire:click="open" class="btn-primary">Tambah Karyawan</button>
+      <button type="button" @click="$wire.set('showForm', true, true); $wire.open()" class="btn-primary">Tambah Karyawan</button>
     </x-slot:action>
   </x-page-header>
 
@@ -64,13 +64,14 @@
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                     Detail
                   </a>
-                  <button wire:click="open({{ $emp->id }})"
+                  <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $emp->id }})"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
                   </button>
-                  <button wire:click="delete({{ $emp->id }})" wire:confirm="Hapus karyawan {{ $emp->full_name }}? Tindakan ini tidak bisa dibatalkan."
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                    Hapus
+                  <button wire:click="toggleActive({{ $emp->id }})"
+                    wire:confirm="{{ $emp->is_active ? 'Nonaktifkan' : 'Aktifkan' }} karyawan {{ $emp->full_name }}?"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $emp->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
+                    {{ $emp->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                   </button>
                 </div>
               </td>

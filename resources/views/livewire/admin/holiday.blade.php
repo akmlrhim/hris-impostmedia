@@ -7,7 +7,7 @@
             <option value="{{ $y }}">{{ $y }}</option>
           @endforeach
         </select>
-        <button wire:click="open" class="btn-primary">Tambah</button>
+        <button type="button" @click="$wire.set('showForm', true, true); $wire.open()" class="btn-primary">Tambah</button>
       </div>
     </x-slot:action>
   </x-page-header>
@@ -39,7 +39,7 @@
       </label>
 
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
+        <button type="button" @click="$wire.set('showForm', false, true)" class="btn-secondary">Batal</button>
         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
           <span wire:loading.remove wire:target="save">Simpan</span>
           <span wire:loading wire:target="save">Menyimpan…</span>
@@ -50,6 +50,9 @@
 
   {{-- Table --}}
   <div class="card overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
+      <span>Menampilkan {{ $holidays->firstItem() ?? 0 }}–{{ $holidays->lastItem() ?? 0 }} dari {{ $holidays->total() }} hari libur</span>
+    </div>
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
@@ -81,7 +84,7 @@
               </td>
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-2">
-                  <button wire:click="open({{ $h->id }})"
+                  <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $h->id }})"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
                   </button>
@@ -103,5 +106,8 @@
         </tbody>
       </table>
     </div>
+    @if ($holidays->hasPages())
+      <div class="px-5 py-3 border-t border-slate-100">{{ $holidays->links() }}</div>
+    @endif
   </div>
 </div>

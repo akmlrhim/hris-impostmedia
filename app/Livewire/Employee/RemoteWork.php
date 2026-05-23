@@ -10,9 +10,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
-#[Title('Pengajuan WFA / WFH')]
+#[Title('Pengajuan WFA / WFH / WFC')]
 class RemoteWork extends Component
 {
+    public string $work_type = WorkType::WFA->value;
+
     public string $start_date = '';
 
     public string $end_date = '';
@@ -25,8 +27,15 @@ class RemoteWork extends Component
 
     public function mount(): void
     {
-        $this->start_date = now()->addDay()->toDateString();
-        $this->end_date = now()->addDay()->toDateString();
+        $this->resetDates();
+    }
+
+    private function resetDates(): void
+    {
+        $start = now()->addDay()->setTime(9, 0);
+        $end = $start->copy()->setTime(18, 0);
+        $this->start_date = $start->format('Y-m-d\TH:i');
+        $this->end_date = $end->format('Y-m-d\TH:i');
     }
 
     public function openForm(): void
@@ -34,17 +43,27 @@ class RemoteWork extends Component
         $employee = auth()->user()?->employee;
 
         if ($employee?->work_type !== WorkType::WFO) {
-            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA/WFH/WFC.');
 
             return;
         }
 
         $this->reset(['reason']);
-        $this->start_date = now()->addDay()->toDateString();
-        $this->end_date = now()->addDay()->toDateString();
+        $this->work_type = WorkType::WFA->value;
+        $this->resetDates();
         $this->resetValidation();
         $this->showForm = true;
         $this->showConfirm = false;
+    }
+
+    private function validationRules(): array
+    {
+        return [
+            'work_type' => 'required|in:'.implode(',', array_map(fn ($t) => $t->value, WorkType::remoteRequestable())),
+            'start_date' => 'required|date|after_or_equal:'.now()->startOfDay()->toDateTimeString(),
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string|min:10|max:500',
+        ];
     }
 
     public function requestConfirm(): void
@@ -52,16 +71,12 @@ class RemoteWork extends Component
         $employee = auth()->user()?->employee;
 
         if (! $employee || $employee->work_type !== WorkType::WFO) {
-            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA/WFH/WFC.');
 
             return;
         }
 
-        $this->validate([
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'reason' => 'required|string|min:10|max:500',
-        ]);
+        $this->validate($this->validationRules());
 
         $this->showConfirm = true;
     }
@@ -77,20 +92,16 @@ class RemoteWork extends Component
         }
 
         if ($employee->work_type !== WorkType::WFO) {
-            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA/WFH/WFC.');
 
             return;
         }
 
-        $this->validate([
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'reason' => 'required|string|min:10|max:500',
-        ]);
+        $this->validate($this->validationRules());
 
         RemoteWorkRequest::create([
             'employee_id' => $employee->id,
-            'work_type' => WorkType::WFA,
+            'work_type' => $this->work_type,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'reason' => $this->reason,
@@ -99,7 +110,7 @@ class RemoteWork extends Component
 
         $this->showForm = false;
         $this->showConfirm = false;
-        $this->dispatch('notify', type: 'success', message: 'Pengajuan WFA berhasil dikirim.');
+        $this->dispatch('notify', type: 'success', message: 'Pengajuan berhasil dikirim.');
     }
 
     public function cancel(int $id): void
@@ -129,6 +140,11 @@ class RemoteWork extends Component
         $isWfo = $employee?->work_type === WorkType::WFO;
         $todayApproved = $employee ? RemoteWorkRequest::approvedFor($employee->id, now()->toDateString()) : null;
 
-        return view('livewire.employee.remote-work', compact('requests', 'isWfo', 'todayApproved'));
+        return view('livewire.employee.remote-work', [
+            'requests' => $requests,
+            'isWfo' => $isWfo,
+            'todayApproved' => $todayApproved,
+            'requestableTypes' => WorkType::remoteRequestable(),
+        ]);
     }
 }

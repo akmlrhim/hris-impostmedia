@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Concerns\HandlesAdminActions;
 use App\Models\Attendance as AttendanceModel;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -14,7 +15,7 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class Attendance extends Component
 {
-    use WithPagination;
+    use HandlesAdminActions, WithPagination;
 
     #[Url]
     public string $date = '';
@@ -37,12 +38,6 @@ class Attendance extends Component
     public function updatingStatus(): void
     {
         $this->resetPage();
-    }
-
-    public function delete(int $id): void
-    {
-        AttendanceModel::findOrFail($id)->delete();
-        $this->dispatch('notify', type: 'success', message: 'Data absensi dihapus.');
     }
 
     public function render(): mixed

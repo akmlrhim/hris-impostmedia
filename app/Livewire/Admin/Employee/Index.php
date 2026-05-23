@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Employee;
 
+use App\Concerns\HandlesAdminActions;
 use App\Enums\EmploymentStatus;
 use App\Enums\UserRole;
+use App\Enums\WorkType;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +24,7 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class Index extends Component
 {
-    use WithFileUploads, WithPagination;
+    use HandlesAdminActions, WithFileUploads, WithPagination;
 
     #[Url(as: 'q')]
     public string $search = '';
@@ -65,6 +67,8 @@ class Index extends Component
 
     // Penempatan
     public string $employment_status = 'permanent';
+
+    public string $work_type = 'wfa';
 
     public ?string $join_date = null;
 
@@ -130,6 +134,7 @@ class Index extends Component
             'province',
             'postal_code',
             'employment_status',
+            'work_type',
             'join_date',
             'probation_end_date',
             'contract_end_date',
@@ -144,6 +149,7 @@ class Index extends Component
         $this->resetValidation();
         $this->gender = 'male';
         $this->employment_status = 'permanent';
+        $this->work_type = 'wfa';
         $this->is_active = true;
         $this->join_date = now()->toDateString();
 
@@ -165,6 +171,7 @@ class Index extends Component
             $this->postal_code = (string) $emp->postal_code;
             $this->existing_avatar_path = $emp->avatar_path;
             $this->employment_status = $emp->employment_status?->value ?? 'permanent';
+            $this->work_type = $emp->work_type?->value ?? 'wfa';
             $this->join_date = $emp->join_date?->format('Y-m-d');
             $this->probation_end_date = $emp->probation_end_date?->format('Y-m-d');
             $this->contract_end_date = $emp->contract_end_date?->format('Y-m-d');
@@ -206,7 +213,8 @@ class Index extends Component
             'province' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:10',
             'avatar' => 'nullable|image|max:2048',
-            'employment_status' => 'required',
+            'employment_status' => ['required', Rule::in(array_column(EmploymentStatus::cases(), 'value'))],
+            'work_type' => ['required', Rule::in(array_column(WorkType::cases(), 'value'))],
             'join_date' => 'required|date',
             'probation_end_date' => 'nullable|date|after_or_equal:join_date',
             'contract_end_date' => 'nullable|date|after_or_equal:join_date',
@@ -216,73 +224,78 @@ class Index extends Component
             'bank_account_holder' => 'nullable|string|max:200',
         ]);
 
-        $avatarPath = $this->existing_avatar_path;
-        if ($this->avatar) {
-            if ($this->existing_avatar_path) {
-                Storage::disk('local')->delete($this->existing_avatar_path);
-            }
-            $avatarPath = $this->avatar->store('avatars', 'local');
-        }
-
-        DB::transaction(function () use ($avatarPath): void {
-            if ($this->editingId) {
-                $emp = Employee::findOrFail($this->editingId);
-                $emp->user?->update([
-                    'name' => $this->full_name,
-                    'email' => $this->email,
-                ]);
-            } else {
-                $user = User::create([
-                    'name' => $this->full_name,
-                    'email' => $this->email,
-                    'password' => Hash::make('password'),
-                    'role' => UserRole::Employee,
-                    'email_verified_at' => now(),
-                ]);
-                $emp = new Employee(['user_id' => $user->id]);
+        $this->safeAction(function () {
+            $avatarPath = $this->existing_avatar_path;
+            if ($this->avatar) {
+                if ($this->existing_avatar_path) {
+                    Storage::disk('local')->delete($this->existing_avatar_path);
+                }
+                $avatarPath = $this->avatar->store('avatars', 'local');
             }
 
-            $emp->fill([
-                'employee_number' => $this->employee_number,
-                'full_name' => $this->full_name,
-                'nickname' => $this->nickname ?: null,
-                'phone' => $this->phone ?: null,
-                'gender' => $this->gender,
-                'date_of_birth' => $this->date_of_birth ?: null,
-                'place_of_birth' => $this->place_of_birth ?: null,
-                'religion' => $this->religion ?: null,
-                'address' => $this->address ?: null,
-                'city' => $this->city ?: null,
-                'province' => $this->province ?: null,
-                'postal_code' => $this->postal_code ?: null,
-                'avatar_path' => $avatarPath,
-                'employment_status' => $this->employment_status,
-                'join_date' => $this->join_date,
-                'probation_end_date' => $this->probation_end_date ?: null,
-                'contract_end_date' => $this->contract_end_date ?: null,
-                'is_active' => $this->is_active,
-                'basic_salary' => $this->basic_salary,
-                'bank_name' => $this->bank_name ?: null,
-                'bank_account_number' => $this->bank_account_number ?: null,
-                'bank_account_holder' => $this->bank_account_holder ?: null,
-            ])->save();
-        });
+            DB::transaction(function () use ($avatarPath): void {
+                if ($this->editingId) {
+                    $emp = Employee::findOrFail($this->editingId);
+                    $emp->user?->update([
+                        'name' => $this->full_name,
+                        'email' => $this->email,
+                    ]);
+                } else {
+                    $user = User::create([
+                        'name' => $this->full_name,
+                        'email' => $this->email,
+                        'password' => Hash::make('password'),
+                        'role' => UserRole::Employee,
+                        'email_verified_at' => now(),
+                    ]);
+                    $emp = new Employee(['user_id' => $user->id]);
+                }
 
-        $this->dispatch('notify', type: 'success', message: $this->editingId ? 'Karyawan diperbarui.' : 'Karyawan ditambahkan.');
-        $this->showForm = false;
-        $this->editingId = null;
+                $emp->fill([
+                    'employee_number' => $this->employee_number,
+                    'full_name' => $this->full_name,
+                    'nickname' => $this->nickname ?: null,
+                    'phone' => $this->phone ?: null,
+                    'gender' => $this->gender,
+                    'date_of_birth' => $this->date_of_birth ?: null,
+                    'place_of_birth' => $this->place_of_birth ?: null,
+                    'religion' => $this->religion ?: null,
+                    'address' => $this->address ?: null,
+                    'city' => $this->city ?: null,
+                    'province' => $this->province ?: null,
+                    'postal_code' => $this->postal_code ?: null,
+                    'avatar_path' => $avatarPath,
+                    'employment_status' => $this->employment_status,
+                    'work_type' => $this->work_type,
+                    'join_date' => $this->join_date,
+                    'probation_end_date' => $this->probation_end_date ?: null,
+                    'contract_end_date' => $this->contract_end_date ?: null,
+                    'is_active' => $this->is_active,
+                    'basic_salary' => $this->basic_salary,
+                    'bank_name' => $this->bank_name ?: null,
+                    'bank_account_number' => $this->bank_account_number ?: null,
+                    'bank_account_holder' => $this->bank_account_holder ?: null,
+                ])->save();
+            });
+
+            $this->toast('success', $this->editingId ? 'Karyawan diperbarui.' : 'Karyawan ditambahkan.');
+            $this->showForm = false;
+            $this->editingId = null;
+        }, permission: 'manage_employees', genericError: 'Gagal menyimpan data karyawan.');
     }
 
-    public function delete(int $id): void
+    public function toggleActive(int $id): void
     {
-        $emp = Employee::findOrFail($id);
-
-        if ($emp->avatar_path) {
-            Storage::disk('local')->delete($emp->avatar_path);
-        }
-
-        $emp->delete();
-        $this->dispatch('notify', type: 'success', message: 'Data karyawan dihapus.');
+        $this->safeAction(function () use ($id) {
+            $emp = Employee::findOrFail($id);
+            $emp->update(['is_active' => ! $emp->is_active]);
+            $this->logActivity(
+                $emp->is_active ? 'employee.activated' : 'employee.deactivated',
+                ($emp->is_active ? 'Mengaktifkan' : 'Menonaktifkan')." karyawan {$emp->full_name}",
+                $emp,
+            );
+            $this->toast('success', $emp->is_active ? 'Karyawan diaktifkan.' : 'Karyawan dinonaktifkan.');
+        }, permission: 'manage_employees', genericError: 'Gagal mengubah status karyawan.');
     }
 
     public function render(): mixed
@@ -299,6 +312,7 @@ class Index extends Component
         return view('livewire.admin.employee.index', [
             'employees' => $employees,
             'employmentStatuses' => EmploymentStatus::cases(),
+            'workTypes' => WorkType::cases(),
         ]);
     }
 }

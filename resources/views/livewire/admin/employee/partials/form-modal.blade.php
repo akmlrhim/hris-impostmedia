@@ -185,7 +185,7 @@
     </div>
 
     <div class="flex flex-wrap gap-2 justify-end pt-4 border-t border-slate-100">
-      <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
+      <button type="button" @click="$wire.set('showForm', false, true)" class="btn-secondary">Batal</button>
       <button type="submit" class="btn-primary" wire:loading.attr="disabled">
         <span wire:loading.remove wire:target="save">Simpan</span>
         <span wire:loading wire:target="save">Menyimpan…</span>

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Payroll;
 
+use App\Concerns\HandlesAdminActions;
 use App\Models\PayrollPeriod;
 use App\Services\Payroll\PayrollGenerator;
 use Illuminate\Support\Carbon;
@@ -16,7 +17,7 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class Index extends Component
 {
-    use WithPagination;
+    use HandlesAdminActions, WithPagination;
 
     public bool $showForm = false;
 
@@ -43,40 +44,49 @@ class Index extends Component
         $this->showForm = true;
     }
 
-    public function createPeriod(PayrollGenerator $generator): void
+    public function createPeriod(PayrollGenerator $generator): mixed
     {
         $this->validate();
 
-        $start = Carbon::create($this->year, $this->month, 1)->startOfMonth();
-        $end = $start->copy()->endOfMonth();
+        return $this->safeAction(function () use ($generator) {
+            $start = Carbon::create($this->year, $this->month, 1)->startOfMonth();
+            $end = $start->copy()->endOfMonth();
 
-        $period = PayrollPeriod::firstOrCreate(
-            ['year' => $this->year, 'month' => $this->month],
-            [
-                'code' => sprintf('PR-%d-%02d', $this->year, $this->month),
-                'start_date' => $start->toDateString(),
-                'end_date' => $end->toDateString(),
-                'payment_date' => $this->payment_date,
-                'status' => 'draft',
-            ]
-        );
+            $period = PayrollPeriod::firstOrCreate(
+                ['year' => $this->year, 'month' => $this->month],
+                [
+                    'code' => sprintf('PR-%d-%02d', $this->year, $this->month),
+                    'start_date' => $start->toDateString(),
+                    'end_date' => $end->toDateString(),
+                    'payment_date' => $this->payment_date,
+                    'status' => 'draft',
+                ]
+            );
 
-        $generator->generateForPeriod($period);
+            $generator->generateForPeriod($period);
 
-        $this->showForm = false;
-        session()->flash('success', "Periode {$period->code} berhasil digenerate.");
-        $this->redirect(route('admin.payroll.show', $period->id), navigate: false);
+            $this->showForm = false;
+            $this->logActivity('payroll.period_created', "Generate periode payroll {$period->code}", $period);
+            $this->toast('success', "Periode {$period->code} berhasil digenerate.");
+
+            return $this->redirect(route('admin.payroll.show', $period->id), navigate: false);
+        }, permission: 'manage_payroll', genericError: 'Gagal generate periode payroll.');
     }
 
     public function delete(int $id): void
     {
-        $period = PayrollPeriod::findOrFail($id);
-        if ($period->locked_at) {
-            session()->flash('error', 'Periode sudah dikunci, tidak dapat dihapus.');
+        $this->safeAction(function () use ($id) {
+            $period = PayrollPeriod::findOrFail($id);
+            if ($period->locked_at) {
+                $this->toast('warning', 'Periode sudah dikunci, tidak dapat dihapus.');
 
-            return;
-        }
-        $period->delete();
+                return;
+            }
+            $code = $period->code;
+            $period->delete();
+            $this->logActivity('payroll.period_deleted', "Menghapus periode payroll {$code}", null, ['id' => $id, 'code' => $code]);
+            $this->toast('success', 'Periode dihapus.');
+        }, permission: 'manage_payroll', genericError: 'Gagal menghapus periode.');
     }
 
     public function render(): mixed

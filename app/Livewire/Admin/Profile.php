@@ -2,15 +2,19 @@
 
 namespace App\Livewire\Admin;
 
+use App\Concerns\HandlesAdminActions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Title('Profil Saya')]
 #[Layout('components.layouts.admin')]
 class Profile extends Component
 {
+    use HandlesAdminActions;
+
     public string $name = '';
 
     public string $email = '';
@@ -37,12 +41,14 @@ class Profile extends Component
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
         ]);
 
-        $user->update([
-            'name' => $this->name,
-            'email' => $this->email,
-        ]);
+        $this->safeAction(function () use ($user) {
+            $user->update([
+                'name' => $this->name,
+                'email' => $this->email,
+            ]);
 
-        $this->dispatch('notify', type: 'success', message: 'Profil berhasil disimpan.');
+            $this->toast('success', 'Profil berhasil disimpan.');
+        }, genericError: 'Gagal menyimpan profil.');
     }
 
     public function changePassword(): void
@@ -60,10 +66,12 @@ class Profile extends Component
             return;
         }
 
-        $user->update(['password' => Hash::make($this->new_password)]);
-        $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
+        $this->safeAction(function () use ($user) {
+            $user->update(['password' => Hash::make($this->new_password)]);
+            $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
 
-        $this->dispatch('notify', type: 'success', message: 'Kata sandi berhasil diubah.');
+            $this->toast('success', 'Kata sandi berhasil diubah.');
+        }, genericError: 'Gagal mengubah kata sandi.');
     }
 
     public function render(): mixed

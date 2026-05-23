@@ -1,7 +1,7 @@
 <div class="space-y-4">
   <x-page-header title="Periode Payroll" description="Generate & kelola perhitungan gaji bulanan.">
     <x-slot:action>
-      <button wire:click="openForm" class="btn-primary">Generate Periode</button>
+      <button type="button" @click="$wire.set('showForm', true, true); $wire.openForm()" class="btn-primary">Generate Periode</button>
     </x-slot:action>
   </x-page-header>
 
@@ -37,7 +37,7 @@
         dan komponen yang tersedia. Periode existing dengan status <em>draft</em> akan ditimpa.
       </p>
       <div class="flex flex-wrap gap-2 justify-end pt-2 border-t border-slate-100">
-        <button type="button" wire:click="$set('showForm', false)" class="btn-secondary">Batal</button>
+        <button type="button" @click="$wire.set('showForm', false, true)" class="btn-secondary">Batal</button>
         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
           <span wire:loading.remove wire:target="createPeriod">Generate Sekarang</span>
           <span wire:loading wire:target="createPeriod">Memproses…</span>

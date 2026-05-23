@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Concerns\HandlesAdminActions;
 use App\Enums\LeaveStatus;
 use App\Models\LeaveRequest;
 use Illuminate\Support\Facades\Gate;
@@ -14,7 +15,7 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class Leave extends Component
 {
-    use WithPagination;
+    use HandlesAdminActions, WithPagination;
 
     public string $filterStatus = 'pending';
 
@@ -43,14 +44,23 @@ class Leave extends Component
 
     public function approve(int $id): void
     {
-        $request = LeaveRequest::findOrFail($id);
-        $request->update([
-            'status' => LeaveStatus::Approved,
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'rejection_reason' => null,
-        ]);
-        $this->dispatch('notify', type: 'success', message: 'Pengajuan disetujui.');
+        $this->safeAction(function () use ($id) {
+            $request = LeaveRequest::with('employee')->findOrFail($id);
+            $request->update([
+                'status' => LeaveStatus::Approved,
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+                'rejection_reason' => null,
+            ]);
+            $range = $request->start_date->format('d M Y H:i').' - '.$request->end_date->format('d M Y H:i');
+            $this->logActivity(
+                'leave.approved',
+                "Menyetujui {$request->type?->label()} {$request->employee?->full_name} ({$range})",
+                $request,
+                ['start' => $request->start_date->toIso8601String(), 'end' => $request->end_date->toIso8601String()],
+            );
+            $this->toast('success', 'Pengajuan disetujui.');
+        }, permission: 'manage_leave', genericError: 'Gagal menyetujui pengajuan.');
     }
 
     public function openRejectForm(int $id): void
@@ -65,21 +75,41 @@ class Leave extends Component
     {
         $this->validate(['rejectionReason' => 'required|string|min:5|max:500']);
 
-        LeaveRequest::findOrFail($this->rejectingId)->update([
-            'status' => LeaveStatus::Rejected,
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'rejection_reason' => $this->rejectionReason,
-        ]);
+        $this->safeAction(function () {
+            $request = LeaveRequest::with('employee')->findOrFail($this->rejectingId);
+            $request->update([
+                'status' => LeaveStatus::Rejected,
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+                'rejection_reason' => $this->rejectionReason,
+            ]);
 
-        $this->showRejectForm = false;
-        $this->dispatch('notify', type: 'success', message: 'Pengajuan ditolak.');
+            $range = $request->start_date->format('d M Y H:i').' - '.$request->end_date->format('d M Y H:i');
+            $this->logActivity(
+                'leave.rejected',
+                "Menolak {$request->type?->label()} {$request->employee?->full_name} ({$range})",
+                $request,
+                ['reason' => $this->rejectionReason, 'start' => $request->start_date->toIso8601String(), 'end' => $request->end_date->toIso8601String()],
+            );
+            $this->showRejectForm = false;
+            $this->toast('success', 'Pengajuan ditolak.');
+        }, permission: 'manage_leave', genericError: 'Gagal menolak pengajuan.');
     }
 
     public function delete(int $id): void
     {
-        LeaveRequest::findOrFail($id)->delete();
-        $this->dispatch('notify', type: 'success', message: 'Pengajuan cuti/izin dihapus.');
+        $this->safeAction(function () use ($id) {
+            $request = LeaveRequest::findOrFail($id);
+
+            if ($request->status !== LeaveStatus::Pending) {
+                $this->toast('warning', 'Pengajuan yang sudah diproses tidak bisa dihapus.');
+
+                return;
+            }
+
+            $request->delete();
+            $this->toast('success', 'Pengajuan cuti/izin dihapus.');
+        }, permission: 'manage_leave', genericError: 'Gagal menghapus pengajuan.');
     }
 
     public function render(): mixed

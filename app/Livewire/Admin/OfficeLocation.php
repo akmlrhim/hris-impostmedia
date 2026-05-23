@@ -2,16 +2,20 @@
 
 namespace App\Livewire\Admin;
 
+use App\Concerns\HandlesAdminActions;
 use App\Models\OfficeLocation as OfficeLocationModel;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Title('Lokasi Kantor')]
 #[Layout('components.layouts.admin')]
 class OfficeLocation extends Component
 {
+    use HandlesAdminActions, WithPagination;
+
     public bool $showForm = false;
 
     public ?int $editingId = null;
@@ -65,29 +69,38 @@ class OfficeLocation extends Component
     {
         $data = $this->validate();
 
-        if ($this->editingId) {
-            OfficeLocationModel::findOrFail($this->editingId)->update($data);
-            $this->dispatch('notify', type: 'success', message: 'Lokasi kantor diperbarui.');
-        } else {
-            OfficeLocationModel::create($data);
-            $this->dispatch('notify', type: 'success', message: 'Lokasi kantor ditambahkan.');
-        }
+        $this->safeAction(function () use ($data) {
+            if ($this->editingId) {
+                OfficeLocationModel::findOrFail($this->editingId)->update($data);
+                $this->toast('success', 'Lokasi kantor diperbarui.');
+            } else {
+                OfficeLocationModel::create($data);
+                $this->toast('success', 'Lokasi kantor ditambahkan.');
+            }
 
-        $this->showForm = false;
-        $this->editingId = null;
+            $this->showForm = false;
+            $this->editingId = null;
+        }, permission: 'manage_office_locations', genericError: 'Gagal menyimpan lokasi kantor.');
     }
 
     public function toggleActive(int $id): void
     {
-        $location = OfficeLocationModel::findOrFail($id);
-        $location->update(['is_active' => ! $location->is_active]);
-        $this->dispatch('notify', type: 'success', message: $location->is_active ? 'Lokasi diaktifkan.' : 'Lokasi dinonaktifkan.');
+        $this->safeAction(function () use ($id) {
+            $location = OfficeLocationModel::findOrFail($id);
+            $location->update(['is_active' => ! $location->is_active]);
+            $this->toast('success', $location->is_active ? 'Lokasi diaktifkan.' : 'Lokasi dinonaktifkan.');
+        }, permission: 'manage_office_locations', genericError: 'Gagal mengubah status lokasi.');
     }
 
     public function delete(int $id): void
     {
-        OfficeLocationModel::findOrFail($id)->delete();
-        $this->dispatch('notify', type: 'success', message: 'Lokasi kantor dihapus.');
+        $this->safeAction(function () use ($id) {
+            $loc = OfficeLocationModel::findOrFail($id);
+            $snapshot = $loc->only(['id', 'name', 'latitude', 'longitude']);
+            $loc->delete();
+            $this->logActivity('office_location.deleted', "Menghapus lokasi kantor {$snapshot['name']}", null, $snapshot);
+            $this->toast('success', 'Lokasi kantor dihapus.');
+        }, permission: 'manage_office_locations', genericError: 'Gagal menghapus lokasi kantor.');
     }
 
     public function mount(): void
@@ -98,7 +111,7 @@ class OfficeLocation extends Component
     public function render(): mixed
     {
         return view('livewire.admin.office-location', [
-            'locations' => OfficeLocationModel::orderBy('name')->get(),
+            'locations' => OfficeLocationModel::orderBy('name')->paginate(15),
         ]);
     }
 }

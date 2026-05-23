@@ -30,10 +30,10 @@
                   'gate' => 'manage_attendance',
               ],
               [
-                  'label' => 'Pengajuan WFA',
+                  'label' => 'Pengajuan Remote',
                   'route' => 'admin.remote-work',
                   'icon' => 'laptop',
-                  'gate' => 'manage_attendance',
+                  'gate' => 'manage_remote_work',
               ],
               [
                   'label' => 'Cuti & Izin',
@@ -57,7 +57,7 @@
                   'gate' => 'manage_office_locations',
               ],
           ];
-          $pendingWfa = auth()->user()?->can('manage_attendance')
+          $pendingWfa = auth()->user()?->can('manage_remote_work')
               ? \App\Models\RemoteWorkRequest::where('status', 'pending')->count()
               : 0;
           $pendingLeave = auth()->user()?->can('manage_leave')
@@ -105,6 +105,11 @@
               class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.access-control') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
               <x-icon name="shield-check" class="w-5 h-5 shrink-0" />
               <span>Hak Akses</span>
+            </a>
+            <a wire:navigate href="{{ route('admin.activity-log') }}"
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.activity-log') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              <x-icon name="clock" class="w-5 h-5 shrink-0" />
+              <span>Log Aktivitas</span>
             </a>
           </div>
         @endcan
@@ -177,11 +182,11 @@
       </header>
 
       <main class="flex-1 p-4 sm:p-6">
-        <x-alert-banner />
         {{ $slot }}
       </main>
     </div>
 
+    <x-admin-toast />
     <x-confirm-modal />
   </div>
 </x-layouts.app>

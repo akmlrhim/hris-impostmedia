@@ -54,7 +54,7 @@
             <span class="text-slate-600">{{ $item->component_name }}</span>
             <div class="flex items-center gap-2">
               <span class="font-medium text-slate-900 tabular-nums">{{ rupiah($item->amount) }}</span>
-              @if ($item->component_code !== 'BASIC')
+              @if ($item->component_code !== 'BASIC' && !$payroll->period->locked_at)
                 <button wire:click="removeItem({{ $item->id }})"
                   wire:confirm="Hapus item {{ $item->component_name }}?"
                   class="text-slate-300 hover:text-red-500 transition">
@@ -86,11 +86,13 @@
               </span>
               <div class="flex items-center gap-2">
                 <span class="font-medium text-red-600 tabular-nums">- {{ rupiah($item->amount) }}</span>
-                <button wire:click="removeItem({{ $item->id }})"
-                  wire:confirm="Hapus potongan {{ $item->component_name }}?"
-                  class="text-slate-300 hover:text-red-500 transition">
-                  <x-icon name="x" class="w-3.5 h-3.5" />
-                </button>
+                @if (!$payroll->period->locked_at)
+                  <button wire:click="removeItem({{ $item->id }})"
+                    wire:confirm="Hapus potongan {{ $item->component_name }}?"
+                    class="text-slate-300 hover:text-red-500 transition">
+                    <x-icon name="x" class="w-3.5 h-3.5" />
+                  </button>
+                @endif
               </div>
             </div>
           @endforeach
@@ -110,10 +112,16 @@
   </div>
 
   {{-- Tambah Item --}}
+  @if ($payroll->period->locked_at)
+    <div class="card p-4 bg-amber-50 border border-amber-200 text-sm text-amber-800 flex items-center gap-2">
+      <x-icon name="lock" class="w-4 h-4" />
+      Periode <strong>{{ $payroll->period->code }}</strong> sudah dikunci. Item slip tidak bisa diubah lagi.
+    </div>
+  @else
   <div class="card p-5">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-sm font-semibold text-slate-900">Tambah Item</h3>
-      <button wire:click="$toggle('showItemForm')" class="text-xs text-brand-600 hover:underline font-medium">
+      <button type="button" @click="$wire.set('showItemForm', !$wire.showItemForm, true)" class="text-xs text-brand-600 hover:underline font-medium">
         {{ $showItemForm ? 'Batal' : '+ Tambah' }}
       </button>
     </div>
@@ -196,7 +204,7 @@
         @endif
 
         <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
-          <button type="button" wire:click="$set('showItemForm', false)" class="btn-secondary">Batal</button>
+          <button type="button" @click="$wire.set('showItemForm', false, true)" class="btn-secondary">Batal</button>
           <button type="submit" class="btn-primary">Simpan Item</button>
         </div>
       </form>
@@ -204,4 +212,5 @@
       <p class="text-sm text-slate-400 text-center py-4">Klik "+ Tambah" untuk menambah bonus, tunjangan, atau potongan PPh 21.</p>
     @endif
   </div>
+  @endif
 </div>

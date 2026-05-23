@@ -2,6 +2,7 @@
 
 use App\Enums\UserRole;
 use App\Livewire\Admin\AccessControl as AdminAccessControl;
+use App\Livewire\Admin\ActivityLog as AdminActivityLog;
 use App\Livewire\Admin\Announcements as AdminAnnouncements;
 use App\Livewire\Admin\Attendance as AdminAttendance;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
@@ -71,7 +72,7 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/employees/{employee}', AdminEmployeeShow::class)->name('employees.show')->middleware('can:manage_employees');
 
         Route::get('/attendance', AdminAttendance::class)->name('attendance')->middleware('can:manage_attendance');
-        Route::get('/remote-work', AdminRemoteWork::class)->name('remote-work')->middleware('can:manage_attendance');
+        Route::get('/remote-work', AdminRemoteWork::class)->name('remote-work')->middleware('can:manage_remote_work');
         Route::get('/leave', AdminLeave::class)->name('leave')->middleware('can:manage_leave');
 
         Route::get('/shift', AdminShift::class)->name('shift')->middleware('can:manage_shifts');
@@ -85,6 +86,7 @@ Route::middleware(['auth', 'admin.panel'])
         // Pengaturan (SuperAdmin only)
         Route::get('/users', AdminUserManagement::class)->name('users')->middleware('can:manage_users');
         Route::get('/access-control', AdminAccessControl::class)->name('access-control')->middleware('can:manage_users');
+        Route::get('/activity-log', AdminActivityLog::class)->name('activity-log')->middleware('can:manage_users');
 
         Route::get('/profile', AdminProfileEdit::class)->name('profile');
     });
