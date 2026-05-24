@@ -69,8 +69,9 @@ jobs:
               git reset --hard origin/main
 
               COMPOSER_MEMORY_LIMIT=-1 composer install \
-                --no-interaction --prefer-dist --optimize-autoloader --no-dev
+                --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
+              $PHP artisan package:discover --ansi
               $PHP artisan migrate --force
               $PHP artisan storage:link || true
               chmod -R 775 storage bootstrap/cache
@@ -84,8 +85,9 @@ jobs:
               git reset --hard FETCH_HEAD
 
               COMPOSER_MEMORY_LIMIT=-1 composer install \
-                --no-interaction --prefer-dist --optimize-autoloader --no-dev
+                --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
+              $PHP artisan package:discover --ansi
               $PHP artisan migrate --force
               $PHP artisan optimize:clear
             fi
