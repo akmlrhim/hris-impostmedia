@@ -37,7 +37,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          port: 65002
           source: "public/build"
           target: "/home/u465920647/domains/impostmedia.com/public_html/hris.impostmedia.com/public"
           strip_components: 1
@@ -48,7 +48,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          port: 65002
           script: |
             APP=/home/u465920647/domains/impostmedia.com/public_html/hris.impostmedia.com
 
