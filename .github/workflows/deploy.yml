@@ -51,38 +51,47 @@ jobs:
           port: 65002
           script: |
             APP=/home/u465920647/domains/impostmedia.com/public_html/hris.impostmedia.com
+            REPO=https://${{ secrets.GH_TOKEN }}@github.com/akmlrhim/hris-impostmedia.git
 
             PHP=$(command -v php8.3 2>/dev/null \
               || command -v php83 2>/dev/null \
               || command -v php 2>/dev/null)
 
             echo "Menggunakan PHP: $PHP ($($PHP -r 'echo PHP_VERSION;'))"
+
+            if [ ! -d "$APP/.git" ]; then
+              echo "Pertama kali — cloning repository..."
+              git clone $REPO $APP
+              cd $APP
+
+              COMPOSER_MEMORY_LIMIT=-1 composer install \
+                --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+              $PHP artisan key:generate --force
+              $PHP artisan migrate --force
+              $PHP artisan storage:link || true
+              chmod -R 775 storage bootstrap/cache
+              echo "Clone selesai."
+            else
+              echo "Update — pulling latest code..."
+              cd $APP
+              $PHP artisan down || true
+
+              git pull $REPO main
+              git reset --hard FETCH_HEAD
+
+              COMPOSER_MEMORY_LIMIT=-1 composer install \
+                --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+              $PHP artisan migrate --force
+              $PHP artisan optimize:clear
+            fi
+
             cd $APP
-
-            $PHP artisan down || true
-
-            git pull https://${{ secrets.GH_TOKEN }}@github.com/akmlrhim/hris-impostmedia.git main
-            git reset --hard FETCH_HEAD
-
-            COMPOSER_MEMORY_LIMIT=-1 composer install \
-              --no-interaction --prefer-dist --optimize-autoloader --no-dev
-
-            $PHP artisan migrate --force
-            $PHP artisan optimize:clear
-
-            set_env() {
-              local KEY="$1" VAL="$2"
-              grep -q "^${KEY}=" .env \
-                && sed -i "s|^${KEY}=.*|${KEY}=${VAL}|" .env \
-                || echo "${KEY}=${VAL}" >> .env
-            }
-
             $PHP artisan config:cache
             $PHP artisan route:cache
             $PHP artisan event:cache
             $PHP artisan view:cache
-
             chmod -R 775 storage bootstrap/cache
-
             $PHP artisan up
             echo "Deploy sukses: $(date)"
