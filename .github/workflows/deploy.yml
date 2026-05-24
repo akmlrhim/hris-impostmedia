@@ -60,18 +60,21 @@ jobs:
             echo "Menggunakan PHP: $PHP ($($PHP -r 'echo PHP_VERSION;'))"
 
             if [ ! -d "$APP/.git" ]; then
-              echo "Pertama kali — cloning repository..."
-              git clone $REPO $APP
+              echo "Pertama kali — setup repository..."
+              mkdir -p $APP
               cd $APP
+              git init
+              git remote add origin $REPO
+              git fetch origin main
+              git reset --hard origin/main
 
               COMPOSER_MEMORY_LIMIT=-1 composer install \
                 --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-              $PHP artisan key:generate --force
               $PHP artisan migrate --force
               $PHP artisan storage:link || true
               chmod -R 775 storage bootstrap/cache
-              echo "Clone selesai."
+              echo "Setup awal selesai."
             else
               echo "Update — pulling latest code..."
               cd $APP
