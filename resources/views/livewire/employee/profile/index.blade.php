@@ -9,7 +9,10 @@
 				@endif
 			</div>
 			<h1 class="text-xl font-bold mt-3">{{ $employee?->full_name ?? auth()->user()->name }}</h1>
-			<p class="text-sm text-brand-100">{{ $employee?->work_type?->label() ?? '-' }}</p>
+			@if ($employee?->position)
+				<p class="text-sm font-medium text-white/90 mt-0.5">{{ $employee->position }}</p>
+			@endif
+			<p class="text-sm text-brand-100 {{ $employee?->position ? '' : 'mt-0.5' }}">{{ $employee?->work_type?->label() ?? '-' }}</p>
 			<p class="text-xs text-brand-200 mt-0.5">No. Karyawan: {{ $employee?->employee_number ?? '-' }}</p>
 		</div>
 	</div>
@@ -19,6 +22,7 @@
 			@php
 				$rows = [
 					['label' => 'Email', 'value' => auth()->user()->email],
+					['label' => 'Jabatan', 'value' => $employee?->position ?? '-'],
 					['label' => 'NIK', 'value' => $employee?->nik ?? '-'],
 					['label' => 'Tipe Kerja', 'value' => $employee?->work_type?->label() ?? '-'],
 					['label' => 'Mulai Kontrak', 'value' => $employee?->contract_start_date?->translatedFormat('d M Y') ?? '-'],

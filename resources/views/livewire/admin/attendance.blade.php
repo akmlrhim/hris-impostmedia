@@ -15,28 +15,41 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs border border-slate-200 font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-5 py-3">Karyawan</th>
-            <th class="px-5 py-3">Tanggal</th>
-            <th class="px-5 py-3">Check-in</th>
-            <th class="px-5 py-3">Check-out</th>
-            <th class="px-5 py-3">Terlambat</th>
-            <th class="px-5 py-3">Status</th>
+            <th class="px-3 sm:px-5 py-3">Karyawan</th>
+            <th class="hidden sm:table-cell px-5 py-3">Tanggal</th>
+            <th class="hidden sm:table-cell px-5 py-3">Check-in</th>
+            <th class="hidden sm:table-cell px-5 py-3">Check-out</th>
+            <th class="hidden sm:table-cell px-5 py-3">Terlambat</th>
+            <th class="px-3 sm:px-5 py-3">Status</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($attendances as $att)
             <tr class="hover:bg-slate-50">
-              <td class="px-5 py-3">
+              <td class="px-3 sm:px-5 py-3">
                 <p class="font-medium text-slate-900">{{ $att->employee->full_name }}</p>
                 <p class="text-xs text-slate-500">{{ $att->employee->employee_number }}</p>
+                {{-- Mobile only: date + check-in/out --}}
+                <div class="sm:hidden mt-1 space-y-0.5">
+                  <p class="text-[11px] text-slate-500">{{ $att->attendance_date->translatedFormat('d M Y') }}</p>
+                  <p class="text-[11px] text-slate-500">
+                    Masuk: <span class="font-medium text-slate-700">{{ $att->check_in_at?->format('H:i') ?? '-' }}</span>
+                    &nbsp;·&nbsp;
+                    Keluar: <span class="font-medium text-slate-700">{{ $att->check_out_at?->format('H:i') ?? '-' }}</span>
+                    @if ($att->late_minutes > 0)
+                      &nbsp;·&nbsp;
+                      <span class="text-amber-600 font-medium">{{ $att->late_minutes }} mnt</span>
+                    @endif
+                  </p>
+                </div>
               </td>
-              <td class="px-5 py-3">{{ $att->attendance_date->translatedFormat('d M Y') }}</td>
-              <td class="px-5 py-3">{{ $att->check_in_at?->format('H:i') ?? '-' }}</td>
-              <td class="px-5 py-3">{{ $att->check_out_at?->format('H:i') ?? '-' }}</td>
-              <td class="px-5 py-3">
+              <td class="hidden sm:table-cell px-5 py-3">{{ $att->attendance_date->translatedFormat('d M Y') }}</td>
+              <td class="hidden sm:table-cell px-5 py-3">{{ $att->check_in_at?->format('H:i') ?? '-' }}</td>
+              <td class="hidden sm:table-cell px-5 py-3">{{ $att->check_out_at?->format('H:i') ?? '-' }}</td>
+              <td class="hidden sm:table-cell px-5 py-3">
                 {{ $att->late_minutes > 0 ? $att->late_minutes . ' mnt' : '-' }}
               </td>
-              <td class="px-5 py-3">
+              <td class="px-3 sm:px-5 py-3">
                 <span class="badge bg-{{ $att->status?->color() }}-100 text-{{ $att->status?->color() }}-700">
                   {{ $att->status?->label() }}
                 </span>

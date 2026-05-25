@@ -18,7 +18,10 @@ use App\Livewire\Admin\Profile as AdminProfileEdit;
 use App\Livewire\Admin\RemoteWork as AdminRemoteWork;
 use App\Livewire\Admin\Shift as AdminShift;
 use App\Livewire\Admin\UserManagement as AdminUserManagement;
+use App\Livewire\Auth\ForgotPassword;
 use App\Livewire\Auth\Login;
+use App\Livewire\Auth\ResetPassword;
+use App\Livewire\Auth\VerifyEmail;
 use App\Livewire\Employee\AnnouncementShow as MobileAnnouncementShow;
 use App\Livewire\Employee\Attendance as MobileAttendance;
 use App\Livewire\Employee\Directory as MobileDirectory;
@@ -31,6 +34,7 @@ use App\Livewire\Employee\Profile\Face as MobileProfileFace;
 use App\Livewire\Employee\Profile\Index as MobileProfile;
 use App\Livewire\Employee\RemoteWork as MobileRemoteWork;
 use App\Models\Employee;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -51,6 +55,19 @@ Route::view('/offline', 'offline')->name('offline');
 // --- Auth ---
 Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
+    Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
+    Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
+});
+
+// Email verification
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', VerifyEmail::class)->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+
+        return redirect()->route('mobile.home');
+    })->middleware('signed')->name('verification.verify');
 });
 
 Route::post('/logout', function () {

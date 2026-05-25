@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'date_of_birth',
     'place_of_birth',
     'work_type',
+    'position',
     'phone',
     'nik',
     'email',

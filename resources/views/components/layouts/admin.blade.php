@@ -10,7 +10,7 @@
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
       <div class="h-16 flex items-center justify-between px-5 border-b border-slate-200">
         <div class="flex items-center gap-2">
-          <img src="{{ asset('logo.webp') }}" class="w-9 h-9 rounded-lg flex items-center justify-center" alt="Logo">
+          <img src="{{ asset('logo.webp') }}" class="w-9 h-9 rounded-lg object-contain" alt="Logo">
           <span class="font-semibold text-lg text-slate-900">Impost Media</span>
         </div>
         <button @click="sidebarOpen = false" class="lg:hidden p-1 rounded hover:bg-slate-100">
@@ -162,7 +162,7 @@
               @if (auth()->user()?->employee)
                 <a wire:navigate href="{{ route('mobile.home') }}"
                   class="flex items-center gap-2 px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">
-                  <x-icon name="smartphone" class="w-4 h-4" /> Beralih ke Mode Karyawan
+                  <x-icon name="smartphone" class="w-4 h-4" /> Mode Karyawan
                 </a>
               @endif
               <form method="POST" action="{{ route('logout') }}">

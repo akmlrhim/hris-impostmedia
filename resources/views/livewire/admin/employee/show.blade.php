@@ -1,4 +1,4 @@
-<div class="space-y-5">
+<div class="space-y-5" x-data="{ showSalary: false }">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
             <a wire:navigate href="{{ route('admin.employees') }}" class="text-slate-600 hover:text-slate-900">
@@ -41,6 +41,9 @@
                     @endif
                 </div>
                 <p class="text-sm text-slate-500 mt-0.5">{{ $employee->user?->email ?? $employee->email }}</p>
+                @if ($employee->position)
+                    <p class="text-sm font-medium text-slate-700 mt-0.5">{{ $employee->position }}</p>
+                @endif
                 <div class="flex flex-wrap gap-2 mt-2">
                     @if ($employee->work_type)
                         <span class="badge bg-{{ $employee->work_type->color() }}-100 text-{{ $employee->work_type->color() }}-700">
@@ -69,8 +72,18 @@
             <p class="text-2xl font-bold text-amber-600 mt-1">{{ $attendanceStats['late'] }}</p>
         </div>
         <div class="card p-4">
-            <p class="text-xs uppercase text-slate-500">Gaji Pokok</p>
-            <p class="text-lg font-bold text-slate-900 mt-1">{{ rupiah($employee->basic_salary) }}</p>
+            <div class="flex items-center justify-between">
+                <p class="text-xs uppercase text-slate-500">Gaji Pokok</p>
+                <button type="button" @click="showSalary = !showSalary"
+                    class="text-slate-400 hover:text-slate-600 transition">
+                    <x-icon name="eye" class="w-3.5 h-3.5" x-show="!showSalary" />
+                    <x-icon name="eye-off" class="w-3.5 h-3.5" x-show="showSalary" x-cloak />
+                </button>
+            </div>
+            <p class="text-lg font-bold text-slate-900 mt-1">
+                <span x-show="showSalary" x-cloak>{{ rupiah($employee->basic_salary) }}</span>
+                <span x-show="!showSalary" class="tracking-widest text-slate-400 text-base">••••••</span>
+            </p>
         </div>
         <div class="card p-4">
             <p class="text-xs uppercase text-slate-500">Mulai Kontrak</p>
@@ -86,6 +99,7 @@
                 @php
                     $identity = [
                         'Nomor Karyawan' => $employee->employee_number,
+                        'Jabatan / Posisi' => $employee->position,
                         'NIK' => $employee->nik,
                         'Nama Panggilan' => $employee->nickname,
                         'Jenis Kelamin' => $employee->gender === 'male' ? 'Laki-laki' : ($employee->gender === 'female' ? 'Perempuan' : '-'),
@@ -128,17 +142,31 @@
 
         {{-- Bank & Salary --}}
         <div class="card p-5">
-            <h3 class="text-sm font-semibold text-slate-900 mb-3">Penggajian</h3>
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-slate-900">Penggajian</h3>
+                <button type="button" @click="showSalary = !showSalary"
+                    class="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition">
+                    <x-icon name="eye" class="w-3.5 h-3.5" x-show="!showSalary" />
+                    <x-icon name="eye-off" class="w-3.5 h-3.5" x-show="showSalary" x-cloak />
+                    <span x-text="showSalary ? 'Sembunyikan' : 'Tampilkan gaji'"></span>
+                </button>
+            </div>
             <dl class="divide-y divide-slate-100 text-sm">
+                <div class="flex justify-between gap-3 py-2">
+                    <dt class="text-slate-500">Gaji Pokok</dt>
+                    <dd class="text-slate-900 font-medium text-right">
+                        <span x-show="showSalary" x-cloak>{{ rupiah($employee->basic_salary) }}</span>
+                        <span x-show="!showSalary" class="tracking-widest text-slate-400">••••••</span>
+                    </dd>
+                </div>
                 @php
-                    $salary = [
-                        'Gaji Pokok' => rupiah($employee->basic_salary),
+                    $bankFields = [
                         'Bank' => $employee->bank_name,
                         'No. Rekening' => $employee->bank_account_number,
                         'Atas Nama' => $employee->bank_account_holder,
                     ];
                 @endphp
-                @foreach ($salary as $k => $v)
+                @foreach ($bankFields as $k => $v)
                     <div class="flex justify-between gap-3 py-2">
                         <dt class="text-slate-500">{{ $k }}</dt>
                         <dd class="text-slate-900 font-medium text-right">{{ $v ?: '-' }}</dd>

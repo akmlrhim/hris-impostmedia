@@ -133,8 +133,9 @@ class UserManagement extends Component
             if ($isNew) {
                 $data['password'] = Hash::make($this->password);
                 $user = User::create($data);
+                $user->sendEmailVerificationNotification();
                 $this->logActivity('user.created', "Membuat pengguna {$user->name} ({$user->email})", $user, ['roles' => $user->roles]);
-                $this->toast('success', 'Pengguna berhasil dibuat.');
+                $this->toast('success', 'Pengguna berhasil dibuat. Email verifikasi telah dikirim.');
             } else {
                 $user = User::findOrFail($this->editingId);
                 $user->update($data);

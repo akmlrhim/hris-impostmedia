@@ -1,5 +1,15 @@
 <x-layouts.app :title="$title ?? 'App'">
   <div class="mobile-shell safe-bottom">
+    @auth
+      @if (! auth()->user()->hasVerifiedEmail())
+        <div class="bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center gap-2 text-xs text-amber-800">
+          <x-icon name="mail" class="w-4 h-4 shrink-0" />
+          <span class="flex-1">Email Anda belum diverifikasi.</span>
+          <a href="{{ route('verification.notice') }}" wire:navigate class="font-semibold underline shrink-0">Verifikasi</a>
+        </div>
+      @endif
+    @endauth
+
     {{ $slot }}
 
     {{-- Bottom nav: floating dark pill with raised center action --}}

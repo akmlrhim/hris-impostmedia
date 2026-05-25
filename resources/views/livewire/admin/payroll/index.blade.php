@@ -51,22 +51,32 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-5 py-3">Periode</th>
-            <th class="px-5 py-3">Tanggal</th>
-            <th class="px-5 py-3">Pembayaran</th>
-            <th class="px-5 py-3 text-right">Karyawan</th>
-            <th class="px-5 py-3">Status</th>
-            <th class="px-5 py-3 text-right">Aksi</th>
+            <th class="px-3 sm:px-5 py-3">Periode</th>
+            <th class="hidden sm:table-cell px-5 py-3">Tanggal</th>
+            <th class="hidden sm:table-cell px-5 py-3">Pembayaran</th>
+            <th class="hidden sm:table-cell px-5 py-3 text-right">Karyawan</th>
+            <th class="px-3 sm:px-5 py-3">Status</th>
+            <th class="px-3 sm:px-5 py-3 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($periods as $p)
             <tr class="hover:bg-slate-50">
-              <td class="px-5 py-3 font-medium">{{ $p->code }}</td>
-              <td class="px-5 py-3">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</td>
-              <td class="px-5 py-3">{{ $p->payment_date?->translatedFormat('d M Y') ?? '-' }}</td>
-              <td class="px-5 py-3 text-right">{{ $p->payrolls_count }}</td>
-              <td class="px-5 py-3">
+              <td class="px-3 sm:px-5 py-3">
+                <p class="font-medium text-slate-900">{{ $p->code }}</p>
+                {{-- Mobile only: date range + payment date --}}
+                <div class="sm:hidden mt-0.5 space-y-0.5">
+                  <p class="text-xs text-slate-500">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</p>
+                  @if ($p->payment_date)
+                    <p class="text-[11px] text-slate-400">Bayar: {{ $p->payment_date->translatedFormat('d M Y') }}</p>
+                  @endif
+                  <p class="text-[11px] text-slate-400">{{ $p->payrolls_count }} karyawan</p>
+                </div>
+              </td>
+              <td class="hidden sm:table-cell px-5 py-3">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</td>
+              <td class="hidden sm:table-cell px-5 py-3">{{ $p->payment_date?->translatedFormat('d M Y') ?? '-' }}</td>
+              <td class="hidden sm:table-cell px-5 py-3 text-right">{{ $p->payrolls_count }}</td>
+              <td class="px-3 sm:px-5 py-3">
                 @php
                   $color = match ($p->status) {
                       'paid' => 'emerald',
@@ -78,16 +88,16 @@
                 <span
                   class="badge bg-{{ $color }}-100 text-{{ $color }}-700 capitalize">{{ $p->status }}</span>
               </td>
-              <td class="px-5 py-3">
-                <div class="flex items-center justify-end gap-2">
+              <td class="px-3 sm:px-5 py-3">
+                <div class="flex items-center justify-end gap-1 sm:gap-2">
                   <a wire:navigate href="{{ route('admin.payroll.show', $p) }}"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
+                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                     Detail
                   </a>
                   @if (!$p->locked_at)
                     <button wire:click="delete({{ $p->id }})"
                       wire:confirm="Hapus periode ini? Semua slip gaji terkait akan ikut terhapus."
-                      class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                      class="px-2 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
                       Hapus
                     </button>
                   @endif

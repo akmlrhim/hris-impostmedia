@@ -145,7 +145,13 @@
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
         </div>
-        <div></div>
+        <div>
+          <label class="label">Jabatan / Posisi</label>
+          <input wire:model="position" class="input" placeholder="Mis. BDS, DMS, CEO, Admin">
+          @error('position')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+        </div>
         <div>
           <label class="label">Mulai Kontrak</label>
           <input type="date" onclick="this.showPicker()" wire:model="contract_start_date" class="input">
@@ -168,12 +174,27 @@
     </div>
 
     {{-- Penggajian & Bank --}}
-    <div class="pt-4 border-t border-slate-100">
-      <h4 class="text-sm font-semibold text-slate-900 mb-2">Penggajian & Bank</h4>
+    <div class="pt-4 border-t border-slate-100" x-data="{ showSalary: false }">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="text-sm font-semibold text-slate-900">Penggajian & Bank</h4>
+        <button type="button" @click="showSalary = !showSalary"
+          class="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition">
+          <x-icon name="eye" class="w-3.5 h-3.5" x-show="!showSalary" />
+          <x-icon name="eye-off" class="w-3.5 h-3.5" x-show="showSalary" x-cloak />
+          <span x-text="showSalary ? 'Sembunyikan Gaji' : 'Tampilkan Gaji'"></span>
+        </button>
+      </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="sm:col-span-2">
           <label class="label">Gaji Pokok <span class="text-red-500">*</span></label>
-          <x-currency-input wire-model="basic_salary" />
+          <div x-show="showSalary" x-cloak>
+            <x-currency-input wire-model="basic_salary" />
+          </div>
+          <button type="button" x-show="!showSalary" class="input w-full flex items-center bg-slate-50 text-left"
+            @click="showSalary = true">
+            <span class="tracking-widest text-slate-400 text-base">••••••••</span>
+            <span class="ml-auto text-xs text-slate-400">Klik untuk tampilkan</span>
+          </button>
           @error('basic_salary')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror

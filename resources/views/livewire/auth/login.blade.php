@@ -44,10 +44,15 @@
         <x-password-input name="password" />
       </div>
 
-      <label class="flex items-center gap-2 text-sm text-slate-600">
-        <input type="checkbox" wire:model="remember" class="rounded border-slate-300">
-        Ingat saya
-      </label>
+      <div class="flex items-center justify-between">
+        <label class="flex items-center gap-2 text-sm text-slate-600">
+          <input type="checkbox" wire:model="remember" class="rounded border-slate-300">
+          Ingat saya
+        </label>
+        <a href="{{ route('password.request') }}" wire:navigate class="text-sm text-brand-600 hover:underline">
+          Lupa kata sandi?
+        </a>
+      </div>
 
       <button type="submit" class="btn-primary w-full" wire:loading.attr="disabled">
         <span wire:loading.remove wire:target="login">Masuk</span>

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Observers\AnnouncementObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(AnnouncementObserver::class)]
 #[Fillable([
     'author_id',
     'title',

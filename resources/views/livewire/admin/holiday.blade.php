@@ -57,40 +57,51 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-5 py-3 w-40">Tanggal</th>
-            <th class="px-5 py-3 w-28">Hari</th>
-            <th class="px-5 py-3">Nama</th>
-            <th class="px-5 py-3 w-32">Tipe</th>
-            <th class="px-5 py-3 text-right">Aksi</th>
+            <th class="px-3 sm:px-5 py-3">Tanggal</th>
+            <th class="hidden sm:table-cell px-5 py-3">Hari</th>
+            <th class="px-3 sm:px-5 py-3">Nama</th>
+            <th class="hidden sm:table-cell px-5 py-3">Tipe</th>
+            <th class="px-3 sm:px-5 py-3 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($holidays as $h)
             <tr class="hover:bg-slate-50">
-              <td class="px-5 py-3 text-slate-700">{{ $h->date->translatedFormat('d M Y') }}</td>
-              <td class="px-5 py-3 text-slate-500">{{ $h->date->translatedFormat('l') }}</td>
-              <td class="px-5 py-3">
+              <td class="px-3 sm:px-5 py-3 text-slate-700 whitespace-nowrap">
+                <p>{{ $h->date->translatedFormat('d M Y') }}</p>
+                <p class="text-xs text-slate-400 sm:hidden">{{ $h->date->translatedFormat('l') }}</p>
+              </td>
+              <td class="hidden sm:table-cell px-5 py-3 text-slate-500">{{ $h->date->translatedFormat('l') }}</td>
+              <td class="px-3 sm:px-5 py-3">
                 <p class="font-medium text-slate-900">{{ $h->name }}</p>
                 @if ($h->description)
                   <p class="text-xs text-slate-500">{{ $h->description }}</p>
                 @endif
+                {{-- Mobile only: type badge --}}
+                <div class="mt-0.5 sm:hidden">
+                  @if ($h->is_national)
+                    <span class="badge bg-red-100 text-red-700 text-[10px] py-0">Nasional</span>
+                  @else
+                    <span class="badge bg-slate-100 text-slate-700 text-[10px] py-0">Internal</span>
+                  @endif
+                </div>
               </td>
-              <td class="px-5 py-3">
+              <td class="hidden sm:table-cell px-5 py-3">
                 @if ($h->is_national)
                   <span class="badge bg-red-100 text-red-700">Nasional</span>
                 @else
                   <span class="badge bg-slate-100 text-slate-700">Internal</span>
                 @endif
               </td>
-              <td class="px-5 py-3">
-                <div class="flex items-center justify-end gap-2">
+              <td class="px-3 sm:px-5 py-3">
+                <div class="flex items-center justify-end gap-1 sm:gap-2">
                   <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $h->id }})"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
+                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
                   </button>
                   <button wire:click="delete({{ $h->id }})"
                     wire:confirm="Hapus hari libur '{{ $h->name }}'?"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
+                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
                     Hapus
                   </button>
                 </div>

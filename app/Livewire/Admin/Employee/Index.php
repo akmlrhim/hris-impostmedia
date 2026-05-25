@@ -70,6 +70,8 @@ class Index extends Component
     // Penempatan
     public string $work_type = 'wfa';
 
+    public string $position = '';
+
     public ?string $contract_start_date = null;
 
     public ?string $contract_end_date = null;
@@ -141,6 +143,7 @@ class Index extends Component
             'last_education',
             'major_school_university',
             'work_type',
+            'position',
             'contract_start_date',
             'contract_end_date',
             'is_active',
@@ -176,6 +179,7 @@ class Index extends Component
             $this->major_school_university = (string) $emp->major_school_university;
             $this->existing_avatar_path = $emp->avatar_path;
             $this->work_type = $emp->work_type?->value ?? 'wfa';
+            $this->position = (string) $emp->position;
             $this->contract_start_date = $emp->contract_start_date?->format('Y-m-d');
             $this->contract_end_date = $emp->contract_end_date?->format('Y-m-d');
             $this->is_active = (bool) $emp->is_active;
@@ -218,6 +222,7 @@ class Index extends Component
             'major_school_university' => 'required|string|max:200',
             'avatar' => 'nullable|image|max:2048',
             'work_type' => ['required', Rule::in(array_column(WorkType::cases(), 'value'))],
+            'position' => 'nullable|string|max:100',
             'contract_start_date' => 'nullable|date',
             'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
             'basic_salary' => 'required|numeric|min:0',
@@ -274,6 +279,7 @@ class Index extends Component
                     'major_school_university' => $this->major_school_university,
                     'avatar_path' => $avatarPath,
                     'work_type' => $this->work_type,
+                    'position' => $this->position ?: null,
                     'contract_start_date' => $this->contract_start_date ?: null,
                     'contract_end_date' => $this->contract_end_date ?: null,
                     'is_active' => $this->is_active,
