@@ -12,25 +12,25 @@ use Livewire\Component;
 #[Title('Verifikasi Email')]
 class VerifyEmail extends Component
 {
-    public bool $sent = false;
+	public bool $sent = false;
 
-    public function resend(): void
-    {
-        /** @var User $user */
-        $user = Auth::user();
+	public function resend(): void
+	{
+		/** @var User $user */
+		$user = Auth::user();
 
-        if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(route('mobile.home'), navigate: true);
+		if ($user->hasVerifiedEmail()) {
+			$this->redirectIntended(route('mobile.home'), navigate: true);
 
-            return;
-        }
+			return;
+		}
 
-        $user->sendEmailVerificationNotification();
-        $this->sent = true;
-    }
+		$user->sendEmailVerificationNotification();
+		$this->sent = true;
+	}
 
-    public function render(): mixed
-    {
-        return view('livewire.auth.verify-email');
-    }
+	public function render(): mixed
+	{
+		return view('livewire.auth.verify-email');
+	}
 }

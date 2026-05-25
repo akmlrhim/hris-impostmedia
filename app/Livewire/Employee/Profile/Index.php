@@ -10,18 +10,18 @@ use Livewire\Component;
 #[Title('Profil')]
 class Index extends Component
 {
-    public function logout(): void
-    {
-        auth()->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-        $this->redirect(route('login'), navigate: false);
-    }
+	public function logout(): void
+	{
+		auth()->logout();
+		request()->session()->invalidate();
+		request()->session()->regenerateToken();
+		$this->redirect(route('login'), navigate: false);
+	}
 
-    public function render(): mixed
-    {
-        $employee = auth()->user()?->employee;
+	public function render(): mixed
+	{
+		$employee = auth()->user()?->employee;
 
-        return view('livewire.employee.profile.index', compact('employee'));
-    }
+		return view('livewire.employee.profile.index', compact('employee'));
+	}
 }

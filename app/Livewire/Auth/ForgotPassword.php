@@ -12,23 +12,23 @@ use Livewire\Component;
 #[Title('Lupa Kata Sandi')]
 class ForgotPassword extends Component
 {
-    #[Validate('required|email')]
-    public string $email = '';
+	#[Validate('required|email')]
+	public string $email = '';
 
-    public bool $sent = false;
+	public bool $sent = false;
 
-    public function sendLink(): void
-    {
-        $this->validate();
+	public function sendLink(): void
+	{
+		$this->validate();
 
-        $status = Password::sendResetLink(['email' => $this->email]);
+		$status = Password::sendResetLink(['email' => $this->email]);
 
-        // Selalu tampilkan pesan berhasil untuk mencegah enumerasi email
-        $this->sent = true;
-    }
+		// Selalu tampilkan pesan berhasil untuk mencegah enumerasi email
+		$this->sent = true;
+	}
 
-    public function render(): mixed
-    {
-        return view('livewire.auth.forgot-password');
-    }
+	public function render(): mixed
+	{
+		return view('livewire.auth.forgot-password');
+	}
 }

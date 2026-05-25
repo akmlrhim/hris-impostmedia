@@ -50,8 +50,8 @@
       </div>
 
       {{-- Akun --}}
-      <div class="card p-5 space-y-4">
-        <h3 class="text-sm font-semibold text-slate-900 -mb-1">Akun</h3>
+      <div class="card p-5 space-y-5">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Akun</h3>
 
         <div>
           <label class="label">Nama Tampilan</label>
@@ -98,8 +98,8 @@
       </div>
 
       {{-- Data pribadi --}}
-      <div class="card p-5 space-y-4">
-        <h3 class="text-sm font-semibold text-slate-900 -mb-1">Data Pribadi</h3>
+      <div class="card p-5 space-y-5">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Data Pribadi</h3>
 
         <div>
           <label class="label">Jenis Kelamin</label>
@@ -134,8 +134,8 @@
       </div>
 
       {{-- Pendidikan --}}
-      <div class="card p-5 space-y-4">
-        <h3 class="text-sm font-semibold text-slate-900 -mb-1">Pendidikan</h3>
+      <div class="card p-5 space-y-5">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Pendidikan</h3>
 
         <div>
           <label class="label">Pendidikan Terakhir <span class="text-red-500">*</span></label>
@@ -167,8 +167,8 @@
       </div>
 
       {{-- Kontak Darurat --}}
-      <div class="card p-5 space-y-4">
-        <h3 class="text-sm font-semibold text-slate-900 -mb-1">Kontak Darurat</h3>
+      <div class="card p-5 space-y-5">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Kontak Darurat</h3>
 
         <div>
           <label class="label">Nama Kontak Darurat <span class="text-red-500">*</span></label>
@@ -190,8 +190,8 @@
       </div>
 
       {{-- Bank --}}
-      <div class="card p-5 space-y-4">
-        <h3 class="text-sm font-semibold text-slate-900 -mb-1">Rekening Bank</h3>
+      <div class="card p-5 space-y-5">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Rekening Bank</h3>
 
         <div>
           <label class="label">Bank</label>
@@ -235,7 +235,7 @@
 
     {{-- Password --}}
     <form wire:submit="changePassword" class="card p-5 space-y-4">
-      <h3 class="text-sm font-semibold text-slate-900 -mb-1">Ubah Kata Sandi</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Ubah Kata Sandi</h3>
 
       <x-password-input name="current_password" label="Kata Sandi Saat Ini" />
       <x-password-input name="new_password" label="Kata Sandi Baru" autocomplete="new-password" />

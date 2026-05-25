@@ -8,14 +8,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureAdminPanel
 {
-    public function handle(Request $request, Closure $next): Response
-    {
-        $user = $request->user();
+	public function handle(Request $request, Closure $next): Response
+	{
+		$user = $request->user();
 
-        if (! $user || ! $user->isAdminPanel()) {
-            abort(403, 'Akses ditolak. Hanya untuk admin/HR.');
-        }
+		if (! $user || ! $user->isAdminPanel()) {
+			abort(403, 'Akses ditolak. Hanya untuk admin/HR.');
+		}
 
-        return $next($request);
-    }
+		return $next($request);
+	}
 }

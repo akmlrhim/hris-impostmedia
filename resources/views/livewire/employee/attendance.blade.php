@@ -116,7 +116,7 @@
             class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
             {{ $attendance?->check_in_at ? 'bg-emerald-500 text-white' : 'bg-brand-600 text-white' }}">
             @if ($attendance?->check_in_at)
-              ✓
+              <x-icon name="check" class="w-3.5 h-3.5" />
             @else
               1
             @endif

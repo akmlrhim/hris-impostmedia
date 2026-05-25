@@ -14,32 +14,32 @@ use Livewire\Component;
 #[Title('Beranda')]
 class Home extends Component
 {
-    public function render(): mixed
-    {
-        $employee = auth()->user()?->employee;
-        $today = now()->toDateString();
+	public function render(): mixed
+	{
+		$employee = auth()->user()?->employee;
+		$today = now()->toDateString();
 
-        $todayAttendance = $employee
-            ? Attendance::where('employee_id', $employee->id)
-                ->whereDate('attendance_date', $today)
-                ->first()
-            : null;
+		$todayAttendance = $employee
+			? Attendance::where('employee_id', $employee->id)
+			->whereDate('attendance_date', $today)
+			->first()
+			: null;
 
-        $announcements = Announcement::whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-            ->orderByDesc('is_pinned')
-            ->latest('published_at')
-            ->limit(5)
-            ->get();
+		$announcements = Announcement::whereNotNull('published_at')
+			->where('published_at', '<=', now())
+			->where(fn($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+			->orderByDesc('is_pinned')
+			->latest('published_at')
+			->limit(5)
+			->get();
 
-        $upcomingHolidays = Holiday::where('date', '>=', now()->toDateString())
-            ->orderBy('date')
-            ->limit(3)
-            ->get();
+		$upcomingHolidays = Holiday::where('date', '>=', now()->toDateString())
+			->orderBy('date')
+			->limit(3)
+			->get();
 
-        $isWfo = $employee?->work_type === WorkType::WFO;
+		$isWfo = $employee?->work_type === WorkType::WFO;
 
-        return view('livewire.employee.home', compact('employee', 'todayAttendance', 'announcements', 'upcomingHolidays', 'isWfo'));
-    }
+		return view('livewire.employee.home', compact('employee', 'todayAttendance', 'announcements', 'upcomingHolidays', 'isWfo'));
+	}
 }

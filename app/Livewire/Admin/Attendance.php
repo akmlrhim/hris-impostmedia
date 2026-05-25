@@ -15,39 +15,39 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class Attendance extends Component
 {
-    use HandlesAdminActions, WithPagination;
+	use HandlesAdminActions, WithPagination;
 
-    #[Url]
-    public string $date = '';
+	#[Url]
+	public string $date = '';
 
-    #[Url]
-    public string $status = '';
+	#[Url]
+	public string $status = '';
 
-    public function mount(): void
-    {
-        Gate::authorize('manage_attendance');
+	public function mount(): void
+	{
+		Gate::authorize('manage_attendance');
 
-        $this->date = $this->date ?: now()->toDateString();
-    }
+		$this->date = $this->date ?: now()->toDateString();
+	}
 
-    public function updatingDate(): void
-    {
-        $this->resetPage();
-    }
+	public function updatingDate(): void
+	{
+		$this->resetPage();
+	}
 
-    public function updatingStatus(): void
-    {
-        $this->resetPage();
-    }
+	public function updatingStatus(): void
+	{
+		$this->resetPage();
+	}
 
-    public function render(): mixed
-    {
-        $attendances = AttendanceModel::with(['employee'])
-            ->when($this->date, fn ($q) => $q->whereDate('attendance_date', $this->date))
-            ->when($this->status, fn ($q) => $q->where('status', $this->status))
-            ->latest('check_in_at')
-            ->paginate(20);
+	public function render(): mixed
+	{
+		$attendances = AttendanceModel::with(['employee'])
+			->when($this->date, fn($q) => $q->whereDate('attendance_date', $this->date))
+			->when($this->status, fn($q) => $q->where('status', $this->status))
+			->latest('check_in_at')
+			->paginate(20);
 
-        return view('livewire.admin.attendance', compact('attendances'));
-    }
+		return view('livewire.admin.attendance', compact('attendances'));
+	}
 }

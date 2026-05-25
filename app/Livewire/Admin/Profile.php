@@ -13,69 +13,69 @@ use Livewire\Component;
 #[Layout('components.layouts.admin')]
 class Profile extends Component
 {
-    use HandlesAdminActions;
+	use HandlesAdminActions;
 
-    public string $name = '';
+	public string $name = '';
 
-    public string $email = '';
+	public string $email = '';
 
-    public string $current_password = '';
+	public string $current_password = '';
 
-    public string $new_password = '';
+	public string $new_password = '';
 
-    public string $new_password_confirmation = '';
+	public string $new_password_confirmation = '';
 
-    public function mount(): void
-    {
-        $user = auth()->user();
-        $this->name = (string) $user?->name;
-        $this->email = (string) $user?->email;
-    }
+	public function mount(): void
+	{
+		$user = auth()->user();
+		$this->name = (string) $user?->name;
+		$this->email = (string) $user?->email;
+	}
 
-    public function saveProfile(): void
-    {
-        $user = auth()->user();
+	public function saveProfile(): void
+	{
+		$user = auth()->user();
 
-        $this->validate([
-            'name' => 'required|string|max:200',
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-        ]);
+		$this->validate([
+			'name' => 'required|string|max:200',
+			'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+		]);
 
-        $this->safeAction(function () use ($user) {
-            $user->update([
-                'name' => $this->name,
-                'email' => $this->email,
-            ]);
+		$this->safeAction(function () use ($user) {
+			$user->update([
+				'name' => $this->name,
+				'email' => $this->email,
+			]);
 
-            $this->toast('success', 'Profil berhasil disimpan.');
-        }, genericError: 'Gagal menyimpan profil.');
-    }
+			$this->toast('success', 'Profil berhasil disimpan.');
+		}, genericError: 'Gagal menyimpan profil.');
+	}
 
-    public function changePassword(): void
-    {
-        $this->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|string|min:8|confirmed',
-        ]);
+	public function changePassword(): void
+	{
+		$this->validate([
+			'current_password' => 'required',
+			'new_password' => 'required|string|min:8|confirmed',
+		]);
 
-        $user = auth()->user();
+		$user = auth()->user();
 
-        if (! Hash::check($this->current_password, $user->password)) {
-            $this->addError('current_password', 'Kata sandi saat ini salah.');
+		if (! Hash::check($this->current_password, $user->password)) {
+			$this->addError('current_password', 'Kata sandi saat ini salah.');
 
-            return;
-        }
+			return;
+		}
 
-        $this->safeAction(function () use ($user) {
-            $user->update(['password' => Hash::make($this->new_password)]);
-            $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
+		$this->safeAction(function () use ($user) {
+			$user->update(['password' => Hash::make($this->new_password)]);
+			$this->reset(['current_password', 'new_password', 'new_password_confirmation']);
 
-            $this->toast('success', 'Kata sandi berhasil diubah.');
-        }, genericError: 'Gagal mengubah kata sandi.');
-    }
+			$this->toast('success', 'Kata sandi berhasil diubah.');
+		}, genericError: 'Gagal mengubah kata sandi.');
+	}
 
-    public function render(): mixed
-    {
-        return view('livewire.admin.profile');
-    }
+	public function render(): mixed
+	{
+		return view('livewire.admin.profile');
+	}
 }

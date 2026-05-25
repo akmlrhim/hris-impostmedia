@@ -41,10 +41,10 @@
     <div class="card p-4 space-y-2">
       <p class="text-xs font-semibold text-slate-700">Tips pendaftaran wajah:</p>
       <ul class="space-y-1.5 text-xs text-slate-500">
-        <li class="flex items-start gap-2"><span class="text-emerald-500 font-bold shrink-0">✓</span> Pastikan pencahayaan cukup dan merata</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-500 font-bold shrink-0">✓</span> Hadapkan wajah langsung ke kamera</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-500 font-bold shrink-0">✓</span> Lepas kacamata hitam atau masker</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-500 font-bold shrink-0">✓</span> Jangan bergerak saat menekan "Simpan"</li>
+        <li class="flex items-start gap-2"><x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" /> Pastikan pencahayaan cukup dan merata</li>
+        <li class="flex items-start gap-2"><x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" /> Hadapkan wajah langsung ke kamera</li>
+        <li class="flex items-start gap-2"><x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" /> Lepas kacamata hitam atau masker</li>
+        <li class="flex items-start gap-2"><x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" /> Jangan bergerak saat menekan "Simpan"</li>
       </ul>
     </div>
 
@@ -69,7 +69,7 @@
           {{-- Face detected indicator --}}
           <div x-show="cameraReady && faceDetected" x-cloak
             class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-emerald-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full">
-            Wajah terdeteksi ✓
+            <x-icon name="check" class="w-3.5 h-3.5 shrink-0" /> Wajah terdeteksi
           </div>
           <div x-show="cameraReady && !faceDetected" x-cloak
             class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-slate-700/80 text-white text-xs px-3 py-1 rounded-full">

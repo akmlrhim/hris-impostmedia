@@ -16,55 +16,55 @@ use Livewire\Component;
 #[Title('Reset Kata Sandi')]
 class ResetPassword extends Component
 {
-    #[Locked]
-    public string $token = '';
+	#[Locked]
+	public string $token = '';
 
-    #[Validate('required|email')]
-    public string $email = '';
+	#[Validate('required|email')]
+	public string $email = '';
 
-    #[Validate('required|string|min:8|confirmed')]
-    public string $password = '';
+	#[Validate('required|string|min:8|confirmed')]
+	public string $password = '';
 
-    public string $password_confirmation = '';
+	public string $password_confirmation = '';
 
-    public function mount(string $token): void
-    {
-        $this->token = $token;
-        $this->email = request()->string('email')->toString();
-    }
+	public function mount(string $token): void
+	{
+		$this->token = $token;
+		$this->email = request()->string('email')->toString();
+	}
 
-    public function resetPassword(): void
-    {
-        $this->validate();
+	public function resetPassword(): void
+	{
+		$this->validate();
 
-        $status = Password::reset(
-            [
-                'email' => $this->email,
-                'password' => $this->password,
-                'password_confirmation' => $this->password_confirmation,
-                'token' => $this->token,
-            ],
-            function ($user) {
-                $user->forceFill([
-                    'password' => Hash::make($this->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+		$status = Password::reset(
+			[
+				'email' => $this->email,
+				'password' => $this->password,
+				'password_confirmation' => $this->password_confirmation,
+				'token' => $this->token,
+			],
+			function ($user) {
+				$user->forceFill([
+					'password' => Hash::make($this->password),
+					'remember_token' => Str::random(60),
+				])->save();
 
-                event(new PasswordReset($user));
-            }
-        );
+				event(new PasswordReset($user));
+			}
+		);
 
-        if ($status === Password::PASSWORD_RESET) {
-            $this->redirectRoute('login', navigate: true);
+		if ($status === Password::PASSWORD_RESET) {
+			$this->redirectRoute('login', navigate: true);
 
-            return;
-        }
+			return;
+		}
 
-        $this->addError('email', __($status));
-    }
+		$this->addError('email', __($status));
+	}
 
-    public function render(): mixed
-    {
-        return view('livewire.auth.reset-password');
-    }
+	public function render(): mixed
+	{
+		return view('livewire.auth.reset-password');
+	}
 }

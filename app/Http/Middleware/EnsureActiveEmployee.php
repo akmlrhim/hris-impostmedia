@@ -9,30 +9,30 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureActiveEmployee
 {
-    public function handle(Request $request, Closure $next): Response
-    {
-        $user = $request->user();
+	public function handle(Request $request, Closure $next): Response
+	{
+		$user = $request->user();
 
-        if (! $user || ! $user->is_active) {
-            return $this->rejectWithMessage($request, 'Akun Anda tidak aktif. Silakan hubungi admin.');
-        }
+		if (! $user || ! $user->is_active) {
+			return $this->rejectWithMessage($request, 'Akun Anda tidak aktif. Silakan hubungi admin.');
+		}
 
-        $employee = $user->employee;
+		$employee = $user->employee;
 
-        if (! $employee || ! $employee->is_active) {
-            return $this->rejectWithMessage($request, 'Akun karyawan Anda tidak aktif. Silakan hubungi admin.');
-        }
+		if (! $employee || ! $employee->is_active) {
+			return $this->rejectWithMessage($request, 'Akun karyawan Anda tidak aktif. Silakan hubungi admin.');
+		}
 
-        return $next($request);
-    }
+		return $next($request);
+	}
 
-    private function rejectWithMessage(Request $request, string $message): Response
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        $request->session()->flash('warning', $message);
+	private function rejectWithMessage(Request $request, string $message): Response
+	{
+		Auth::logout();
+		$request->session()->invalidate();
+		$request->session()->regenerateToken();
+		$request->session()->flash('warning', $message);
 
-        return redirect()->route('login');
-    }
+		return redirect()->route('login');
+	}
 }

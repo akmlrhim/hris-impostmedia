@@ -14,64 +14,64 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.admin')]
 class ActivityLog extends Component
 {
-    use WithPagination;
+	use WithPagination;
 
-    #[Url(as: 'q')]
-    public string $search = '';
+	#[Url(as: 'q')]
+	public string $search = '';
 
-    #[Url]
-    public string $action = '';
+	#[Url]
+	public string $action = '';
 
-    #[Url]
-    public string $userId = '';
+	#[Url]
+	public string $userId = '';
 
-    public function mount(): void
-    {
-        Gate::authorize('manage_users');
-    }
+	public function mount(): void
+	{
+		Gate::authorize('manage_users');
+	}
 
-    public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
+	public function updatingSearch(): void
+	{
+		$this->resetPage();
+	}
 
-    public function updatingAction(): void
-    {
-        $this->resetPage();
-    }
+	public function updatingAction(): void
+	{
+		$this->resetPage();
+	}
 
-    public function updatingUserId(): void
-    {
-        $this->resetPage();
-    }
+	public function updatingUserId(): void
+	{
+		$this->resetPage();
+	}
 
-    public function render(): mixed
-    {
-        $logs = ActivityLogModel::query()
-            ->with('user:id,name,email')
-            ->when($this->search, fn ($q) => $q->where('description', 'like', "%{$this->search}%"))
-            ->when($this->action, fn ($q) => $q->where('action', $this->action))
-            ->when($this->userId, fn ($q) => $q->where('user_id', $this->userId))
-            ->latest('created_at')
-            ->paginate(30);
+	public function render(): mixed
+	{
+		$logs = ActivityLogModel::query()
+			->with('user:id,name,email')
+			->when($this->search, fn($q) => $q->where('description', 'like', "%{$this->search}%"))
+			->when($this->action, fn($q) => $q->where('action', $this->action))
+			->when($this->userId, fn($q) => $q->where('user_id', $this->userId))
+			->latest('created_at')
+			->paginate(30);
 
-        $availableActions = ActivityLogModel::query()
-            ->select('action')
-            ->distinct()
-            ->orderBy('action')
-            ->pluck('action');
+		$availableActions = ActivityLogModel::query()
+			->select('action')
+			->distinct()
+			->orderBy('action')
+			->pluck('action');
 
-        $availableUsers = ActivityLogModel::query()
-            ->with('user:id,name')
-            ->whereNotNull('user_id')
-            ->select('user_id')
-            ->distinct()
-            ->get()
-            ->pluck('user')
-            ->filter()
-            ->sortBy('name')
-            ->values();
+		$availableUsers = ActivityLogModel::query()
+			->with('user:id,name')
+			->whereNotNull('user_id')
+			->select('user_id')
+			->distinct()
+			->get()
+			->pluck('user')
+			->filter()
+			->sortBy('name')
+			->values();
 
-        return view('livewire.admin.activity-log', compact('logs', 'availableActions', 'availableUsers'));
-    }
+		return view('livewire.admin.activity-log', compact('logs', 'availableActions', 'availableUsers'));
+	}
 }
