@@ -23,7 +23,7 @@ class Attendance extends Component
 
     private const MINIMUM_WORK_MINUTES = 480;
 
-    public function checkIn(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null): void
+    public function checkIn(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null, ?string $selectedWorkType = null): void
     {
         $employee = auth()->user()?->employee;
 
@@ -46,14 +46,23 @@ class Attendance extends Component
             return;
         }
 
-        $workType = $employee->work_type ?? WorkType::WFA;
+        $baseWorkType = $employee->work_type ?? WorkType::WFA;
 
         $remoteRequest = RemoteWorkRequest::approvedFor($employee->id, $today);
         if ($remoteRequest) {
-            $workType = $remoteRequest->work_type;
+            $effectiveWorkType = $remoteRequest->work_type;
+        } elseif ($baseWorkType === WorkType::Hybrid) {
+            // Karyawan Hybrid memilih mode WFO atau WFA saat check-in
+            $effectiveWorkType = WorkType::tryFrom($selectedWorkType ?? 'wfa') ?? WorkType::WFA;
+            // Mode Hybrid hanya bisa WFO atau WFA
+            if ($effectiveWorkType === WorkType::Hybrid) {
+                $effectiveWorkType = WorkType::WFA;
+            }
+        } else {
+            $effectiveWorkType = $baseWorkType;
         }
 
-        if ($workType->requiresGeofencing()) {
+        if ($effectiveWorkType->requiresGeofencing()) {
             if (! $latitude || ! $longitude) {
                 $this->dispatch('notify', message: 'GPS diperlukan untuk absensi WFO. Izinkan akses lokasi.', type: 'error');
 
@@ -79,6 +88,7 @@ class Attendance extends Component
             'check_in_address' => $address,
             'check_in_photo_path' => $photoPath,
             'status' => AttendanceStatus::Present,
+            'work_type' => $effectiveWorkType->value,
             'late_minutes' => 0,
         ])->save();
 
@@ -212,7 +222,7 @@ class Attendance extends Component
         $remoteRequest = $employee ? RemoteWorkRequest::approvedFor($employee->id, $today) : null;
         $workType = $remoteRequest ? $remoteRequest->work_type : $baseWorkType;
 
-        $officeLocations = $workType->requiresGeofencing()
+        $officeLocations = ($workType->requiresGeofencing() || $workType === WorkType::Hybrid)
             ? OfficeLocation::where('is_active', true)->get(['id', 'name', 'latitude', 'longitude', 'radius_meters'])
             : collect();
 

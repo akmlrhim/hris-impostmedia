@@ -18,9 +18,15 @@ window.attendanceCamera = function ({ workType, officeLocations, faceDescriptor,
         address: '',
 
         processing: false,
+        workType,
 
         get needsGeofence() {
-            return workType === 'wfo';
+            return this.workType === 'wfo';
+        },
+
+        setWorkType(wt) {
+            this.workType = wt;
+            this.checkGeofence();
         },
 
         get faceLabel() {
@@ -263,7 +269,7 @@ window.attendanceCamera = function ({ workType, officeLocations, faceDescriptor,
                     this.notify('Gagal mengambil foto. Coba lagi.', 'error');
                     return;
                 }
-                await this.$wire.checkIn(photo, this.latitude, this.longitude, this.address);
+                await this.$wire.checkIn(photo, this.latitude, this.longitude, this.address, this.workType);
             } catch (e) {
                 console.error('[checkIn]', e);
                 this.notify('Check-in gagal: ' + (e?.message || 'kesalahan jaringan'), 'error');

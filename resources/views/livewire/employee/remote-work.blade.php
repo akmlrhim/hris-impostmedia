@@ -5,7 +5,7 @@
       <x-icon name="arrow-left" class="w-5 h-5" />
     </a>
     <div class="flex-1">
-      <h1 class="text-lg font-bold text-slate-900">Pengajuan WFA / WFH / WFC</h1>
+      <h1 class="text-lg font-bold text-slate-900">Pengajuan WFA</h1>
       <p class="text-xs text-slate-400 mt-0.5">Kerja dari luar kantor</p>
     </div>
     @if ($isWfo)
@@ -15,7 +15,7 @@
 
   {{-- Form modal (hanya untuk WFO) --}}
   @if ($isWfo)
-    <x-modal show="showForm" max-width="md" title="Pengajuan Kerja Remote">
+    <x-modal show="showForm" max-width="md" title="Pengajuan WFA">
       <form wire:submit="requestConfirm" class="space-y-4">
 
         {{-- Work type selector --}}

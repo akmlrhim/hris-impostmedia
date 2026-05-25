@@ -10,7 +10,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
-#[Title('Pengajuan WFA / WFH / WFC')]
+#[Title('Pengajuan WFA')]
 class RemoteWork extends Component
 {
     public string $work_type = WorkType::WFA->value;
@@ -43,7 +43,7 @@ class RemoteWork extends Component
         $employee = auth()->user()?->employee;
 
         if ($employee?->work_type !== WorkType::WFO) {
-            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA/WFH/WFC.');
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
 
             return;
         }
@@ -71,7 +71,7 @@ class RemoteWork extends Component
         $employee = auth()->user()?->employee;
 
         if (! $employee || $employee->work_type !== WorkType::WFO) {
-            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA/WFH/WFC.');
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
 
             return;
         }
@@ -92,7 +92,7 @@ class RemoteWork extends Component
         }
 
         if ($employee->work_type !== WorkType::WFO) {
-            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA/WFH/WFC.');
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
 
             return;
         }

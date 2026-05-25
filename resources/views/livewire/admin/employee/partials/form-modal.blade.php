@@ -226,7 +226,7 @@
 
     @if (!$editingId)
       <p class="text-xs text-slate-500 text-right">
-        Password awal otomatis: <code class="bg-slate-100 px-1 rounded">password</code>
+        Password awal otomatis: <code class="bg-slate-100 px-1 rounded">ddMMYY</code>
       </p>
     @endif
   </form>

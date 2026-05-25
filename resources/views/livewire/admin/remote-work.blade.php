@@ -1,5 +1,5 @@
 <div class="space-y-4">
-  <x-page-header title="Pengajuan Kerja Remote" description="Kelola pengajuan WFA / WFH / WFC dari karyawan.">
+  <x-page-header title="Pengajuan Kerja Remote" description="Kelola pengajuan WFA dari karyawan WFO.">
     @if ($pendingCount > 0)
       <x-slot:action>
         <span class="badge bg-amber-100 text-amber-700 text-xs">{{ $pendingCount }} menunggu persetujuan</span>

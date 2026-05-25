@@ -1,5 +1,5 @@
 <div x-data="attendanceCamera({
-    workType: @js($workType->value),
+    workType: @js($workType === \App\Enums\WorkType::Hybrid ? 'wfa' : $workType->value),
     officeLocations: @js($officeLocations->values()),
     faceDescriptor: @js($faceDescriptor),
     hasFaceEnrolled: @js((bool) $faceDescriptor),
@@ -19,7 +19,7 @@
     @if ($employee)
       <span
         class="badge text-xs px-2 py-0.5
-        {{ $workType->value === 'wfo' ? 'bg-blue-100 text-blue-700' : ($workType->value === 'wfh' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700') }}">
+        {{ $workType->value === 'wfo' ? 'bg-blue-100 text-blue-700' : ($workType->value === 'hybrid' ? 'bg-teal-100 text-teal-700' : 'bg-purple-100 text-purple-700') }}">
         {{ $workType->label() }}
       </span>
     @endif
@@ -156,6 +156,43 @@
           <x-icon name="check-circle" class="w-4 h-4 shrink-0 mt-0.5 text-purple-500" />
           <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong> disetujui - GPS tidak wajib hari
             ini.</span>
+        </div>
+      @endif
+
+      {{-- Pilihan mode untuk karyawan Hybrid (hanya tampil sebelum check-in) --}}
+      @if ($baseWorkType === \App\Enums\WorkType::Hybrid && !$attendance?->check_in_at)
+        <div class="card p-4 space-y-2">
+          <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Mode Kerja Hari Ini</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button"
+              @click="setWorkType('wfa')"
+              :class="workType === 'wfa'
+                ? 'border-purple-500 bg-purple-50 text-purple-700'
+                : 'border-slate-200 text-slate-500 hover:border-slate-300'"
+              class="flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-150">
+              <x-icon name="laptop" class="w-5 h-5 shrink-0" />
+              <div class="text-left">
+                <p class="text-sm font-semibold">WFA</p>
+                <p class="text-[11px] leading-tight">Dari mana saja</p>
+              </div>
+            </button>
+            <button type="button"
+              @click="setWorkType('wfo')"
+              :class="workType === 'wfo'
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-slate-200 text-slate-500 hover:border-slate-300'"
+              class="flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-150">
+              <x-icon name="building" class="w-5 h-5 shrink-0" />
+              <div class="text-left">
+                <p class="text-sm font-semibold">WFO</p>
+                <p class="text-[11px] leading-tight">Dari kantor</p>
+              </div>
+            </button>
+          </div>
+          <p x-show="workType === 'wfo'" class="text-xs text-blue-600 flex items-center gap-1">
+            <x-icon name="map-pin" class="w-3.5 h-3.5" />
+            GPS & radius kantor diperlukan untuk WFO.
+          </p>
         </div>
       @endif
 

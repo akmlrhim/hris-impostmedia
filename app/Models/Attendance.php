@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\WorkType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'check_in_latitude', 'check_in_longitude', 'check_out_latitude', 'check_out_longitude',
     'check_in_photo_path', 'check_out_photo_path',
     'check_in_address', 'check_out_address',
-    'status', 'late_minutes', 'work_minutes', 'notes',
+    'status', 'work_type', 'late_minutes', 'work_minutes', 'notes',
 ])]
 class Attendance extends Model
 {
@@ -25,6 +26,7 @@ class Attendance extends Model
             'check_in_at' => 'datetime',
             'check_out_at' => 'datetime',
             'status' => AttendanceStatus::class,
+            'work_type' => WorkType::class,
         ];
     }
 
