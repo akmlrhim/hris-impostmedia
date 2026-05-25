@@ -12,4 +12,5 @@
       </div>
     </div>
   </div>
+  <x-admin-toast />
 </x-layouts.app>

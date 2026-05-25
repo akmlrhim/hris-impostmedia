@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveEmployee;
 use App\Http\Middleware\EnsureAdminPanel;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin.panel' => EnsureAdminPanel::class,
+            'employee.active' => EnsureActiveEmployee::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -91,8 +91,8 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/profile', AdminProfileEdit::class)->name('profile');
     });
 
-// --- Mobile (PWA) — open to any authenticated user, including HR/Admin ---
-Route::middleware('auth')
+// --- Mobile (PWA) — hanya untuk karyawan aktif ---
+Route::middleware(['auth', 'employee.active'])
     ->prefix('m')
     ->name('mobile.')
     ->group(function () {

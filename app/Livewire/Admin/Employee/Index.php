@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Enums\WorkType;
 use App\Models\Employee;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -244,10 +245,14 @@ class Index extends Component
                         'email' => $this->email,
                     ]);
                 } else {
+                    $defaultPassword = $this->date_of_birth
+                        ? strtolower(Carbon::parse($this->date_of_birth)->format('dMy'))
+                        : 'password';
+
                     $user = User::create([
                         'name' => $this->full_name,
                         'email' => $this->email,
-                        'password' => Hash::make('password'),
+                        'password' => Hash::make($defaultPassword),
                         'role' => UserRole::Employee,
                         'email_verified_at' => now(),
                     ]);
