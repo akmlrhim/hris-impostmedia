@@ -1,10 +1,9 @@
-<div x-data="attendanceCamera({
+<div x-data="attendanceFingerprint({
     workType: @js($workType === \App\Enums\WorkType::Hybrid ? 'wfa' : $workType->value),
     officeLocations: @js($officeLocations->values()),
-    faceDescriptor: @js($faceDescriptor),
-    hasFaceEnrolled: @js((bool) $faceDescriptor),
+    credentialId: @js($webauthnCredential?->credential_id),
+    webauthnChallenge: @js($webauthnChallenge),
 })" @attendance-recorded.window="onAttendanceRecorded()" wire:ignore.self>
-  <x-face-api />
 
   {{-- Header --}}
   <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 z-10">
@@ -27,7 +26,7 @@
 
   <div class="px-5 pt-4 space-y-4 pb-32">
 
-    {{-- ===== STATE 1: Tidak ada data karyawan ===== --}}
+    {{-- STATE: Tidak ada data karyawan --}}
     @if (!$employee)
       <div class="card p-6 text-center space-y-4 mt-4">
         <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto">
@@ -35,8 +34,7 @@
         </div>
         <div>
           <p class="font-semibold text-slate-900">Akun belum terhubung ke data karyawan</p>
-          <p class="text-sm text-slate-500 mt-1">Hubungi Admin atau HR untuk menghubungkan akun Anda ke profil karyawan.
-          </p>
+          <p class="text-sm text-slate-500 mt-1">Hubungi Admin atau HR untuk menghubungkan akun Anda ke profil karyawan.</p>
         </div>
         @if ($isAdminPanelUser)
           <a wire:navigate href="{{ route('admin.employees') }}" class="btn-primary text-sm">
@@ -44,10 +42,11 @@
           </a>
         @endif
       </div>
+
+    {{-- STATE: Sudah check-out --}}
     @elseif ($attendance?->check_out_at)
       <div class="card p-4 flex items-center gap-3">
-        <div
-          class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
+        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
           @if ($employee->avatar_path)
             <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
           @else
@@ -85,12 +84,11 @@
         </p>
       </div>
 
-      {{-- ===== STATE 4: Proses absensi (check-in / check-out) ===== --}}
+    {{-- STATE: Proses absensi --}}
     @else
       {{-- Info karyawan + jam --}}
       <div class="card p-4 flex items-center gap-3">
-        <div
-          class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
+        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
           @if ($employee->avatar_path)
             <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
           @else
@@ -102,7 +100,8 @@
           <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
         </div>
         <div class="text-right">
-          <p x-data="{ t: '' }" x-init="setInterval(() => t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 1000)"
+          <p x-data="{ t: '' }"
+            x-init="setInterval(() => t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 1000)"
             x-text="t || new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'})"
             class="font-mono text-xl font-bold text-slate-900 tabular-nums">
           </p>
@@ -112,8 +111,7 @@
       {{-- Step indicator --}}
       <div class="flex items-center gap-2">
         <div class="flex items-center gap-1.5 flex-1">
-          <div
-            class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
             {{ $attendance?->check_in_at ? 'bg-emerald-500 text-white' : 'bg-brand-600 text-white' }}">
             @if ($attendance?->check_in_at)
               <x-icon name="check" class="w-3.5 h-3.5" />
@@ -130,45 +128,57 @@
           <span class="text-xs font-medium {{ $attendance?->check_in_at ? 'text-slate-900' : 'text-slate-400' }}">
             Check-out
           </span>
-          <div
-            class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
             {{ $attendance?->check_in_at ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-400' }}">
             2
           </div>
         </div>
       </div>
 
-      {{-- Banner face belum terdaftar (informatif, bukan pemblokir) --}}
-      @if (!$faceDescriptor)
-        <div class="p-3 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 text-xs flex items-center gap-2">
-          <x-icon name="scan-face" class="w-4 h-4 shrink-0 text-amber-500" />
-          <span>Wajah belum terdaftar - verifikasi biometrik nonaktif.
-            <a wire:navigate href="{{ route('mobile.profile.edit') }}" class="underline font-medium">Daftarkan
-              sekarang.</a>
-          </span>
+      {{-- Verifikasi kata sandi (fallback jika sidik jari tidak terdaftar) --}}
+      @if (!$webauthnCredential)
+        <div class="card p-4 space-y-3">
+          <div class="flex items-center gap-2">
+            <x-icon name="lock" class="w-4 h-4 text-amber-500 shrink-0" />
+            <p class="text-sm font-semibold text-slate-900">Verifikasi Kata Sandi</p>
+          </div>
+          <p class="text-xs text-slate-500">Sidik jari belum terdaftar. Masukkan kata sandi akun untuk melanjutkan absensi.</p>
+          <div class="relative">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              x-model="password"
+              class="input pr-10"
+              placeholder="Kata sandi akun"
+              autocomplete="current-password"
+            >
+            <button type="button" @click="showPassword = !showPassword"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5">
+              <x-icon name="eye" class="w-4 h-4" x-show="!showPassword" />
+              <x-icon name="eye-off" class="w-4 h-4" x-show="showPassword" />
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400">
+            <a wire:navigate href="{{ route('mobile.profile.fingerprint') }}" class="underline font-medium">Daftarkan sidik jari</a>
+            agar tidak perlu input kata sandi setiap absensi.
+          </p>
         </div>
       @endif
 
-      {{-- Jika WFA override oleh remote request --}}
+      {{-- WFA override oleh remote request --}}
       @if ($remoteRequest && $baseWorkType->requiresGeofencing())
-        <div
-          class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-purple-800 text-xs flex items-start gap-2">
+        <div class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-purple-800 text-xs flex items-start gap-2">
           <x-icon name="check-circle" class="w-4 h-4 shrink-0 mt-0.5 text-purple-500" />
-          <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong> disetujui - GPS tidak wajib hari
-            ini.</span>
+          <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong> disetujui - GPS tidak wajib hari ini.</span>
         </div>
       @endif
 
-      {{-- Pilihan mode untuk karyawan Hybrid (hanya tampil sebelum check-in) --}}
+      {{-- Pilihan mode untuk karyawan Hybrid --}}
       @if ($baseWorkType === \App\Enums\WorkType::Hybrid && !$attendance?->check_in_at)
         <div class="card p-4 space-y-2">
           <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Mode Kerja Hari Ini</p>
           <div class="grid grid-cols-2 gap-2">
-            <button type="button"
-              @click="setWorkType('wfa')"
-              :class="workType === 'wfa'
-                ? 'border-purple-500 bg-purple-50 text-purple-700'
-                : 'border-slate-200 text-slate-500 hover:border-slate-300'"
+            <button type="button" @click="setWorkType('wfa')"
+              :class="workType === 'wfa' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'"
               class="flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-150">
               <x-icon name="laptop" class="w-5 h-5 shrink-0" />
               <div class="text-left">
@@ -176,11 +186,8 @@
                 <p class="text-[11px] leading-tight">Dari mana saja</p>
               </div>
             </button>
-            <button type="button"
-              @click="setWorkType('wfo')"
-              :class="workType === 'wfo'
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-slate-200 text-slate-500 hover:border-slate-300'"
+            <button type="button" @click="setWorkType('wfo')"
+              :class="workType === 'wfo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'"
               class="flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-150">
               <x-icon name="building" class="w-5 h-5 shrink-0" />
               <div class="text-left">
@@ -196,80 +203,41 @@
         </div>
       @endif
 
-      {{-- Kamera --}}
-      <div class="card overflow-hidden">
-        <div class="relative bg-slate-900 aspect-video flex items-center justify-center">
-          <video x-ref="video" autoplay playsinline muted class="w-full h-full object-cover"
-            :class="cameraReady ? 'opacity-100' : 'opacity-0'" style="transform: scaleX(-1);">
-          </video>
-          <canvas x-ref="canvas" class="hidden"></canvas>
-
-          {{-- Loading --}}
-          <div x-show="!cameraReady"
-            class="absolute inset-0 flex flex-col items-center justify-center text-white gap-2">
-            <svg class="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-              </circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-            </svg>
-            <p class="text-sm" x-text="loadingMsg"></p>
+      {{-- Status GPS + Sidik Jari --}}
+      <div class="card divide-x divide-slate-100 grid grid-cols-2">
+        {{-- GPS --}}
+        <div class="p-3 flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full shrink-0"
+            :class="{
+              'bg-slate-300': gpsStatus === 'loading',
+              'bg-emerald-500': geofenceOk || (gpsStatus === 'ok' && !needsGeofence),
+              'bg-red-500': gpsStatus === 'ok' && needsGeofence && !geofenceOk,
+              'bg-red-400': gpsStatus === 'error',
+            }">
           </div>
-
-          {{-- Face box --}}
-          <div x-show="cameraReady && faceBox" x-cloak
-            class="absolute border-2 rounded pointer-events-none transition-all duration-100"
-            :class="faceStatus === 'matched' ? 'border-emerald-400' : (faceStatus === 'no-match' ? 'border-red-400' :
-                'border-yellow-400')"
-            :style="`left: ${faceBoxCss.left}; top: ${faceBoxCss.top}; width: ${faceBoxCss.width}; height: ${faceBoxCss.height};`">
-          </div>
-
-          {{-- Face label --}}
-          <div x-show="cameraReady && faceBox" x-cloak
-            class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold text-white"
-            :class="faceStatus === 'matched' ? 'bg-emerald-500/90' : (faceStatus === 'no-match' ? 'bg-red-500/90' :
-                'bg-amber-500/90')"
-            x-text="faceLabel">
+          <div>
+            <p class="text-[10px] text-slate-400 leading-none">Lokasi</p>
+            <p class="text-xs font-medium text-slate-700 leading-snug" x-text="gpsStatusText"></p>
           </div>
         </div>
 
-        {{-- Status strip --}}
-        <div class="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
-          <div class="p-3 flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full"
-              :class="{
-                  'bg-slate-300': faceStatus === 'loading',
-                  'bg-yellow-400': faceStatus === 'no-face',
-                  'bg-emerald-500': faceStatus === 'matched',
-                  'bg-amber-400': faceStatus === 'no-enrolled',
-                  'bg-red-500': faceStatus === 'no-match',
-              }">
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-400 leading-none">Wajah</p>
-              <p class="text-xs font-medium text-slate-700 leading-snug" x-text="faceStatusText"></p>
-            </div>
+        {{-- Sidik jari --}}
+        <div class="p-3 flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full shrink-0
+            {{ $webauthnCredential ? 'bg-emerald-500' : 'bg-amber-400' }}">
           </div>
-          <div class="p-3 flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full"
-              :class="{
-                  'bg-slate-300': gpsStatus === 'loading',
-                  'bg-emerald-500': geofenceOk || (gpsStatus === 'ok' && !needsGeofence),
-                  'bg-red-500': gpsStatus === 'ok' && needsGeofence && !geofenceOk,
-                  'bg-red-400': gpsStatus === 'error',
-              }">
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-400 leading-none">Lokasi</p>
-              <p class="text-xs font-medium text-slate-700 leading-snug" x-text="gpsStatusText"></p>
-            </div>
+          <div>
+            <p class="text-[10px] text-slate-400 leading-none">Sidik Jari</p>
+            <p class="text-xs font-medium text-slate-700 leading-snug">
+              {{ $webauthnCredential ? 'Terdaftar' : 'Belum terdaftar' }}
+            </p>
           </div>
         </div>
       </div>
 
       {{-- Info check-in jika sudah check-in --}}
       @if ($attendance?->check_in_at)
-        <div
-          class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm flex items-center gap-2">
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm flex items-center gap-2">
           <x-icon name="check" class="w-4 h-4 shrink-0" />
           <span>Masuk pukul <strong>{{ $attendance->check_in_at->format('H:i') }}</strong>
             @if ($attendance->late_minutes > 0)
@@ -315,8 +283,7 @@
               <span x-show="!processing">Tetap Check-out</span>
               <span x-show="processing" class="flex items-center justify-center gap-1.5">
                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                    stroke-width="4"></circle>
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
                 Memproses…
@@ -330,11 +297,15 @@
       @if (!$attendance?->check_in_at)
         <button @click="doCheckIn()" :disabled="!canProceed || processing"
           class="w-full bg-emerald-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
-          <span x-show="!processing">Check-in Sekarang</span>
+          <span x-show="!processing" class="flex items-center justify-center gap-2">
+            @if ($webauthnCredential)
+              <x-icon name="fingerprint" class="w-5 h-5" />
+            @endif
+            Check-in Sekarang
+          </span>
           <span x-show="processing" class="flex items-center justify-center gap-2">
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                stroke-width="4"></circle>
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
             Memproses…
@@ -343,11 +314,15 @@
       @elseif (!$showEarlyCheckoutWarning)
         <button @click="doCheckOut()" :disabled="!canProceed || processing"
           class="w-full bg-rose-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
-          <span x-show="!processing">Check-out Sekarang</span>
+          <span x-show="!processing" class="flex items-center justify-center gap-2">
+            @if ($webauthnCredential)
+              <x-icon name="fingerprint" class="w-5 h-5" />
+            @endif
+            Check-out Sekarang
+          </span>
           <span x-show="processing" class="flex items-center justify-center gap-2">
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                stroke-width="4"></circle>
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
             Memproses…
@@ -355,21 +330,23 @@
         </button>
       @endif
 
-      {{-- Pesan panduan --}}
-      <div x-show="!canProceed" x-cloak class="text-xs text-center text-slate-500 -mt-1 space-y-1">
-        <p x-show="!cameraReady">Menunggu kamera siap…</p>
-        <p x-show="cameraReady && needsGeofence && !geofenceOk && gpsStatus === 'error'" class="text-red-500">
+      {{-- Panduan --}}
+      <div x-show="!canProceed" x-cloak class="text-xs text-center text-slate-500 -mt-1">
+        <p x-show="needsGeofence && !geofenceOk && gpsStatus === 'error'" class="text-red-500">
           GPS tidak dapat diakses. Izinkan akses lokasi.
         </p>
-        <p x-show="cameraReady && needsGeofence && !geofenceOk && gpsStatus === 'ok'">
+        <p x-show="needsGeofence && !geofenceOk && gpsStatus === 'ok'">
           Anda berada di luar radius kantor. Absensi WFO memerlukan kehadiran fisik di kantor.
         </p>
-        <p x-show="cameraReady && needsGeofence && !geofenceOk && gpsStatus === 'loading'">
+        <p x-show="needsGeofence && !geofenceOk && gpsStatus === 'loading'">
           Mendapatkan lokasi GPS…
+        </p>
+        <p x-show="!hasCredential && !password">
+          Masukkan kata sandi di atas untuk melanjutkan.
         </p>
       </div>
 
-    @endif {{-- end state check --}}
+    @endif
 
     {{-- Riwayat --}}
     @if ($history->isNotEmpty())
@@ -384,8 +361,7 @@
                   {{ $h->check_in_at?->format('H:i') ?? '-' }} - {{ $h->check_out_at?->format('H:i') ?? '-' }}
                 </p>
               </div>
-              <span
-                class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
+              <span class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
                 {{ $h->status?->label() ?? '-' }}
               </span>
             </div>

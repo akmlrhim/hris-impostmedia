@@ -8,7 +8,8 @@ use App\Models\Attendance as AttendanceModel;
 use App\Models\AttendanceLog;
 use App\Models\OfficeLocation;
 use App\Models\RemoteWorkRequest;
-use Illuminate\Support\Facades\Storage;
+use App\Models\WebauthnCredential;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -17,227 +18,296 @@ use Livewire\Component;
 #[Title('Absensi')]
 class Attendance extends Component
 {
-	public bool $showEarlyCheckoutWarning = false;
+    public bool $showEarlyCheckoutWarning = false;
 
-	public int $workedMinutes = 0;
+    public int $workedMinutes = 0;
 
-	private const MINIMUM_WORK_MINUTES = 480;
+    public string $webauthnChallenge = '';
 
-	public function checkIn(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null, ?string $selectedWorkType = null): void
-	{
-		$employee = auth()->user()?->employee;
+    private const MINIMUM_WORK_MINUTES = 480;
 
-		if (! $employee) {
-			$this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
+    public function mount(): void
+    {
+        $this->refreshChallenge();
+    }
 
-			return;
-		}
+    public function refreshChallenge(): void
+    {
+        $challenge = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+        session(['webauthn_auth_challenge' => $challenge]);
+        $this->webauthnChallenge = $challenge;
+    }
 
-		$today = now()->toDateString();
+    public function checkIn(?string $credentialId = null, ?string $clientDataJSON = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null, ?string $selectedWorkType = null, ?string $password = null): void
+    {
+        $user = auth()->user();
+        $employee = $user?->employee;
 
-		$attendance = AttendanceModel::firstOrNew([
-			'employee_id' => $employee->id,
-			'attendance_date' => $today,
-		]);
+        if (! $employee) {
+            $this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
 
-		if ($attendance->check_in_at) {
-			$this->dispatch('notify', message: 'Anda sudah check-in hari ini.', type: 'warning');
+            return;
+        }
 
-			return;
-		}
+        $storedCredential = WebauthnCredential::where('user_id', $user->id)->first();
 
-		$baseWorkType = $employee->work_type ?? WorkType::WFA;
+        if ($storedCredential) {
+            if (! $credentialId || ! $clientDataJSON) {
+                $this->dispatch('notify', message: 'Verifikasi sidik jari diperlukan.', type: 'error');
 
-		$remoteRequest = RemoteWorkRequest::approvedFor($employee->id, $today);
-		if ($remoteRequest) {
-			$effectiveWorkType = $remoteRequest->work_type;
-		} elseif ($baseWorkType === WorkType::Hybrid) {
-			// Karyawan Hybrid memilih mode WFO atau WFA saat check-in
-			$effectiveWorkType = WorkType::tryFrom($selectedWorkType ?? 'wfa') ?? WorkType::WFA;
-			// Mode Hybrid hanya bisa WFO atau WFA
-			if ($effectiveWorkType === WorkType::Hybrid) {
-				$effectiveWorkType = WorkType::WFA;
-			}
-		} else {
-			$effectiveWorkType = $baseWorkType;
-		}
+                return;
+            }
 
-		if ($effectiveWorkType->requiresGeofencing()) {
-			if (! $latitude || ! $longitude) {
-				$this->dispatch('notify', message: 'GPS diperlukan untuk absensi WFO. Izinkan akses lokasi.', type: 'error');
+            if (! $this->verifyWebauthnAssertion($credentialId, $clientDataJSON)) {
+                $this->dispatch('notify', message: 'Verifikasi sidik jari gagal. Coba lagi.', type: 'error');
+                $this->refreshChallenge();
 
-				return;
-			}
+                return;
+            }
+        } else {
+            if (! $password || ! Hash::check($password, $user->password)) {
+                $this->dispatch('notify', message: 'Kata sandi salah. Coba lagi.', type: 'error');
 
-			$offices = OfficeLocation::where('is_active', true)->get();
-			$withinRadius = $offices->contains(fn($office) => $office->isWithinRadius($latitude, $longitude));
+                return;
+            }
+        }
 
-			if (! $withinRadius) {
-				$this->dispatch('notify', message: 'Anda berada di luar radius kantor. Absensi WFO tidak dapat diproses.', type: 'error');
+        $today = now()->toDateString();
 
-				return;
-			}
-		}
+        $attendance = AttendanceModel::firstOrNew([
+            'employee_id' => $employee->id,
+            'attendance_date' => $today,
+        ]);
 
-		$photoPath = $this->savePhoto($photo, "ci_{$employee->id}_" . now()->format('Ymd_His'));
+        if ($attendance->check_in_at) {
+            $this->dispatch('notify', message: 'Anda sudah check-in hari ini.', type: 'warning');
 
-		$attendance->fill([
-			'check_in_at' => now(),
-			'check_in_latitude' => $latitude,
-			'check_in_longitude' => $longitude,
-			'check_in_address' => $address,
-			'check_in_photo_path' => $photoPath,
-			'status' => AttendanceStatus::Present,
-			'work_type' => $effectiveWorkType->value,
-			'late_minutes' => 0,
-		])->save();
+            return;
+        }
 
-		AttendanceLog::create([
-			'attendance_id' => $attendance->id,
-			'employee_id' => $employee->id,
-			'event' => 'check_in',
-			'event_at' => now(),
-			'latitude' => $latitude,
-			'longitude' => $longitude,
-			'photo_path' => $photoPath,
-			'ip_address' => request()->ip(),
-			'device_info' => substr(request()->userAgent() ?? '', 0, 255),
-		]);
+        $baseWorkType = $employee->work_type ?? WorkType::WFA;
 
-		$this->dispatch('notify', message: 'Check-in berhasil!', type: 'success');
-		$this->dispatch('attendance-recorded');
-	}
+        $remoteRequest = RemoteWorkRequest::approvedFor($employee->id, $today);
+        if ($remoteRequest) {
+            $effectiveWorkType = $remoteRequest->work_type;
+        } elseif ($baseWorkType === WorkType::Hybrid) {
+            $effectiveWorkType = WorkType::tryFrom($selectedWorkType ?? 'wfa') ?? WorkType::WFA;
+            if ($effectiveWorkType === WorkType::Hybrid) {
+                $effectiveWorkType = WorkType::WFA;
+            }
+        } else {
+            $effectiveWorkType = $baseWorkType;
+        }
 
-	public function checkOut(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null): void
-	{
-		$employee = auth()->user()?->employee;
+        if ($effectiveWorkType->requiresGeofencing()) {
+            if (! $latitude || ! $longitude) {
+                $this->dispatch('notify', message: 'GPS diperlukan untuk absensi WFO. Izinkan akses lokasi.', type: 'error');
 
-		if (! $employee) {
-			$this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
+                return;
+            }
 
-			return;
-		}
+            $offices = OfficeLocation::where('is_active', true)->get();
+            $withinRadius = $offices->contains(fn ($office) => $office->isWithinRadius($latitude, $longitude));
 
-		$attendance = AttendanceModel::where('employee_id', $employee->id)
-			->whereDate('attendance_date', now()->toDateString())
-			->first();
+            if (! $withinRadius) {
+                $this->dispatch('notify', message: 'Anda berada di luar radius kantor. Absensi WFO tidak dapat diproses.', type: 'error');
 
-		if (! $attendance || ! $attendance->check_in_at) {
-			$this->dispatch('notify', message: 'Anda belum check-in hari ini.', type: 'warning');
+                return;
+            }
+        }
 
-			return;
-		}
+        $attendance->fill([
+            'check_in_at' => now(),
+            'check_in_latitude' => $latitude,
+            'check_in_longitude' => $longitude,
+            'check_in_address' => $address,
+            'check_in_photo_path' => null,
+            'status' => AttendanceStatus::Present,
+            'work_type' => $effectiveWorkType->value,
+            'late_minutes' => 0,
+        ])->save();
 
-		if ($attendance->check_out_at) {
-			$this->dispatch('notify', message: 'Anda sudah check-out.', type: 'warning');
+        AttendanceLog::create([
+            'attendance_id' => $attendance->id,
+            'employee_id' => $employee->id,
+            'event' => 'check_in',
+            'event_at' => now(),
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'photo_path' => null,
+            'ip_address' => request()->ip(),
+            'device_info' => substr(request()->userAgent() ?? '', 0, 255),
+        ]);
 
-			return;
-		}
+        $this->dispatch('notify', message: 'Check-in berhasil!', type: 'success');
+        $this->dispatch('attendance-recorded');
+    }
 
-		$workedMinutes = (int) $attendance->check_in_at->diffInMinutes(now());
+    public function checkOut(?string $credentialId = null, ?string $clientDataJSON = null, ?float $latitude = null, ?float $longitude = null, ?string $address = null, ?string $password = null): void
+    {
+        $user = auth()->user();
+        $employee = $user?->employee;
 
-		if ($workedMinutes < self::MINIMUM_WORK_MINUTES && ! $this->showEarlyCheckoutWarning) {
-			$this->workedMinutes = $workedMinutes;
-			$this->showEarlyCheckoutWarning = true;
+        if (! $employee) {
+            $this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
 
-			return;
-		}
+            return;
+        }
 
-		$this->showEarlyCheckoutWarning = false;
-		$workMinutes = (int) $attendance->check_in_at->diffInMinutes(now());
-		$photoPath = $this->savePhoto($photo, "co_{$employee->id}_" . now()->format('Ymd_His'));
+        $storedCredential = WebauthnCredential::where('user_id', $user->id)->first();
 
-		$attendance->update([
-			'check_out_at' => now(),
-			'check_out_latitude' => $latitude,
-			'check_out_longitude' => $longitude,
-			'check_out_address' => $address,
-			'check_out_photo_path' => $photoPath,
-			'work_minutes' => (int) $workMinutes,
-		]);
+        if ($storedCredential) {
+            if (! $credentialId || ! $clientDataJSON) {
+                $this->dispatch('notify', message: 'Verifikasi sidik jari diperlukan.', type: 'error');
 
-		AttendanceLog::create([
-			'attendance_id' => $attendance->id,
-			'employee_id' => $employee->id,
-			'event' => 'check_out',
-			'event_at' => now(),
-			'latitude' => $latitude,
-			'longitude' => $longitude,
-			'photo_path' => $photoPath,
-			'ip_address' => request()->ip(),
-			'device_info' => substr(request()->userAgent() ?? '', 0, 255),
-		]);
+                return;
+            }
 
-		$this->dispatch('notify', message: 'Check-out berhasil! Terima kasih.', type: 'success');
-		$this->dispatch('attendance-recorded');
-	}
+            if (! $this->verifyWebauthnAssertion($credentialId, $clientDataJSON)) {
+                $this->dispatch('notify', message: 'Verifikasi sidik jari gagal. Coba lagi.', type: 'error');
+                $this->refreshChallenge();
 
-	public function cancelEarlyCheckout(): void
-	{
-		$this->showEarlyCheckoutWarning = false;
-		$this->workedMinutes = 0;
-	}
+                return;
+            }
+        } else {
+            if (! $password || ! Hash::check($password, $user->password)) {
+                $this->dispatch('notify', message: 'Kata sandi salah. Coba lagi.', type: 'error');
 
-	private function savePhoto(?string $base64Data, string $filename): ?string
-	{
-		if (! $base64Data) {
-			return null;
-		}
+                return;
+            }
+        }
 
-		$imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64Data);
-		$decoded = base64_decode($imageData, strict: true);
+        $attendance = AttendanceModel::where('employee_id', $employee->id)
+            ->whereDate('attendance_date', now()->toDateString())
+            ->first();
 
-		if ($decoded === false) {
-			return null;
-		}
+        if (! $attendance || ! $attendance->check_in_at) {
+            $this->dispatch('notify', message: 'Anda belum check-in hari ini.', type: 'warning');
 
-		$path = "attendance-photos/{$filename}.jpg";
-		Storage::disk('local')->put($path, $decoded);
+            return;
+        }
 
-		return $path;
-	}
+        if ($attendance->check_out_at) {
+            $this->dispatch('notify', message: 'Anda sudah check-out.', type: 'warning');
 
-	public function render(): mixed
-	{
-		$user = auth()->user();
-		$employee = $user?->employee;
-		$today = now()->toDateString();
-		$isAdminPanelUser = $user?->role?->isAdminPanel() ?? false;
+            return;
+        }
 
-		$attendance = $employee
-			? AttendanceModel::where('employee_id', $employee->id)
-			->whereDate('attendance_date', $today)
-			->first()
-			: null;
+        $workedMinutes = (int) $attendance->check_in_at->diffInMinutes(now());
 
-		$history = $employee
-			? AttendanceModel::where('employee_id', $employee->id)
-			->whereDate('attendance_date', '<', $today)
-			->orderByDesc('attendance_date')
-			->limit(10)
-			->get()
-			: collect();
+        if ($workedMinutes < self::MINIMUM_WORK_MINUTES && ! $this->showEarlyCheckoutWarning) {
+            $this->workedMinutes = $workedMinutes;
+            $this->showEarlyCheckoutWarning = true;
 
-		$baseWorkType = $employee?->work_type ?? WorkType::WFA;
-		$remoteRequest = $employee ? RemoteWorkRequest::approvedFor($employee->id, $today) : null;
-		$workType = $remoteRequest ? $remoteRequest->work_type : $baseWorkType;
+            return;
+        }
 
-		$officeLocations = ($workType->requiresGeofencing() || $workType === WorkType::Hybrid)
-			? OfficeLocation::where('is_active', true)->get(['id', 'name', 'latitude', 'longitude', 'radius_meters'])
-			: collect();
+        $this->showEarlyCheckoutWarning = false;
+        $workMinutes = (int) $attendance->check_in_at->diffInMinutes(now());
 
-		$faceDescriptor = $employee?->face_descriptor;
+        $attendance->update([
+            'check_out_at' => now(),
+            'check_out_latitude' => $latitude,
+            'check_out_longitude' => $longitude,
+            'check_out_address' => $address,
+            'check_out_photo_path' => null,
+            'work_minutes' => $workMinutes,
+        ]);
 
-		return view('livewire.employee.attendance', compact(
-			'employee',
-			'attendance',
-			'history',
-			'workType',
-			'baseWorkType',
-			'remoteRequest',
-			'officeLocations',
-			'faceDescriptor',
-			'isAdminPanelUser'
-		));
-	}
+        AttendanceLog::create([
+            'attendance_id' => $attendance->id,
+            'employee_id' => $employee->id,
+            'event' => 'check_out',
+            'event_at' => now(),
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'photo_path' => null,
+            'ip_address' => request()->ip(),
+            'device_info' => substr(request()->userAgent() ?? '', 0, 255),
+        ]);
+
+        $this->dispatch('notify', message: 'Check-out berhasil! Terima kasih.', type: 'success');
+        $this->dispatch('attendance-recorded');
+    }
+
+    public function cancelEarlyCheckout(): void
+    {
+        $this->showEarlyCheckoutWarning = false;
+        $this->workedMinutes = 0;
+    }
+
+    private function verifyWebauthnAssertion(string $credentialId, string $clientDataJSON): bool
+    {
+        $user = auth()->user();
+
+        $credential = WebauthnCredential::where('user_id', $user->id)
+            ->where('credential_id', $credentialId)
+            ->first();
+
+        if (! $credential) {
+            return false;
+        }
+
+        $decoded = base64_decode(strtr($clientDataJSON, '-_', '+/'));
+        $data = json_decode($decoded, true);
+
+        if (! $data || ($data['type'] ?? '') !== 'webauthn.get') {
+            return false;
+        }
+
+        $storedChallenge = session('webauthn_auth_challenge');
+        if (! $storedChallenge || ($data['challenge'] ?? '') !== $storedChallenge) {
+            return false;
+        }
+
+        session()->forget('webauthn_auth_challenge');
+
+        return true;
+    }
+
+    public function render(): mixed
+    {
+        $user = auth()->user();
+        $employee = $user?->employee;
+        $today = now()->toDateString();
+        $isAdminPanelUser = $user?->role?->isAdminPanel() ?? false;
+
+        $attendance = $employee
+            ? AttendanceModel::where('employee_id', $employee->id)
+                ->whereDate('attendance_date', $today)
+                ->first()
+            : null;
+
+        $history = $employee
+            ? AttendanceModel::where('employee_id', $employee->id)
+                ->whereDate('attendance_date', '<', $today)
+                ->orderByDesc('attendance_date')
+                ->limit(10)
+                ->get()
+            : collect();
+
+        $baseWorkType = $employee?->work_type ?? WorkType::WFA;
+        $remoteRequest = $employee ? RemoteWorkRequest::approvedFor($employee->id, $today) : null;
+        $workType = $remoteRequest ? $remoteRequest->work_type : $baseWorkType;
+
+        $officeLocations = ($workType->requiresGeofencing() || $workType === WorkType::Hybrid)
+            ? OfficeLocation::where('is_active', true)->get(['id', 'name', 'latitude', 'longitude', 'radius_meters'])
+            : collect();
+
+        $webauthnCredential = $user
+            ? WebauthnCredential::where('user_id', $user->id)->first()
+            : null;
+
+        return view('livewire.employee.attendance', compact(
+            'employee',
+            'attendance',
+            'history',
+            'workType',
+            'baseWorkType',
+            'remoteRequest',
+            'officeLocations',
+            'webauthnCredential',
+            'isAdminPanelUser'
+        ));
+    }
 }
