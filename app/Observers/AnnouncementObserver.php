@@ -18,7 +18,6 @@ class AnnouncementObserver
 
 	public function updated(Announcement $announcement): void
 	{
-		// Kirim notifikasi hanya saat status berubah dari draft → published
 		if (
 			$announcement->wasChanged('published_at') &&
 			$announcement->published_at !== null &&
