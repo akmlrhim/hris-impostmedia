@@ -13,6 +13,10 @@ class SendHolidayNotificationsJob implements ShouldQueue
 {
 	use Queueable;
 
+	public int $tries = 1;
+
+	public int $timeout = 110;
+
 	public function __construct(
 		private readonly Holiday $holiday,
 	) {}
