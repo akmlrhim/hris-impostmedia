@@ -77,7 +77,9 @@ window.fingerprintEnrollment = function ({ hasFingerprint }) {
             if (/iPad/.test(ua)) return 'iPad';
             if (/Android/.test(ua)) {
                 const match = ua.match(/Android.*;\s*([^)]+)\)/);
-                return match ? match[1].trim() : 'Android';
+                const model = match ? match[1].trim() : '';
+                // Android 13+ sends a generic single-char identifier (e.g. "K") for privacy
+                return model.length > 2 ? model : 'Android';
             }
             if (/Windows/.test(ua)) return 'Windows PC';
             if (/Mac/.test(ua)) return 'Mac';

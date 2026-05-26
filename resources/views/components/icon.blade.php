@@ -58,6 +58,10 @@
           '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
       'trending-up' => '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
 
+      // Biometric
+      'fingerprint' =>
+          '<path stroke-linecap="round" stroke-linejoin="round" d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4M14 13.12c0 2.38 0 6.88-1 8.88M17.29 21.02c.12-2.6.41-4.2.41-5.02M19 10c.34 1.27.49 2.61.49 4M5 10.1c-.07 1.93-.37 3.71-.91 5.41M6.14 21.01C7 17 7 13 7 10M7.43 7.71C6.54 8.65 6 9.77 6 11M11.5 12.5c-.17.64-.17 2.5-.5 3M17 12c0 1.1-.18 2.21-.5 3.22M12 10a5 5 0 0 0-4.17 7.77M12 10a5 5 0 0 1 3.13 8.94M12 10a5 5 0 0 1 1 9.9M3 10c0-5 3.5-8 9-8M21 10c0-5-3.5-8-9-8"/>',
+
       // Security & Auth
       'log-out' =>
           '<path stroke-linecap="round" stroke-linejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
