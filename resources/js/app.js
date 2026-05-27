@@ -2,5 +2,5 @@ import './pwa';
 import './quill';
 import './confirm';
 import './currency';
-import './attendance-fingerprint';
-import './fingerprint-enrollment';
+import './attendance-face-id';
+import './face-id-enrollment';

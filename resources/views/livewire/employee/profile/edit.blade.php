@@ -215,18 +215,18 @@
       </button>
     </form>
 
-    {{-- Link ke halaman sidik jari --}}
-    @php $fingerprintEnrolled = \App\Models\WebauthnCredential::where('user_id', auth()->id())->exists(); @endphp
-    <a wire:navigate href="{{ route('mobile.profile.fingerprint') }}"
+    {{-- Link ke halaman Face ID --}}
+    @php $faceIdEnrolled = \App\Models\WebauthnCredential::where('user_id', auth()->id())->exists(); @endphp
+    <a wire:navigate href="{{ route('mobile.profile.face-id') }}"
       class="card p-4 flex items-center justify-between gap-3 active:scale-[0.99] transition">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl {{ $fingerprintEnrolled ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-50 text-rose-500' }} flex items-center justify-center shrink-0">
-          <x-icon name="fingerprint" class="w-5 h-5" />
+        <div class="w-10 h-10 rounded-xl {{ $faceIdEnrolled ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-50 text-rose-500' }} flex items-center justify-center shrink-0">
+          <x-icon name="scan-face" class="w-5 h-5" />
         </div>
         <div>
-          <p class="text-sm font-medium text-slate-900">Sidik Jari</p>
-          <p class="text-xs {{ $fingerprintEnrolled ? 'text-emerald-600' : 'text-rose-500' }}">
-            {{ $fingerprintEnrolled ? 'Sudah terdaftar' : 'Belum terdaftar - tap untuk mendaftar' }}
+          <p class="text-sm font-medium text-slate-900">Face ID</p>
+          <p class="text-xs {{ $faceIdEnrolled ? 'text-emerald-600' : 'text-rose-500' }}">
+            {{ $faceIdEnrolled ? 'Sudah terdaftar' : 'Belum terdaftar - tap untuk mendaftar' }}
           </p>
         </div>
       </div>

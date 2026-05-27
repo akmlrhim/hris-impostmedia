@@ -1,4 +1,4 @@
-<div x-data="attendanceFingerprint({
+<div x-data="attendanceFaceId({
     workType: @js($workType === \App\Enums\WorkType::Hybrid ? 'wfa' : $workType->value),
     officeLocations: @js($officeLocations->values()),
     credentialId: @js($webauthnCredential?->credential_id),
@@ -135,14 +135,16 @@
         </div>
       </div>
 
-      {{-- Verifikasi kata sandi (fallback jika sidik jari tidak terdaftar) --}}
+      {{-- Verifikasi kata sandi (fallback jika biometrik tidak terdaftar) --}}
       @if (!$webauthnCredential)
         <div class="card p-4 space-y-3">
           <div class="flex items-center gap-2">
             <x-icon name="lock" class="w-4 h-4 text-amber-500 shrink-0" />
             <p class="text-sm font-semibold text-slate-900">Verifikasi Kata Sandi</p>
           </div>
-          <p class="text-xs text-slate-500">Sidik jari belum terdaftar. Masukkan kata sandi akun untuk melanjutkan absensi.</p>
+          <p class="text-xs text-slate-500">
+            <span x-text="biometricLabel">Biometrik</span> belum terdaftar. Masukkan kata sandi akun untuk melanjutkan absensi.
+          </p>
           <div class="relative">
             <input
               :type="showPassword ? 'text' : 'password'"
@@ -158,7 +160,7 @@
             </button>
           </div>
           <p class="text-[11px] text-slate-400">
-            <a wire:navigate href="{{ route('mobile.profile.fingerprint') }}" class="underline font-medium">Daftarkan sidik jari</a>
+            <a wire:navigate href="{{ route('mobile.profile.face-id') }}" class="underline font-medium">Daftarkan <span x-text="biometricLabel">biometrik</span></a>
             agar tidak perlu input kata sandi setiap absensi.
           </p>
         </div>
@@ -203,7 +205,7 @@
         </div>
       @endif
 
-      {{-- Status GPS + Sidik Jari --}}
+      {{-- Status GPS + Face ID --}}
       <div class="card divide-x divide-slate-100 grid grid-cols-2">
         {{-- GPS --}}
         <div class="p-3 flex items-center gap-2">
@@ -221,13 +223,13 @@
           </div>
         </div>
 
-        {{-- Sidik jari --}}
+        {{-- Biometrik (Face ID / Sidik Jari) --}}
         <div class="p-3 flex items-center gap-2">
           <div class="w-2 h-2 rounded-full shrink-0
             {{ $webauthnCredential ? 'bg-emerald-500' : 'bg-amber-400' }}">
           </div>
           <div>
-            <p class="text-[10px] text-slate-400 leading-none">Sidik Jari</p>
+            <p class="text-[10px] text-slate-400 leading-none" x-text="biometricLabel">Biometrik</p>
             <p class="text-xs font-medium text-slate-700 leading-snug">
               {{ $webauthnCredential ? 'Terdaftar' : 'Belum terdaftar' }}
             </p>
@@ -299,7 +301,7 @@
           class="w-full bg-emerald-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
           <span x-show="!processing" class="flex items-center justify-center gap-2">
             @if ($webauthnCredential)
-              <x-icon name="fingerprint" class="w-5 h-5" />
+              <x-icon name="scan-face" class="w-5 h-5" />
             @endif
             Check-in Sekarang
           </span>
@@ -316,7 +318,7 @@
           class="w-full bg-rose-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
           <span x-show="!processing" class="flex items-center justify-center gap-2">
             @if ($webauthnCredential)
-              <x-icon name="fingerprint" class="w-5 h-5" />
+              <x-icon name="scan-face" class="w-5 h-5" />
             @endif
             Check-out Sekarang
           </span>

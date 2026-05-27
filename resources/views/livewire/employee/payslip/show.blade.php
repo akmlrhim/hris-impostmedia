@@ -3,10 +3,15 @@
         <a wire:navigate href="{{ route('mobile.payslip') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
             <x-icon name="arrow-left" class="w-5 h-5" />
         </a>
-        <div>
+        <div class="flex-1">
             <h1 class="text-lg font-bold text-slate-900">Slip Gaji</h1>
             <p class="text-xs text-slate-500">{{ $payroll->period->code }}</p>
         </div>
+        <a href="{{ route('mobile.payslip.pdf', $payroll) }}" target="_blank"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold active:bg-slate-200 transition">
+            <x-icon name="download" class="w-4 h-4" />
+            Unduh PDF
+        </a>
     </div>
 
     <div class="p-4 space-y-3">

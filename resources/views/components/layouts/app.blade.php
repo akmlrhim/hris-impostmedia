@@ -38,12 +38,43 @@
 </head>
 
 <body class="h-full">
+
+  {{-- Landscape blocker: hanya aktif di perangkat sentuh (HP/tablet) saat landscape --}}
+  <div id="landscape-blocker"
+    class="fixed inset-0 z-[9999] bg-slate-900 text-white flex-col items-center justify-center gap-5 px-8 text-center hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-slate-400" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor" stroke-width="1.5">
+      <rect x="5" y="2" width="14" height="20" rx="2" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3c0 0 3-3 9-3s9 3 9 3" class="text-brand-400" />
+    </svg>
+    <div>
+      <p class="text-lg font-semibold">Putar Perangkat Anda</p>
+      <p class="text-sm text-slate-400 mt-1">Aplikasi ini dioptimalkan untuk tampilan <strong
+          class="text-white">portrait</strong> (tegak).</p>
+    </div>
+  </div>
+
+  <style>
+    @media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+      #landscape-blocker {
+        display: flex !important;
+      }
+    }
+  </style>
+
   {{ $slot }}
 
   <x-pwa-install-banner />
 
   @livewireScripts
   @stack('scripts')
+
+  <script>
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('portrait').catch(() => {});
+    }
+  </script>
 
   <script>
     if ('serviceWorker' in navigator) {

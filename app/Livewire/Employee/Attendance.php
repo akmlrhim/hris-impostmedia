@@ -53,13 +53,13 @@ class Attendance extends Component
 
         if ($storedCredential) {
             if (! $credentialId || ! $clientDataJSON) {
-                $this->dispatch('notify', message: 'Verifikasi sidik jari diperlukan.', type: 'error');
+                $this->dispatch('notify', message: 'Verifikasi biometrik diperlukan.', type: 'error');
 
                 return;
             }
 
             if (! $this->verifyWebauthnAssertion($credentialId, $clientDataJSON)) {
-                $this->dispatch('notify', message: 'Verifikasi sidik jari gagal. Coba lagi.', type: 'error');
+                $this->dispatch('notify', message: 'Verifikasi biometrik gagal. Coba lagi.', type: 'error');
                 $this->refreshChallenge();
 
                 return;
@@ -158,13 +158,13 @@ class Attendance extends Component
 
         if ($storedCredential) {
             if (! $credentialId || ! $clientDataJSON) {
-                $this->dispatch('notify', message: 'Verifikasi sidik jari diperlukan.', type: 'error');
+                $this->dispatch('notify', message: 'Verifikasi biometrik diperlukan.', type: 'error');
 
                 return;
             }
 
             if (! $this->verifyWebauthnAssertion($credentialId, $clientDataJSON)) {
-                $this->dispatch('notify', message: 'Verifikasi sidik jari gagal. Coba lagi.', type: 'error');
+                $this->dispatch('notify', message: 'Verifikasi biometrik gagal. Coba lagi.', type: 'error');
                 $this->refreshChallenge();
 
                 return;
@@ -198,6 +198,7 @@ class Attendance extends Component
         if ($workedMinutes < self::MINIMUM_WORK_MINUTES && ! $this->showEarlyCheckoutWarning) {
             $this->workedMinutes = $workedMinutes;
             $this->showEarlyCheckoutWarning = true;
+            $this->refreshChallenge();
 
             return;
         }

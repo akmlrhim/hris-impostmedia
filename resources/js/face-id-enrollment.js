@@ -1,8 +1,10 @@
-window.fingerprintEnrollment = function ({ hasFingerprint }) {
+window.faceIdEnrollment = function ({ hasFaceId }) {
     return {
         enrolling: false,
         statusMsg: '',
         supported: !!window.PublicKeyCredential,
+
+        biometricLabel: 'Face ID',
 
         base64urlToBuffer(base64url) {
             const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
@@ -17,7 +19,7 @@ window.fingerprintEnrollment = function ({ hasFingerprint }) {
             return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
         },
 
-        async registerFingerprint() {
+        async registerFaceId() {
             if (this.enrolling) return;
 
             if (!this.supported) {
@@ -45,26 +47,26 @@ window.fingerprintEnrollment = function ({ hasFingerprint }) {
                     attestation: options.attestation,
                 };
 
-                this.statusMsg = 'Ikuti instruksi perangkat Anda…';
+                this.statusMsg = 'Arahkan wajah ke kamera untuk Face ID…';
 
                 const credential = await navigator.credentials.create({ publicKey: createOptions });
 
                 const credentialId = this.bufferToBase64url(credential.rawId);
                 const deviceName = this.getDeviceName();
 
-                this.statusMsg = 'Menyimpan sidik jari…';
+                this.statusMsg = `Menyimpan ${this.biometricLabel}…`;
                 await this.$wire.storeCredential(credentialId, deviceName);
 
-                hasFingerprint = true;
+                hasFaceId = true;
                 this.statusMsg = '';
             } catch (e) {
                 if (e?.name === 'NotAllowedError') {
-                    this.statusMsg = 'Pendaftaran dibatalkan atau sidik jari tidak dikenali.';
+                    this.statusMsg = 'Pendaftaran dibatalkan atau Face ID tidak dikenali.';
                 } else if (e?.name === 'InvalidStateError') {
                     this.statusMsg = 'Perangkat ini sudah terdaftar.';
                 } else {
-                    console.error('[fingerprint-enrollment]', e);
-                    this.statusMsg = 'Gagal mendaftarkan sidik jari. Coba lagi.';
+                    console.error('[face-id-enrollment]', e);
+                    this.statusMsg = `Gagal mendaftarkan ${this.biometricLabel}. Coba lagi.`;
                 }
             } finally {
                 this.enrolling = false;

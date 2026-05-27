@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Http\Controllers\Admin\Payroll\PayrollPdfController;
+use App\Http\Controllers\Employee\PayslipPdfController;
 use App\Livewire\Admin\AccessControl as AdminAccessControl;
 use App\Livewire\Admin\ActivityLog as AdminActivityLog;
 use App\Livewire\Admin\Announcements as AdminAnnouncements;
@@ -30,7 +32,7 @@ use App\Livewire\Employee\Leave as MobileLeave;
 use App\Livewire\Employee\Payslip\Index as MobilePayslip;
 use App\Livewire\Employee\Payslip\Show as MobilePayslipShow;
 use App\Livewire\Employee\Profile\Edit as MobileProfileEdit;
-use App\Livewire\Employee\Profile\Fingerprint as MobileProfileFingerprint;
+use App\Livewire\Employee\Profile\FaceId as MobileProfileFaceId;
 use App\Livewire\Employee\Profile\Index as MobileProfile;
 use App\Livewire\Employee\RemoteWork as MobileRemoteWork;
 use App\Models\Employee;
@@ -95,6 +97,7 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/shift', AdminShift::class)->name('shift')->middleware('can:manage_shifts');
         Route::get('/payroll', AdminPayroll::class)->name('payroll')->middleware('can:manage_payroll');
         Route::get('/payroll/payslip/{payroll}', AdminPayslip::class)->name('payroll.payslip')->middleware('can:manage_payroll');
+        Route::get('/payroll/{period}/pdf', PayrollPdfController::class)->name('payroll.period.pdf')->middleware('can:manage_payroll');
         Route::get('/payroll/{period}', AdminPayrollShow::class)->name('payroll.show')->middleware('can:manage_payroll');
         Route::get('/announcements', AdminAnnouncements::class)->name('announcements')->middleware('can:manage_announcements');
         Route::get('/holidays', AdminHoliday::class)->name('holidays')->middleware('can:manage_holidays');
@@ -118,9 +121,10 @@ Route::middleware(['auth', 'employee.active'])
         Route::get('/directory', MobileDirectory::class)->name('directory');
         Route::get('/payslip', MobilePayslip::class)->name('payslip');
         Route::get('/payslip/{payroll}', MobilePayslipShow::class)->name('payslip.show');
+        Route::get('/payslip/{payroll}/pdf', PayslipPdfController::class)->name('payslip.pdf');
         Route::get('/profile', MobileProfile::class)->name('profile');
         Route::get('/profile/edit', MobileProfileEdit::class)->name('profile.edit');
-        Route::get('/profile/fingerprint', MobileProfileFingerprint::class)->name('profile.fingerprint');
+        Route::get('/profile/face-id', MobileProfileFaceId::class)->name('profile.face-id');
         Route::get('/announcements/{announcement}', MobileAnnouncementShow::class)->name('announcements.show');
         Route::get('/remote-work', MobileRemoteWork::class)->name('remote-work');
         Route::get('/leave', MobileLeave::class)->name('leave');

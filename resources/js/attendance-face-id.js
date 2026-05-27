@@ -1,4 +1,4 @@
-window.attendanceFingerprint = function ({ workType, officeLocations, credentialId, webauthnChallenge }) {
+window.attendanceFaceId = function ({ workType, officeLocations, credentialId, webauthnChallenge }) {
     return {
         gpsStatus: 'loading',
         geofenceOk: false,
@@ -6,12 +6,14 @@ window.attendanceFingerprint = function ({ workType, officeLocations, credential
         longitude: null,
         address: '',
 
-        fingerprintStatus: credentialId ? 'idle' : 'no-credential',
+        faceIdStatus: credentialId ? 'idle' : 'no-credential',
         hasCredential: credentialId !== null,
         password: '',
         showPassword: false,
         processing: false,
         workType,
+
+        biometricLabel: 'Face ID',
 
         get needsGeofence() {
             return this.workType === 'wfo';
@@ -101,6 +103,10 @@ window.attendanceFingerprint = function ({ workType, officeLocations, credential
         async getWebAuthnAssertion() {
             if (!credentialId) return null;
 
+            // Read the live Livewire property so rotated challenges (e.g. after early-checkout
+            // warning) are always picked up, not the stale init-time value.
+            const currentChallenge = (await this.$wire.webauthnChallenge) || webauthnChallenge;
+
             const allowCredentials = [
                 {
                     type: 'public-key',
@@ -111,7 +117,7 @@ window.attendanceFingerprint = function ({ workType, officeLocations, credential
 
             const assertion = await navigator.credentials.get({
                 publicKey: {
-                    challenge: this.base64urlToBuffer(webauthnChallenge),
+                    challenge: this.base64urlToBuffer(currentChallenge),
                     rpId: window.location.hostname,
                     userVerification: 'required',
                     allowCredentials,
@@ -139,16 +145,16 @@ window.attendanceFingerprint = function ({ workType, officeLocations, credential
                 let verifyPassword = null;
 
                 if (credentialId) {
-                    this.fingerprintStatus = 'scanning';
+                    this.faceIdStatus = 'scanning';
                     const assertion = await this.getWebAuthnAssertion();
                     if (!assertion) {
-                        this.notify('Verifikasi sidik jari dibatalkan.', 'warning');
-                        this.fingerprintStatus = 'idle';
+                        this.notify(`Verifikasi ${this.biometricLabel} dibatalkan.`, 'warning');
+                        this.faceIdStatus = 'idle';
                         return;
                     }
                     assertionCredentialId = assertion.credentialId;
                     assertionClientDataJSON = assertion.clientDataJSON;
-                    this.fingerprintStatus = 'idle';
+                    this.faceIdStatus = 'idle';
                 } else {
                     if (!this.password) {
                         this.notify('Masukkan kata sandi untuk verifikasi.', 'warning');
@@ -170,12 +176,12 @@ window.attendanceFingerprint = function ({ workType, officeLocations, credential
                 this.password = '';
             } catch (e) {
                 if (e?.name === 'NotAllowedError') {
-                    this.notify('Verifikasi sidik jari dibatalkan atau gagal.', 'warning');
+                    this.notify(`Verifikasi ${this.biometricLabel} dibatalkan atau gagal.`, 'warning');
                 } else {
                     console.error('[checkIn]', e);
                     this.notify('Check-in gagal: ' + (e?.message || 'kesalahan jaringan'), 'error');
                 }
-                this.fingerprintStatus = 'idle';
+                this.faceIdStatus = 'idle';
             } finally {
                 this.processing = false;
             }
@@ -191,16 +197,16 @@ window.attendanceFingerprint = function ({ workType, officeLocations, credential
                 let verifyPassword = null;
 
                 if (credentialId) {
-                    this.fingerprintStatus = 'scanning';
+                    this.faceIdStatus = 'scanning';
                     const assertion = await this.getWebAuthnAssertion();
                     if (!assertion) {
-                        this.notify('Verifikasi sidik jari dibatalkan.', 'warning');
-                        this.fingerprintStatus = 'idle';
+                        this.notify(`Verifikasi ${this.biometricLabel} dibatalkan.`, 'warning');
+                        this.faceIdStatus = 'idle';
                         return;
                     }
                     assertionCredentialId = assertion.credentialId;
                     assertionClientDataJSON = assertion.clientDataJSON;
-                    this.fingerprintStatus = 'idle';
+                    this.faceIdStatus = 'idle';
                 } else {
                     if (!this.password) {
                         this.notify('Masukkan kata sandi untuk verifikasi.', 'warning');
@@ -221,12 +227,12 @@ window.attendanceFingerprint = function ({ workType, officeLocations, credential
                 this.password = '';
             } catch (e) {
                 if (e?.name === 'NotAllowedError') {
-                    this.notify('Verifikasi sidik jari dibatalkan atau gagal.', 'warning');
+                    this.notify(`Verifikasi ${this.biometricLabel} dibatalkan atau gagal.`, 'warning');
                 } else {
                     console.error('[checkOut]', e);
                     this.notify('Check-out gagal: ' + (e?.message || 'kesalahan jaringan'), 'error');
                 }
-                this.fingerprintStatus = 'idle';
+                this.faceIdStatus = 'idle';
             } finally {
                 this.processing = false;
             }

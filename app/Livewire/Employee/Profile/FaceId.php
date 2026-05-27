@@ -8,10 +8,10 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
-#[Title('Sidik Jari')]
-class Fingerprint extends Component
+#[Title('Face ID')]
+class FaceId extends Component
 {
-    public bool $hasFingerprint = false;
+    public bool $hasFaceId = false;
 
     public string $deviceName = '';
 
@@ -19,7 +19,7 @@ class Fingerprint extends Component
     {
         $user = auth()->user();
         $credential = WebauthnCredential::where('user_id', $user->id)->first();
-        $this->hasFingerprint = $credential !== null;
+        $this->hasFaceId = $credential !== null;
         $this->deviceName = $credential?->device_name ?? '';
     }
 
@@ -67,10 +67,10 @@ class Fingerprint extends Component
             'device_name' => $deviceName ?: 'Perangkat ini',
         ]);
 
-        $this->hasFingerprint = true;
+        $this->hasFaceId = true;
         $this->deviceName = $deviceName ?: 'Perangkat ini';
 
-        $this->dispatch('notify', type: 'success', message: 'Sidik jari berhasil didaftarkan.');
+        $this->dispatch('notify', type: 'success', message: 'Face ID berhasil didaftarkan.');
     }
 
     public function deleteCredential(): void
@@ -79,15 +79,15 @@ class Fingerprint extends Component
 
         WebauthnCredential::where('user_id', $user->id)->delete();
 
-        $this->hasFingerprint = false;
+        $this->hasFaceId = false;
         $this->deviceName = '';
 
-        $this->dispatch('notify', type: 'success', message: 'Sidik jari dihapus.');
+        $this->dispatch('notify', type: 'success', message: 'Face ID dihapus.');
     }
 
     public function render(): mixed
     {
-        return view('livewire.employee.profile.fingerprint');
+        return view('livewire.employee.profile.face-id');
     }
 
     private function base64urlEncode(string $data): string
