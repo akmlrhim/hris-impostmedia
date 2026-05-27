@@ -1,4 +1,4 @@
-<div x-data="attendanceFaceId({
+<div x-data="attendanceBiometric({
     workType: @js($workType === \App\Enums\WorkType::Hybrid ? 'wfa' : $workType->value),
     officeLocations: @js($officeLocations->values()),
     credentialId: @js($webauthnCredential?->credential_id),
@@ -160,7 +160,7 @@
             </button>
           </div>
           <p class="text-[11px] text-slate-400">
-            <a wire:navigate href="{{ route('mobile.profile.face-id') }}" class="underline font-medium">Daftarkan <span x-text="biometricLabel">biometrik</span></a>
+            <a wire:navigate href="{{ route('mobile.profile.biometric') }}" class="underline font-medium">Daftarkan <span x-text="biometricLabel">biometrik</span></a>
             agar tidak perlu input kata sandi setiap absensi.
           </p>
         </div>

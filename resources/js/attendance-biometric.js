@@ -1,4 +1,4 @@
-window.attendanceFaceId = function ({ workType, officeLocations, credentialId, webauthnChallenge }) {
+window.attendanceBiometric = function ({ workType, officeLocations, credentialId, webauthnChallenge }) {
     return {
         gpsStatus: 'loading',
         geofenceOk: false,
@@ -6,14 +6,19 @@ window.attendanceFaceId = function ({ workType, officeLocations, credentialId, w
         longitude: null,
         address: '',
 
-        faceIdStatus: credentialId ? 'idle' : 'no-credential',
+        biometricStatus: credentialId ? 'idle' : 'no-credential',
         hasCredential: credentialId !== null,
         password: '',
         showPassword: false,
         processing: false,
         workType,
 
-        biometricLabel: 'Face ID',
+        get biometricLabel() {
+            const ua = navigator.userAgent;
+            if (/Android/i.test(ua)) return 'Sidik Jari';
+            if (/iPhone|iPad/i.test(ua)) return 'Face ID';
+            return 'Biometrik';
+        },
 
         get needsGeofence() {
             return this.workType === 'wfo';
@@ -103,8 +108,6 @@ window.attendanceFaceId = function ({ workType, officeLocations, credentialId, w
         async getWebAuthnAssertion() {
             if (!credentialId) return null;
 
-            // Read the live Livewire property so rotated challenges (e.g. after early-checkout
-            // warning) are always picked up, not the stale init-time value.
             const currentChallenge = (await this.$wire.webauthnChallenge) || webauthnChallenge;
 
             const allowCredentials = [
@@ -145,16 +148,16 @@ window.attendanceFaceId = function ({ workType, officeLocations, credentialId, w
                 let verifyPassword = null;
 
                 if (credentialId) {
-                    this.faceIdStatus = 'scanning';
+                    this.biometricStatus = 'scanning';
                     const assertion = await this.getWebAuthnAssertion();
                     if (!assertion) {
                         this.notify(`Verifikasi ${this.biometricLabel} dibatalkan.`, 'warning');
-                        this.faceIdStatus = 'idle';
+                        this.biometricStatus = 'idle';
                         return;
                     }
                     assertionCredentialId = assertion.credentialId;
                     assertionClientDataJSON = assertion.clientDataJSON;
-                    this.faceIdStatus = 'idle';
+                    this.biometricStatus = 'idle';
                 } else {
                     if (!this.password) {
                         this.notify('Masukkan kata sandi untuk verifikasi.', 'warning');
@@ -181,7 +184,7 @@ window.attendanceFaceId = function ({ workType, officeLocations, credentialId, w
                     console.error('[checkIn]', e);
                     this.notify('Check-in gagal: ' + (e?.message || 'kesalahan jaringan'), 'error');
                 }
-                this.faceIdStatus = 'idle';
+                this.biometricStatus = 'idle';
             } finally {
                 this.processing = false;
             }
@@ -197,16 +200,16 @@ window.attendanceFaceId = function ({ workType, officeLocations, credentialId, w
                 let verifyPassword = null;
 
                 if (credentialId) {
-                    this.faceIdStatus = 'scanning';
+                    this.biometricStatus = 'scanning';
                     const assertion = await this.getWebAuthnAssertion();
                     if (!assertion) {
                         this.notify(`Verifikasi ${this.biometricLabel} dibatalkan.`, 'warning');
-                        this.faceIdStatus = 'idle';
+                        this.biometricStatus = 'idle';
                         return;
                     }
                     assertionCredentialId = assertion.credentialId;
                     assertionClientDataJSON = assertion.clientDataJSON;
-                    this.faceIdStatus = 'idle';
+                    this.biometricStatus = 'idle';
                 } else {
                     if (!this.password) {
                         this.notify('Masukkan kata sandi untuk verifikasi.', 'warning');
@@ -232,7 +235,7 @@ window.attendanceFaceId = function ({ workType, officeLocations, credentialId, w
                     console.error('[checkOut]', e);
                     this.notify('Check-out gagal: ' + (e?.message || 'kesalahan jaringan'), 'error');
                 }
-                this.faceIdStatus = 'idle';
+                this.biometricStatus = 'idle';
             } finally {
                 this.processing = false;
             }

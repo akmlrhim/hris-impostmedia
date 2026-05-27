@@ -8,8 +8,8 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
-#[Title('Face ID')]
-class FaceId extends Component
+#[Title('Biometrik')]
+class Biometric extends Component
 {
     public bool $hasFaceId = false;
 
@@ -70,7 +70,7 @@ class FaceId extends Component
         $this->hasFaceId = true;
         $this->deviceName = $deviceName ?: 'Perangkat ini';
 
-        $this->dispatch('notify', type: 'success', message: 'Face ID berhasil didaftarkan.');
+        $this->dispatch('notify', type: 'success', message: 'Biometrik berhasil didaftarkan.');
     }
 
     public function deleteCredential(): void
@@ -82,12 +82,12 @@ class FaceId extends Component
         $this->hasFaceId = false;
         $this->deviceName = '';
 
-        $this->dispatch('notify', type: 'success', message: 'Face ID dihapus.');
+        $this->dispatch('notify', type: 'success', message: 'Biometrik dihapus.');
     }
 
     public function render(): mixed
     {
-        return view('livewire.employee.profile.face-id');
+        return view('livewire.employee.profile.biometric');
     }
 
     private function base64urlEncode(string $data): string

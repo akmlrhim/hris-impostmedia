@@ -1,10 +1,15 @@
-window.faceIdEnrollment = function ({ hasFaceId }) {
+window.biometricEnrollment = function ({ hasFaceId }) {
     return {
         enrolling: false,
         statusMsg: '',
         supported: !!window.PublicKeyCredential,
 
-        biometricLabel: 'Face ID',
+        get biometricLabel() {
+            const ua = navigator.userAgent;
+            if (/Android/i.test(ua)) return 'Sidik Jari';
+            if (/iPhone|iPad/i.test(ua)) return 'Face ID';
+            return 'Biometrik';
+        },
 
         base64urlToBuffer(base64url) {
             const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
@@ -19,7 +24,7 @@ window.faceIdEnrollment = function ({ hasFaceId }) {
             return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
         },
 
-        async registerFaceId() {
+        async registerBiometric() {
             if (this.enrolling) return;
 
             if (!this.supported) {
@@ -47,7 +52,7 @@ window.faceIdEnrollment = function ({ hasFaceId }) {
                     attestation: options.attestation,
                 };
 
-                this.statusMsg = 'Arahkan wajah ke kamera untuk Face ID…';
+                this.statusMsg = `Ikuti instruksi ${this.biometricLabel} di perangkat…`;
 
                 const credential = await navigator.credentials.create({ publicKey: createOptions });
 
@@ -61,11 +66,11 @@ window.faceIdEnrollment = function ({ hasFaceId }) {
                 this.statusMsg = '';
             } catch (e) {
                 if (e?.name === 'NotAllowedError') {
-                    this.statusMsg = 'Pendaftaran dibatalkan atau Face ID tidak dikenali.';
+                    this.statusMsg = `Pendaftaran dibatalkan atau ${this.biometricLabel} tidak dikenali.`;
                 } else if (e?.name === 'InvalidStateError') {
                     this.statusMsg = 'Perangkat ini sudah terdaftar.';
                 } else {
-                    console.error('[face-id-enrollment]', e);
+                    console.error('[biometric-enrollment]', e);
                     this.statusMsg = `Gagal mendaftarkan ${this.biometricLabel}. Coba lagi.`;
                 }
             } finally {
@@ -80,7 +85,6 @@ window.faceIdEnrollment = function ({ hasFaceId }) {
             if (/Android/.test(ua)) {
                 const match = ua.match(/Android.*;\s*([^)]+)\)/);
                 const model = match ? match[1].trim() : '';
-                // Android 13+ sends a generic single-char identifier (e.g. "K") for privacy
                 return model.length > 2 ? model : 'Android';
             }
             if (/Windows/.test(ua)) return 'Windows PC';

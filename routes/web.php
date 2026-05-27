@@ -31,8 +31,8 @@ use App\Livewire\Employee\Home as MobileHome;
 use App\Livewire\Employee\Leave as MobileLeave;
 use App\Livewire\Employee\Payslip\Index as MobilePayslip;
 use App\Livewire\Employee\Payslip\Show as MobilePayslipShow;
+use App\Livewire\Employee\Profile\Biometric as MobileProfileBiometric;
 use App\Livewire\Employee\Profile\Edit as MobileProfileEdit;
-use App\Livewire\Employee\Profile\FaceId as MobileProfileFaceId;
 use App\Livewire\Employee\Profile\Index as MobileProfile;
 use App\Livewire\Employee\RemoteWork as MobileRemoteWork;
 use App\Models\Employee;
@@ -124,7 +124,7 @@ Route::middleware(['auth', 'employee.active'])
         Route::get('/payslip/{payroll}/pdf', PayslipPdfController::class)->name('payslip.pdf');
         Route::get('/profile', MobileProfile::class)->name('profile');
         Route::get('/profile/edit', MobileProfileEdit::class)->name('profile.edit');
-        Route::get('/profile/face-id', MobileProfileFaceId::class)->name('profile.face-id');
+        Route::get('/profile/biometric', MobileProfileBiometric::class)->name('profile.biometric');
         Route::get('/announcements/{announcement}', MobileAnnouncementShow::class)->name('announcements.show');
         Route::get('/remote-work', MobileRemoteWork::class)->name('remote-work');
         Route::get('/leave', MobileLeave::class)->name('leave');

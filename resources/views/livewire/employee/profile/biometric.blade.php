@@ -1,4 +1,4 @@
-<div x-data="faceIdEnrollment({ hasFaceId: {{ $hasFaceId ? 'true' : 'false' }} })">
+<div x-data="biometricEnrollment({ hasFaceId: {{ $hasFaceId ? 'true' : 'false' }} })">
 
   {{-- Header --}}
   <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 z-10">
@@ -26,8 +26,7 @@
         </div>
         <div>
           <p class="font-semibold text-slate-900">Perangkat Tidak Didukung</p>
-          <p class="text-xs text-slate-500 mt-1">Browser atau perangkat Anda tidak mendukung Face ID. Gunakan browser
-            terbaru di HP yang mendukung Face ID.</p>
+          <p class="text-xs text-slate-500 mt-1">Browser atau perangkat Anda tidak mendukung autentikasi biometrik. Gunakan browser terbaru di HP yang mendukung biometrik.</p>
         </div>
       </div>
     </template>
@@ -36,20 +35,17 @@
     <template x-if="supported">
       <div class="space-y-4">
         <div class="card p-5 flex items-center gap-4">
-          <div
-            class="w-14 h-14 rounded-full flex items-center justify-center shrink-0
+          <div class="w-14 h-14 rounded-full flex items-center justify-center shrink-0
             {{ $hasFaceId ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400' }}">
             <x-icon name="scan-face" class="w-7 h-7" />
           </div>
           <div class="flex-1">
             @if ($hasFaceId)
               <p class="font-semibold text-slate-900"><span x-text="biometricLabel">Biometrik</span> terdaftar</p>
-              <p class="text-xs text-slate-500 mt-0.5">{{ $deviceName ?: 'Perangkat ini' }} &bull; Siap digunakan untuk
-                absensi.</p>
+              <p class="text-xs text-slate-500 mt-0.5">{{ $deviceName ?: 'Perangkat ini' }} &bull; Siap digunakan untuk absensi.</p>
             @else
               <p class="font-semibold text-slate-900">Belum ada <span x-text="biometricLabel">biometrik</span></p>
-              <p class="text-xs text-slate-500 mt-0.5">Daftarkan <span x-text="biometricLabel">biometrik</span> agar
-                bisa melakukan absensi tanpa kata sandi.</p>
+              <p class="text-xs text-slate-500 mt-0.5">Daftarkan <span x-text="biometricLabel">biometrik</span> agar bisa melakukan absensi tanpa kata sandi.</p>
             @endif
           </div>
         </div>
@@ -60,20 +56,19 @@
           <ul class="space-y-1.5 text-xs text-slate-500">
             <li class="flex items-start gap-2">
               <x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-              <span>Tekan tombol di bawah untuk mendaftarkan <span x-text="biometricLabel">Face ID</span> perangkat
-                ini</span>
+              <span>Tekan tombol di bawah untuk mendaftarkan <span x-text="biometricLabel">biometrik</span> perangkat ini</span>
             </li>
             <li class="flex items-start gap-2">
               <x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-              Arahkan wajah ke kamera depan saat diminta oleh Face ID
+              <span>Ikuti instruksi <span x-text="biometricLabel">biometrik</span> yang muncul di perangkat</span>
             </li>
             <li class="flex items-start gap-2">
               <x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-              Setelah terdaftar, absensi cukup dengan sentuh tombol check-in
+              <span>Setelah terdaftar, absensi cukup dengan sentuh tombol check-in</span>
             </li>
             <li class="flex items-start gap-2">
               <x-icon name="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-              Hanya satu perangkat yang bisa terdaftar per akun
+              <span>Hanya satu perangkat yang bisa terdaftar per akun</span>
             </li>
           </ul>
         </div>
@@ -84,7 +79,7 @@
         </p>
 
         {{-- Tombol daftar --}}
-        <button type="button" @click="registerFaceId()" :disabled="enrolling"
+        <button type="button" @click="registerBiometric()" :disabled="enrolling"
           class="btn-primary w-full disabled:opacity-50">
           <span x-show="!enrolling" class="flex items-center justify-center gap-2">
             <x-icon name="scan-face" class="w-5 h-5" />
@@ -92,8 +87,7 @@
           </span>
           <span x-show="enrolling" class="flex items-center justify-center gap-2">
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-              </circle>
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
             Memproses…
@@ -101,10 +95,11 @@
         </button>
 
         @if ($hasFaceId)
-          <button type="button" wire:click="deleteCredential"
+          <button type="button"
+            wire:click="deleteCredential"
             :wire:confirm="'Hapus ' + biometricLabel + ' yang terdaftar? Anda tidak akan bisa absen biometrik hingga mendaftar ulang.'"
             class="btn-secondary w-full text-rose-600">
-            Hapus<span x-text="biometricLabel">Biometrik</span>
+            Hapus <span x-text="biometricLabel">Biometrik</span>
           </button>
         @endif
       </div>
