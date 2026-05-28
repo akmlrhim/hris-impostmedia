@@ -47,7 +47,7 @@
     @elseif ($isOffDay)
       <div class="card p-6 text-center space-y-4 mt-4 bg-slate-50 border-slate-100">
         <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-          <x-icon name="calendar-off" class="w-9 h-9" />
+          <x-icon name="calendar" class="w-9 h-9" />
         </div>
         <div>
           <p class="font-bold text-slate-700 text-lg">{{ $offDayName }}</p>
