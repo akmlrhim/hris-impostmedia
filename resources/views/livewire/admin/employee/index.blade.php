@@ -1,7 +1,8 @@
 <div class="space-y-4">
   <x-page-header title="Daftar Karyawan" description="Kelola data seluruh karyawan.">
     <x-slot:action>
-      <button type="button" @click="$wire.set('showForm', true, true); $wire.open()" class="btn-primary">Tambah Karyawan</button>
+      <button type="button" @click="$wire.set('showForm', true, true); $wire.open()" class="btn-primary">Tambah
+        Karyawan</button>
     </x-slot:action>
   </x-page-header>
 
@@ -9,8 +10,8 @@
   <div class="card p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
     <div class="flex-1 relative">
       <x-icon name="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-      <input wire:model.live.debounce.300ms="search" type="text"
-        placeholder="Cari nama, nomor karyawan, atau NIK…" class="input pl-9">
+      <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama, nomor karyawan, atau NIK…"
+        class="input pl-9">
     </div>
 
     <select wire:model.live="work_type_filter" class="input md:w-44">
@@ -49,8 +50,12 @@
               <td class="px-3 sm:px-5 py-3">
                 <div class="flex items-center gap-2.5">
                   <div
-                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-200 flex items-center justify-center font-semibold text-slate-600 shrink-0">
-                    {{ substr($emp->full_name, 0, 1) }}
+                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
+                    @if ($emp->avatar_path)
+                      <img src="{{ route('files.avatar', $emp) }}" class="w-full h-full object-cover">
+                    @else
+                      {{ strtoupper(substr($emp->full_name, 0, 1)) }}
+                    @endif
                   </div>
                   <div class="min-w-0">
                     <p class="font-medium text-slate-900 truncate">{{ $emp->full_name }}</p>
@@ -61,8 +66,11 @@
                         <span class="text-[11px] text-slate-400">{{ $emp->nik }}</span>
                       @endif
                       @if ($emp->work_type)
-                        @if ($emp->nik)<span class="text-slate-300 text-[11px]">·</span>@endif
-                        <span class="badge bg-{{ $emp->work_type->color() }}-100 text-{{ $emp->work_type->color() }}-700 text-[10px] py-0">{{ $emp->work_type->shortLabel() }}</span>
+                        @if ($emp->nik)
+                          <span class="text-slate-300 text-[11px]">·</span>
+                        @endif
+                        <span
+                          class="badge bg-{{ $emp->work_type->color() }}-100 text-{{ $emp->work_type->color() }}-700 text-[10px] py-0">{{ $emp->work_type->shortLabel() }}</span>
                       @endif
                     </div>
                   </div>
@@ -71,8 +79,7 @@
               <td class="hidden sm:table-cell px-5 py-3 text-slate-600">{{ $emp->nik ?: '-' }}</td>
               <td class="hidden sm:table-cell px-5 py-3">
                 @if ($emp->work_type)
-                  <span
-                    class="badge bg-{{ $emp->work_type->color() }}-100 text-{{ $emp->work_type->color() }}-700">
+                  <span class="badge bg-{{ $emp->work_type->color() }}-100 text-{{ $emp->work_type->color() }}-700">
                     {{ $emp->work_type->shortLabel() }}
                   </span>
                 @else

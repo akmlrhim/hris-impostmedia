@@ -66,17 +66,28 @@
             @endphp
             <tr class="hover:bg-slate-50" wire:key="row-{{ $req->id }}">
               <td class="px-3 sm:px-5 py-3">
-                <p class="font-medium text-slate-900">{{ $req->employee->full_name }}</p>
-                <p class="text-xs text-slate-500">{{ $req->employee->employee_number }}</p>
-                {{-- Mobile only: type badge + date range --}}
-                <div class="sm:hidden mt-1 space-y-0.5">
-                  <span class="badge bg-{{ $typeColor }}-100 text-{{ $typeColor }}-700 text-[10px] py-0">{{ $req->type->label() }}</span>
-                  <p class="text-[11px] text-slate-500 mt-1">
-                    {{ $req->start_date->translatedFormat('d M Y') }}
-                    @if ($req->start_date->toDateString() !== $req->end_date->toDateString())
-                      – {{ $req->end_date->translatedFormat('d M Y') }}
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
+                    @if ($req->employee->avatar_path)
+                      <img src="{{ route('files.avatar', $req->employee) }}" class="w-full h-full object-cover">
+                    @else
+                      {{ strtoupper(substr($req->employee->full_name, 0, 1)) }}
                     @endif
-                  </p>
+                  </div>
+                  <div>
+                    <p class="font-medium text-slate-900">{{ $req->employee->full_name }}</p>
+                    <p class="text-xs text-slate-500">{{ $req->employee->employee_number }}</p>
+                    {{-- Mobile only: type badge + date range --}}
+                    <div class="sm:hidden mt-1 space-y-0.5">
+                      <span class="badge bg-{{ $typeColor }}-100 text-{{ $typeColor }}-700 text-[10px] py-0">{{ $req->type->label() }}</span>
+                      <p class="text-[11px] text-slate-500 mt-1">
+                        {{ $req->start_date->translatedFormat('d M Y') }}
+                        @if ($req->start_date->toDateString() !== $req->end_date->toDateString())
+                          – {{ $req->end_date->translatedFormat('d M Y') }}
+                        @endif
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </td>
               <td class="hidden sm:table-cell px-5 py-3">

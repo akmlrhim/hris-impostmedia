@@ -43,6 +43,16 @@
                   if (f) { const r = new FileReader(); r.onload = e => preview = e.target.result; r.readAsDataURL(f); }
                 ">
             </label>
+            @if ($existing_avatar_path)
+              <button type="button" wire:click="deleteAvatar"
+                wire:confirm="Hapus foto profil?"
+                wire:loading.attr="disabled"
+                wire:target="deleteAvatar"
+                class="mt-2 block w-full px-3 py-2 rounded-lg border border-red-200 text-xs text-red-600 bg-white hover:bg-red-50 transition text-center">
+                <span wire:loading.remove wire:target="deleteAvatar">Hapus foto</span>
+                <span wire:loading wire:target="deleteAvatar">Menghapus…</span>
+              </button>
+            @endif
             <p class="text-[11px] text-slate-400 mt-1">JPG/PNG, max 2MB. Tersimpan otomatis.</p>
             @error('avatar') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
           </div>

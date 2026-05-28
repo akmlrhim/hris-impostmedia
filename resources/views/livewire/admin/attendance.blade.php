@@ -27,20 +27,31 @@
           @forelse ($attendances as $att)
             <tr class="hover:bg-slate-50">
               <td class="px-3 sm:px-5 py-3">
-                <p class="font-medium text-slate-900">{{ $att->employee->full_name }}</p>
-                <p class="text-xs text-slate-500">{{ $att->employee->employee_number }}</p>
-                {{-- Mobile only: date + check-in/out --}}
-                <div class="sm:hidden mt-1 space-y-0.5">
-                  <p class="text-[11px] text-slate-500">{{ $att->attendance_date->translatedFormat('d M Y') }}</p>
-                  <p class="text-[11px] text-slate-500">
-                    Masuk: <span class="font-medium text-slate-700">{{ $att->check_in_at?->format('H:i') ?? '-' }}</span>
-                    &nbsp;·&nbsp;
-                    Keluar: <span class="font-medium text-slate-700">{{ $att->check_out_at?->format('H:i') ?? '-' }}</span>
-                    @if ($att->late_minutes > 0)
-                      &nbsp;·&nbsp;
-                      <span class="text-amber-600 font-medium">{{ $att->late_minutes }} mnt</span>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
+                    @if ($att->employee->avatar_path)
+                      <img src="{{ route('files.avatar', $att->employee) }}" class="w-full h-full object-cover">
+                    @else
+                      {{ strtoupper(substr($att->employee->full_name, 0, 1)) }}
                     @endif
-                  </p>
+                  </div>
+                  <div>
+                    <p class="font-medium text-slate-900">{{ $att->employee->full_name }}</p>
+                    <p class="text-xs text-slate-500">{{ $att->employee->employee_number }}</p>
+                    {{-- Mobile only: date + check-in/out --}}
+                    <div class="sm:hidden mt-1 space-y-0.5">
+                      <p class="text-[11px] text-slate-500">{{ $att->attendance_date->translatedFormat('d M Y') }}</p>
+                      <p class="text-[11px] text-slate-500">
+                        Masuk: <span class="font-medium text-slate-700">{{ $att->check_in_at?->format('H:i') ?? '-' }}</span>
+                        &nbsp;·&nbsp;
+                        Keluar: <span class="font-medium text-slate-700">{{ $att->check_out_at?->format('H:i') ?? '-' }}</span>
+                        @if ($att->late_minutes > 0)
+                          &nbsp;·&nbsp;
+                          <span class="text-amber-600 font-medium">{{ $att->late_minutes }} mnt</span>
+                        @endif
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </td>
               <td class="hidden sm:table-cell px-5 py-3">{{ $att->attendance_date->translatedFormat('d M Y') }}</td>
