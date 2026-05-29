@@ -27,9 +27,9 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
 	e.waitUntil(
-		// Hapus SEMUA cache lama tanpa terkecuali
+		// Hapus hanya cache versi lama, pertahankan cache aktif
 		caches.keys().then((keys) =>
-			Promise.all(keys.map((k) => caches.delete(k)))
+			Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
 		).then(() => self.clients.claim())
 	);
 });
