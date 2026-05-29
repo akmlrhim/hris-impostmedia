@@ -16,90 +16,110 @@ use Livewire\Component;
 #[Title('Masuk')]
 class Login extends Component
 {
-    #[Validate('required|email')]
-    public string $email = '';
+	#[Validate('required|email')]
+	public string $email = '';
 
-    #[Validate('required|string|min:6')]
-    public string $password = '';
+	#[Validate('required|string|min:6')]
+	public string $password = '';
 
-    public bool $remember = false;
+	public bool $remember = true;
 
-    public bool $showPanelSelector = false;
+	public bool $showPanelSelector = false;
 
-    public function mount(): void
-    {
-        if (Auth::check()) {
-            $this->handleAlreadyAuthenticated();
-        }
-    }
+	public function mount(): void
+	{
+		if (Auth::check()) {
+			$this->handleAlreadyAuthenticated();
+		}
+	}
 
-    public function login(): void
-    {
-        $this->validate();
+	public function login(): void
+	{
+		$this->validate();
 
-        $key = 'login:'.Str::lower($this->email).'|'.request()->ip();
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            throw ValidationException::withMessages([
-                'email' => 'Terlalu banyak percobaan. Coba lagi dalam '.RateLimiter::availableIn($key).' detik.',
-            ]);
-        }
+		$key = 'login:' . Str::lower($this->email) . '|' . request()->ip();
+		if (RateLimiter::tooManyAttempts($key, 5)) {
+			throw ValidationException::withMessages([
+				'email' => 'Terlalu banyak percobaan. Coba lagi dalam ' . RateLimiter::availableIn($key) . ' detik.',
+			]);
+		}
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
-            RateLimiter::hit($key);
-            throw ValidationException::withMessages([
-                'email' => 'Email atau kata sandi salah.',
-            ]);
-        }
+		if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+			RateLimiter::hit($key);
+			throw ValidationException::withMessages([
+				'email' => 'Email atau kata sandi salah.',
+			]);
+		}
 
-        /** @var User $user */
-        $user = Auth::user();
+		/** @var User $user */
+		$user = Auth::user();
 
-        if (! $user->is_active) {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                'email' => 'Akun Anda tidak aktif.',
-            ]);
-        }
+		if (! $user->is_active) {
+			Auth::logout();
+			throw ValidationException::withMessages([
+				'email' => 'Akun Anda tidak aktif.',
+			]);
+		}
 
-        RateLimiter::clear($key);
-        request()->session()->regenerate();
+		RateLimiter::clear($key);
+		request()->session()->regenerate();
 
-        $this->handleAlreadyAuthenticated();
-    }
+		$this->handleAlreadyAuthenticated();
+	}
 
-    public function choosePanel(string $panel): void
-    {
-        if (! Auth::check()) {
-            return;
-        }
+	public function choosePanel(string $panel): void
+	{
+		if (! Auth::check()) {
+			return;
+		}
 
-        $this->redirect(
-            $panel === 'employee' ? route('mobile.home') : route('admin.dashboard'),
-            navigate: false,
-        );
-    }
+		if ($panel === 'admin') {
+			$this->redirect($this->pullAdminIntendedUrl(), navigate: false);
+		} else {
+			$this->redirect(route('mobile.home'), navigate: false);
+		}
+	}
 
-    private function handleAlreadyAuthenticated(): void
-    {
-        /** @var User $user */
-        $user = Auth::user();
-        $isAdminPanel = $user->isAdminPanel();
-        $hasEmployee = $user->employee !== null;
+	private function handleAlreadyAuthenticated(): void
+	{
+		/** @var User $user */
+		$user = Auth::user();
 
-        if ($isAdminPanel && $hasEmployee) {
-            $this->showPanelSelector = true;
+		if (! $user->hasVerifiedEmail()) {
+			$this->redirect(route('verification.notice'), navigate: false);
 
-            return;
-        }
+			return;
+		}
 
-        $this->redirect(
-            $isAdminPanel ? route('admin.dashboard') : route('mobile.home'),
-            navigate: false,
-        );
-    }
+		$isAdminPanel = $user->isAdminPanel();
+		$hasEmployee = $user->employee !== null;
 
-    public function render(): mixed
-    {
-        return view('livewire.auth.login');
-    }
+		if ($isAdminPanel && $hasEmployee) {
+			$this->showPanelSelector = true;
+
+			return;
+		}
+
+		if ($isAdminPanel) {
+			$this->redirect($this->pullAdminIntendedUrl(), navigate: false);
+		} else {
+			$this->redirect(route('mobile.home'), navigate: false);
+		}
+	}
+
+	private function pullAdminIntendedUrl(): string
+	{
+		$intended = session()->pull('url.intended');
+
+		if ($intended && str_starts_with(parse_url($intended, PHP_URL_PATH) ?? '', '/admin')) {
+			return $intended;
+		}
+
+		return route('admin.dashboard');
+	}
+
+	public function render(): mixed
+	{
+		return view('livewire.auth.login');
+	}
 }

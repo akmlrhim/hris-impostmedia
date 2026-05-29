@@ -5,6 +5,10 @@ window.attendanceBiometric = function ({ workType, officeLocations, credentialId
         latitude: null,
         longitude: null,
         address: '',
+        timezone: (() => {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            return ['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura'].includes(tz) ? tz : 'Asia/Jakarta';
+        })(),
 
         biometricStatus: credentialId ? 'idle' : 'no-credential',
         hasCredential: credentialId !== null,
@@ -51,19 +55,31 @@ window.attendanceBiometric = function ({ workType, officeLocations, credentialId
                 this.gpsStatus = 'error';
                 return;
             }
+            this.gpsStatus = 'loading';
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    this.latitude = pos.coords.latitude;
-                    this.longitude = pos.coords.longitude;
-                    this.address = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-                    this.gpsStatus = 'ok';
-                    this.checkGeofence();
-                },
+                (pos) => this._applyPosition(pos),
                 () => {
-                    this.gpsStatus = 'error';
+                    // Fallback: network-based location (faster, works indoors)
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => this._applyPosition(pos),
+                        () => { this.gpsStatus = 'error'; },
+                        { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 },
+                    );
                 },
-                { enableHighAccuracy: true, timeout: 12000 },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
             );
+        },
+
+        _applyPosition(pos) {
+            this.latitude = pos.coords.latitude;
+            this.longitude = pos.coords.longitude;
+            this.address = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+            this.gpsStatus = 'ok';
+            this.checkGeofence();
+        },
+
+        retryLocation() {
+            this.getLocation();
         },
 
         checkGeofence() {
@@ -174,6 +190,7 @@ window.attendanceBiometric = function ({ workType, officeLocations, credentialId
                     this.address,
                     this.workType,
                     verifyPassword,
+                    this.timezone,
                 );
 
                 this.password = '';
@@ -225,6 +242,7 @@ window.attendanceBiometric = function ({ workType, officeLocations, credentialId
                     this.longitude,
                     this.address,
                     verifyPassword,
+                    this.timezone,
                 );
 
                 this.password = '';

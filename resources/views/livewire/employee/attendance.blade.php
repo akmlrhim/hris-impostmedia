@@ -229,10 +229,14 @@
               'bg-red-400': gpsStatus === 'error',
             }">
           </div>
-          <div>
+          <div class="flex-1">
             <p class="text-[10px] text-slate-400 leading-none">Lokasi</p>
             <p class="text-xs font-medium text-slate-700 leading-snug" x-text="gpsStatusText"></p>
           </div>
+          <button x-show="gpsStatus === 'error'" x-cloak @click="retryLocation()"
+            class="text-[10px] text-brand-600 font-semibold underline shrink-0">
+            Coba lagi
+          </button>
         </div>
 
         {{-- Biometrik (Face ID / Sidik Jari) --}}
@@ -347,7 +351,8 @@
       {{-- Panduan --}}
       <div x-show="!canProceed" x-cloak class="text-xs text-center text-slate-500 -mt-1">
         <p x-show="needsGeofence && !geofenceOk && gpsStatus === 'error'" class="text-red-500">
-          GPS tidak dapat diakses. Izinkan akses lokasi.
+          GPS tidak dapat diakses. Izinkan akses lokasi, lalu
+          <button @click="retryLocation()" class="underline font-semibold">coba lagi</button>.
         </p>
         <p x-show="needsGeofence && !geofenceOk && gpsStatus === 'ok'">
           Anda berada di luar radius kantor. Absensi WFO memerlukan kehadiran fisik di kantor.
