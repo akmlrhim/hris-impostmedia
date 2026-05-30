@@ -41,7 +41,6 @@
                   'icon' => 'calendar',
                   'gate' => 'manage_leave',
               ],
-              ['label' => 'Shift', 'route' => 'admin.shift', 'icon' => 'layers', 'gate' => 'manage_shifts'],
               ['label' => 'Payroll', 'route' => 'admin.payroll', 'icon' => 'wallet', 'gate' => 'manage_payroll'],
               ['label' => 'Hari Libur', 'route' => 'admin.holidays', 'icon' => 'flag', 'gate' => 'manage_holidays'],
               [

@@ -179,7 +179,6 @@ return [
 		'employment_status' => 'Status kepegawaian',
 		'department' => 'Departemen',
 		'position' => 'Jabatan',
-		'shift_id' => 'Shift',
 		'location' => 'Lokasi',
 		'latitude' => 'Lintang',
 		'longitude' => 'Bujur',
