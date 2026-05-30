@@ -56,7 +56,8 @@
   </div>
 
   <style>
-    @media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+    /* Hanya tampil di HP (bukan laptop/tablet) saat landscape: max-height 500px = ukuran HP di landscape */
+    @media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px) {
       #landscape-blocker {
         display: flex !important;
       }
