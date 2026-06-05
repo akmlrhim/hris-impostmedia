@@ -74,32 +74,56 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-5 py-3">Nama</th>
-            <th class="px-5 py-3">Alamat</th>
-            <th class="px-5 py-3">Koordinat</th>
-            <th class="px-5 py-3">Radius</th>
-            <th class="px-5 py-3">Status</th>
-            <th class="px-5 py-3 text-right">Aksi</th>
+            <th class="px-3 sm:px-5 py-3">Lokasi</th>
+            <th class="hidden sm:table-cell px-5 py-3">Koordinat</th>
+            <th class="hidden sm:table-cell px-5 py-3">Radius</th>
+            <th class="px-3 sm:px-5 py-3">Status</th>
+            <th class="px-3 sm:px-5 py-3 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($locations as $loc)
             <tr class="hover:bg-slate-50">
-              <td class="px-5 py-3 font-medium">{{ $loc->name }}</td>
-              <td class="px-5 py-3 text-slate-600 max-w-xs truncate">{{ $loc->address ?: '-' }}</td>
-              <td class="px-5 py-3 font-mono text-xs text-slate-600">
+              <td class="px-3 sm:px-5 py-3">
+                <p class="font-medium text-slate-900">{{ $loc->name }}</p>
+                @if ($loc->address)
+                  <p class="text-xs text-slate-500 truncate max-w-xs">{{ $loc->address }}</p>
+                @endif
+                {{-- Mobile only: koordinat + radius --}}
+                <div class="sm:hidden mt-0.5 space-y-0.5">
+                  <p class="text-[11px] text-slate-400 font-mono">{{ number_format($loc->latitude, 6) }}, {{ number_format($loc->longitude, 6) }}</p>
+                  <p class="text-[11px] text-slate-500">Radius: {{ $loc->radius_meters }} m</p>
+                </div>
+              </td>
+              <td class="hidden sm:table-cell px-5 py-3 font-mono text-xs text-slate-600">
                 {{ number_format($loc->latitude, 6) }}, {{ number_format($loc->longitude, 6) }}
               </td>
-              <td class="px-5 py-3">{{ $loc->radius_meters }} m</td>
-              <td class="px-5 py-3">
+              <td class="hidden sm:table-cell px-5 py-3 text-slate-600">{{ $loc->radius_meters }} m</td>
+              <td class="px-3 sm:px-5 py-3">
                 @if ($loc->is_active)
                   <span class="badge bg-emerald-100 text-emerald-700">Aktif</span>
                 @else
                   <span class="badge bg-slate-100 text-slate-500">Nonaktif</span>
                 @endif
               </td>
-              <td class="px-5 py-3">
-                <div class="flex items-center justify-end gap-2">
+              <td class="px-3 sm:px-5 py-3">
+                {{-- Mobile: icon buttons --}}
+                <div class="flex items-center justify-end gap-1 sm:hidden">
+                  <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $loc->id }})" title="Edit"
+                    class="p-1.5 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
+                    <x-icon name="pencil" class="w-4 h-4" />
+                  </button>
+                  <button wire:click="toggleActive({{ $loc->id }})" title="{{ $loc->is_active ? 'Nonaktifkan' : 'Aktifkan' }}"
+                    class="p-1.5 rounded-lg {{ $loc->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
+                    <x-icon name="{{ $loc->is_active ? 'eye-off' : 'eye' }}" class="w-4 h-4" />
+                  </button>
+                  <button wire:click="delete({{ $loc->id }})" wire:confirm="Hapus lokasi ini?" title="Hapus"
+                    class="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">
+                    <x-icon name="trash-2" class="w-4 h-4" />
+                  </button>
+                </div>
+                {{-- Desktop: text buttons --}}
+                <div class="hidden sm:flex items-center justify-end gap-2">
                   <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $loc->id }})"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
@@ -117,7 +141,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="px-5 py-12 text-center text-slate-500">
+              <td colspan="5" class="px-5 py-12 text-center text-slate-500">
                 Belum ada lokasi kantor. Tambahkan lokasi untuk mengaktifkan geofencing absensi WFO.
               </td>
             </tr>

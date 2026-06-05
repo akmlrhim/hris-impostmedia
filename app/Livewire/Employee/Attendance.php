@@ -6,7 +6,6 @@ use App\Enums\AttendanceStatus;
 use App\Enums\WorkType;
 use App\Models\Attendance as AttendanceModel;
 use App\Models\AttendanceLog;
-use App\Models\Holiday;
 use App\Models\OfficeLocation;
 use App\Models\RemoteWorkRequest;
 use App\Models\WebauthnCredential;
@@ -56,7 +55,7 @@ class Attendance extends Component
         $localNow = now($tz);
         $today = $localNow->toDateString();
 
-        if ($localNow->isSunday() || Holiday::whereDate('date', $today)->exists()) {
+        if ($localNow->isSunday()) {
             $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
 
             return;
@@ -170,7 +169,7 @@ class Attendance extends Component
         $localNow = now($tz);
         $todayDate = $localNow->toDateString();
 
-        if ($localNow->isSunday() || Holiday::whereDate('date', $todayDate)->exists()) {
+        if ($localNow->isSunday()) {
             $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
 
             return;
@@ -297,9 +296,8 @@ class Attendance extends Component
         $isAdminPanelUser = $user?->role?->isAdminPanel() ?? false;
 
         $isSunday = now()->isSunday();
-        $holiday = Holiday::whereDate('date', $today)->first();
-        $isOffDay = $isSunday || $holiday !== null;
-        $offDayName = $isSunday ? 'Hari Minggu' : ($holiday?->name ?? '');
+        $isOffDay = $isSunday;
+        $offDayName = $isSunday ? 'Hari Minggu' : '';
 
         $attendance = $employee
             ? AttendanceModel::where('employee_id', $employee->id)

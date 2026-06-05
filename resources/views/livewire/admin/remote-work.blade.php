@@ -31,12 +31,11 @@
 
   {{-- Tabel --}}
   <div class="card overflow-hidden">
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto" wire:loading.class="opacity-50 pointer-events-none" wire:target="filterStatus">
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
             <th class="px-3 sm:px-5 py-3">Karyawan</th>
-            <th class="hidden sm:table-cell px-5 py-3">Jenis</th>
             <th class="hidden sm:table-cell px-5 py-3">Waktu</th>
             <th class="hidden md:table-cell px-5 py-3">Alasan</th>
             <th class="px-3 sm:px-5 py-3">Status</th>
@@ -45,8 +44,7 @@
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($requests as $req)
-            @php $typeColor = $req->work_type?->color() ?? 'slate'; @endphp
-            <tr class="hover:bg-slate-50">
+            <tr class="hover:bg-slate-50" wire:key="row-{{ $req->id }}">
               <td class="px-3 sm:px-5 py-3">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
@@ -59,10 +57,9 @@
                   <div>
                     <p class="font-medium text-slate-900">{{ $req->employee->full_name }}</p>
                     <p class="text-xs text-slate-500">{{ $req->employee->employee_number }}</p>
-                    {{-- Mobile only: type badge + date range --}}
-                    <div class="sm:hidden mt-1 space-y-0.5">
-                      <span class="badge bg-{{ $typeColor }}-100 text-{{ $typeColor }}-700 text-[10px] py-0">{{ $req->work_type?->shortLabel() ?? '-' }}</span>
-                      <p class="text-[11px] text-slate-500 mt-1">
+                    {{-- Mobile only: date range --}}
+                    <div class="sm:hidden mt-1">
+                      <p class="text-[11px] text-slate-500">
                         {{ $req->start_date->translatedFormat('d M Y') }}
                         @if ($req->start_date->toDateString() !== $req->end_date->toDateString())
                           – {{ $req->end_date->translatedFormat('d M Y') }}
@@ -71,11 +68,6 @@
                     </div>
                   </div>
                 </div>
-              </td>
-              <td class="hidden sm:table-cell px-5 py-3">
-                <span class="badge bg-{{ $typeColor }}-100 text-{{ $typeColor }}-700">
-                  {{ $req->work_type?->shortLabel() ?? '-' }}
-                </span>
               </td>
               <td class="hidden sm:table-cell px-5 py-3 text-slate-600 text-xs">
                 {{ $req->start_date->translatedFormat('d M Y H:i') }}
@@ -92,7 +84,25 @@
                 <span class="badge bg-{{ $color }}-100 text-{{ $color }}-700">{{ $req->status->label() }}</span>
               </td>
               <td class="px-3 sm:px-5 py-3">
-                <div class="flex items-center justify-end gap-1 sm:gap-1.5">
+                {{-- Mobile: icon buttons --}}
+                @if ($req->status === \App\Enums\RemoteWorkStatus::Pending)
+                  <div class="flex items-center justify-end gap-1 sm:hidden">
+                    <button wire:click="approve({{ $req->id }})" title="Setujui"
+                      class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">
+                      <x-icon name="check" class="w-4 h-4" />
+                    </button>
+                    <button type="button" @click="$wire.set('showRejectForm', true, true); $wire.openRejectForm({{ $req->id }})" title="Tolak"
+                      class="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">
+                      <x-icon name="x" class="w-4 h-4" />
+                    </button>
+                    <button wire:click="delete({{ $req->id }})" wire:confirm="Hapus pengajuan WFA ini?" title="Hapus"
+                      class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                      <x-icon name="trash-2" class="w-4 h-4" />
+                    </button>
+                  </div>
+                @endif
+                {{-- Desktop: text buttons --}}
+                <div class="hidden sm:flex items-center justify-end gap-1.5">
                   @if ($req->status === \App\Enums\RemoteWorkStatus::Pending)
                     <button wire:click="approve({{ $req->id }})"
                       class="px-2 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">
@@ -102,23 +112,21 @@
                       class="px-2 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
                       Tolak
                     </button>
-                  @else
-                    <span class="text-xs text-slate-400 hidden sm:inline">
-                      {{ $req->reviewer?->name ?? '-' }} · {{ $req->reviewed_at?->diffForHumans() }}
-                    </span>
-                  @endif
-                  @if ($req->status === \App\Enums\RemoteWorkStatus::Pending)
                     <button wire:click="delete({{ $req->id }})" wire:confirm="Hapus pengajuan WFA ini?"
                       class="px-2 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
                       Hapus
                     </button>
+                  @else
+                    <span class="text-xs text-slate-400">
+                      {{ $req->reviewer?->name ?? '-' }} · {{ $req->reviewed_at?->diffForHumans() }}
+                    </span>
                   @endif
                 </div>
               </td>
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="px-5 py-12 text-center text-slate-500">Tidak ada pengajuan.</td>
+              <td colspan="5" class="px-5 py-12 text-center text-slate-500">Tidak ada pengajuan.</td>
             </tr>
           @endforelse
         </tbody>

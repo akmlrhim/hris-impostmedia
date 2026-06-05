@@ -129,13 +129,13 @@
   <div class="px-5 pt-4 pb-32 space-y-4">
 
     {{-- Type legend --}}
-    <div class="grid grid-cols-3 gap-2">
+    <div class="card overflow-hidden divide-y divide-slate-100">
       @foreach (\App\Enums\LeaveType::cases() as $lt)
-        <div class="card p-3 flex items-center gap-2">
+        <div class="px-4 py-2.5 flex items-center gap-3">
           <div class="w-8 h-8 rounded-full bg-{{ $lt->color() }}-100 text-{{ $lt->color() }}-600 flex items-center justify-center shrink-0">
             <x-icon :name="$lt->icon()" class="w-4 h-4" />
           </div>
-          <span class="text-xs font-medium text-slate-700">{{ $lt->label() }}</span>
+          <span class="text-sm font-medium text-slate-700">{{ $lt->label() }}</span>
         </div>
       @endforeach
     </div>

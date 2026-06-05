@@ -42,7 +42,6 @@
                   'gate' => 'manage_leave',
               ],
               ['label' => 'Payroll', 'route' => 'admin.payroll', 'icon' => 'wallet', 'gate' => 'manage_payroll'],
-              ['label' => 'Hari Libur', 'route' => 'admin.holidays', 'icon' => 'flag', 'gate' => 'manage_holidays'],
               [
                   'label' => 'Pengumuman',
                   'route' => 'admin.announcements',
@@ -131,8 +130,8 @@
           <div x-data="{ title: '' }" x-init="title = document.title.split(' | ')[0] ?? '';
           document.addEventListener('livewire:navigate', () => {
               $nextTick(() => { title = document.title.split(' | ')[0] ?? ''; });
-          });">
-            <h1 class="text-sm font-semibold text-slate-800 hidden sm:block" x-text="title"></h1>
+          });" class="min-w-0">
+            <h1 class="text-sm font-semibold text-slate-800 truncate" x-text="title"></h1>
           </div>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">

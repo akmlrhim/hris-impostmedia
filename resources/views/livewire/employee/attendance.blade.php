@@ -34,7 +34,8 @@
         </div>
         <div>
           <p class="font-semibold text-slate-900">Akun belum terhubung ke data karyawan</p>
-          <p class="text-sm text-slate-500 mt-1">Hubungi Admin atau HR untuk menghubungkan akun Anda ke profil karyawan.</p>
+          <p class="text-sm text-slate-500 mt-1">Hubungi Admin atau HR untuk menghubungkan akun Anda ke profil karyawan.
+          </p>
         </div>
         @if ($isAdminPanelUser)
           <a wire:navigate href="{{ route('admin.employees') }}" class="btn-primary text-sm">
@@ -43,7 +44,7 @@
         @endif
       </div>
 
-    {{-- STATE: Hari Libur --}}
+      {{-- STATE: Hari Libur --}}
     @elseif ($isOffDay)
       <div class="card p-6 text-center space-y-4 mt-4 bg-slate-50 border-slate-100">
         <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
@@ -55,10 +56,11 @@
         </div>
       </div>
 
-    {{-- STATE: Sudah check-out --}}
+      {{-- STATE: Sudah check-out --}}
     @elseif ($attendance?->check_out_at)
       <div class="card p-4 flex items-center gap-3">
-        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
+        <div
+          class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
           @if ($employee->avatar_path)
             <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
           @else
@@ -96,11 +98,12 @@
         </p>
       </div>
 
-    {{-- STATE: Proses absensi --}}
+      {{-- STATE: Proses absensi --}}
     @else
       {{-- Info karyawan + jam --}}
       <div class="card p-4 flex items-center gap-3">
-        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
+        <div
+          class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
           @if ($employee->avatar_path)
             <img src="{{ route('files.avatar', $employee) }}" class="w-full h-full object-cover">
           @else
@@ -112,10 +115,9 @@
           <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
         </div>
         <div class="text-right">
-          <p x-data="{ t: '' }"
-            x-init="setInterval(() => t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 1000)"
+          <p x-data="{ t: '' }" x-init="setInterval(() => t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 1000)"
             x-text="t || new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'})"
-            class="font-mono text-xl font-bold text-slate-900 tabular-nums">
+            class="text-xl font-bold text-slate-900 tabular-nums">
           </p>
         </div>
       </div>
@@ -123,7 +125,8 @@
       {{-- Step indicator --}}
       <div class="flex items-center gap-2">
         <div class="flex items-center gap-1.5 flex-1">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+          <div
+            class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
             {{ $attendance?->check_in_at ? 'bg-emerald-500 text-white' : 'bg-brand-600 text-white' }}">
             @if ($attendance?->check_in_at)
               <x-icon name="check" class="w-3.5 h-3.5" />
@@ -140,7 +143,8 @@
           <span class="text-xs font-medium {{ $attendance?->check_in_at ? 'text-slate-900' : 'text-slate-400' }}">
             Check-out
           </span>
-          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+          <div
+            class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
             {{ $attendance?->check_in_at ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-400' }}">
             2
           </div>
@@ -155,16 +159,12 @@
             <p class="text-sm font-semibold text-slate-900">Verifikasi Kata Sandi</p>
           </div>
           <p class="text-xs text-slate-500">
-            <span x-text="biometricLabel">Biometrik</span> belum terdaftar. Masukkan kata sandi akun untuk melanjutkan absensi.
+            <span x-text="biometricLabel">Biometrik</span> belum terdaftar. Masukkan kata sandi akun untuk melanjutkan
+            absensi.
           </p>
           <div class="relative">
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              x-model="password"
-              class="input pr-10"
-              placeholder="Kata sandi akun"
-              autocomplete="current-password"
-            >
+            <input :type="showPassword ? 'text' : 'password'" x-model="password" class="input pr-10"
+              placeholder="Kata sandi akun" autocomplete="current-password">
             <button type="button" @click="showPassword = !showPassword"
               class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5">
               <x-icon name="eye" class="w-4 h-4" x-show="!showPassword" />
@@ -172,7 +172,8 @@
             </button>
           </div>
           <p class="text-[11px] text-slate-400">
-            <a wire:navigate href="{{ route('mobile.profile.biometric') }}" class="underline font-medium">Daftarkan <span x-text="biometricLabel">biometrik</span></a>
+            <a wire:navigate href="{{ route('mobile.profile.biometric') }}" class="underline font-medium">Daftarkan
+              <span x-text="biometricLabel">biometrik</span></a>
             agar tidak perlu input kata sandi setiap absensi.
           </p>
         </div>
@@ -180,9 +181,11 @@
 
       {{-- WFA override oleh remote request --}}
       @if ($remoteRequest && $baseWorkType->requiresGeofencing())
-        <div class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-purple-800 text-xs flex items-start gap-2">
+        <div
+          class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-purple-800 text-xs flex items-start gap-2">
           <x-icon name="check-circle" class="w-4 h-4 shrink-0 mt-0.5 text-purple-500" />
-          <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong> disetujui - GPS tidak wajib hari ini.</span>
+          <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong> disetujui - GPS tidak wajib hari
+            ini.</span>
         </div>
       @endif
 
@@ -192,7 +195,8 @@
           <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Mode Kerja Hari Ini</p>
           <div class="grid grid-cols-2 gap-2">
             <button type="button" @click="setWorkType('wfa')"
-              :class="workType === 'wfa' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'"
+              :class="workType === 'wfa' ? 'border-purple-500 bg-purple-50 text-purple-700' :
+                  'border-slate-200 text-slate-500 hover:border-slate-300'"
               class="flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-150">
               <x-icon name="laptop" class="w-5 h-5 shrink-0" />
               <div class="text-left">
@@ -201,7 +205,8 @@
               </div>
             </button>
             <button type="button" @click="setWorkType('wfo')"
-              :class="workType === 'wfo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'"
+              :class="workType === 'wfo' ? 'border-blue-500 bg-blue-50 text-blue-700' :
+                  'border-slate-200 text-slate-500 hover:border-slate-300'"
               class="flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-150">
               <x-icon name="building" class="w-5 h-5 shrink-0" />
               <div class="text-left">
@@ -217,16 +222,16 @@
         </div>
       @endif
 
-      {{-- Status GPS + Face ID --}}
-      <div class="card divide-x divide-slate-100 grid grid-cols-2">
-        {{-- GPS --}}
-        <div class="p-3 flex items-center gap-2">
+      {{-- Status GPS + Biometrik --}}
+      <div class="card grid divide-x divide-slate-100" :class="needsGeofence ? 'grid-cols-2' : 'grid-cols-1'">
+        {{-- GPS — hanya tampil jika butuh geofence (WFO / Hybrid mode WFO) --}}
+        <div x-show="needsGeofence" x-cloak class="p-3 flex items-center gap-2">
           <div class="w-2 h-2 rounded-full shrink-0"
             :class="{
-              'bg-slate-300': gpsStatus === 'loading',
-              'bg-emerald-500': geofenceOk || (gpsStatus === 'ok' && !needsGeofence),
-              'bg-red-500': gpsStatus === 'ok' && needsGeofence && !geofenceOk,
-              'bg-red-400': gpsStatus === 'error',
+                'bg-slate-300': gpsStatus === 'loading',
+                'bg-emerald-500': geofenceOk,
+                'bg-red-500': gpsStatus === 'ok' && !geofenceOk,
+                'bg-red-400': gpsStatus === 'error',
             }">
           </div>
           <div class="flex-1">
@@ -241,7 +246,8 @@
 
         {{-- Biometrik (Face ID / Sidik Jari) --}}
         <div class="p-3 flex items-center gap-2">
-          <div class="w-2 h-2 rounded-full shrink-0
+          <div
+            class="w-2 h-2 rounded-full shrink-0
             {{ $webauthnCredential ? 'bg-emerald-500' : 'bg-amber-400' }}">
           </div>
           <div>
@@ -255,7 +261,8 @@
 
       {{-- Info check-in jika sudah check-in --}}
       @if ($attendance?->check_in_at)
-        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm flex items-center gap-2">
+        <div
+          class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm flex items-center gap-2">
           <x-icon name="check" class="w-4 h-4 shrink-0" />
           <span>Masuk pukul <strong>{{ $attendance->check_in_at->format('H:i') }}</strong>
             @if ($attendance->late_minutes > 0)
@@ -301,7 +308,8 @@
               <span x-show="!processing">Tetap Check-out</span>
               <span x-show="processing" class="flex items-center justify-center gap-1.5">
                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                    stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
                 Memproses…
@@ -323,7 +331,8 @@
           </span>
           <span x-show="processing" class="flex items-center justify-center gap-2">
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
             Memproses…
@@ -340,7 +349,8 @@
           </span>
           <span x-show="processing" class="flex items-center justify-center gap-2">
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
             Memproses…
@@ -371,16 +381,17 @@
     @if ($history->isNotEmpty())
       <div class="mt-2">
         <h3 class="text-sm font-semibold text-slate-900 mb-3">Riwayat Terakhir</h3>
-        <div class="space-y-2">
+        <div class="card overflow-hidden divide-y divide-slate-100">
           @foreach ($history as $h)
-            <div class="card p-3 flex items-center justify-between">
+            <div class="px-4 py-3 flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-slate-900">{{ $h->attendance_date->translatedFormat('d M Y') }}</p>
                 <p class="text-xs text-slate-500">
-                  {{ $h->check_in_at?->format('H:i') ?? '-' }} - {{ $h->check_out_at?->format('H:i') ?? '-' }}
+                  {{ $h->check_in_at?->format('H:i') ?? '-' }} – {{ $h->check_out_at?->format('H:i') ?? '-' }}
                 </p>
               </div>
-              <span class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
+              <span
+                class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
                 {{ $h->status?->label() ?? '-' }}
               </span>
             </div>

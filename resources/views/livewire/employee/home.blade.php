@@ -101,61 +101,36 @@
     </div>
   </div>
 
-  {{-- Hari libur terdekat --}}
-  @if ($upcomingHolidays->isNotEmpty())
-    <div class="px-4 mt-6">
-      <h3 class="text-sm font-semibold text-slate-900 mb-3">Hari Libur Terdekat</h3>
-      <div class="space-y-2">
-        @foreach ($upcomingHolidays as $h)
-          <div class="card p-3 flex items-center gap-3">
-            <div
-              class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex flex-col items-center justify-center shrink-0">
-              <span class="text-[10px] font-medium uppercase">{{ $h->date->translatedFormat('M') }}</span>
-              <span class="text-base font-bold leading-none">{{ $h->date->format('d') }}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold text-slate-900 text-sm truncate">{{ $h->name }}</p>
-              <p class="text-xs text-slate-500">
-                {{ $h->date->translatedFormat('l') }} · {{ $h->date->diffForHumans() }}
-                @if ($h->is_national)
-                  · <span class="text-rose-600">Libur Nasional</span>
-                @endif
-              </p>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    </div>
-  @endif
-
   {{-- Announcements --}}
   <div class="px-4 mt-6">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-semibold text-slate-900">Pengumuman</h3>
     </div>
-    <div class="space-y-3">
-      @forelse ($announcements as $a)
-        <a wire:navigate href="{{ route('mobile.announcements.show', $a) }}"
-          class="card p-4 block active:scale-[0.99] transition">
-          <div class="flex items-start gap-3">
-            @if ($a->is_pinned)
-              <span class="badge bg-amber-100 text-amber-700 shrink-0">📌</span>
-            @endif
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold text-slate-900 text-sm">{{ $a->title }}</p>
-              <p class="text-xs text-slate-500 mt-0.5">{{ $a->published_at?->diffForHumans() }}</p>
-              <div class="ql-snow mt-2">
-                <div class="ql-editor ql-readonly text-xs line-clamp-2">{!! $a->content !!}</div>
+    @if ($announcements->isEmpty())
+      <div class="card p-6 text-center text-sm text-slate-500">
+        Belum ada pengumuman.
+      </div>
+    @else
+      <div class="card overflow-hidden divide-y divide-slate-100">
+        @foreach ($announcements as $a)
+          <a wire:navigate href="{{ route('mobile.announcements.show', $a) }}"
+            class="block p-4 active:bg-slate-50 transition">
+            <div class="flex items-start gap-3">
+              @if ($a->is_pinned)
+                <span class="badge bg-amber-100 text-amber-700 shrink-0 mt-0.5">📌</span>
+              @endif
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-slate-900 text-sm">{{ $a->title }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ $a->published_at?->diffForHumans() }}</p>
+                <div class="ql-snow mt-1.5">
+                  <div class="ql-editor ql-readonly text-xs line-clamp-2">{!! $a->content !!}</div>
+                </div>
               </div>
-              <p class="text-xs text-brand-600 font-medium mt-2">Baca selengkapnya ›</p>
+              <x-icon name="chevron-right" class="w-4 h-4 text-slate-300 shrink-0 mt-0.5" />
             </div>
-          </div>
-        </a>
-      @empty
-        <div class="card p-6 text-center text-sm text-slate-500">
-          Belum ada pengumuman.
-        </div>
-      @endforelse
-    </div>
+          </a>
+        @endforeach
+      </div>
+    @endif
   </div>
 </div>

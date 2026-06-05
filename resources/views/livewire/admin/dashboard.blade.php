@@ -40,7 +40,7 @@
   @endif
 
   {{-- Stats grid --}}
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
     <x-stat-card label="Total Karyawan" :value="$stats['total_employees']" icon="users" color="bg-blue-500" />
     <x-stat-card label="Hadir Hari Ini" :value="$stats['present_today']" icon="check" color="bg-emerald-500" />
     <x-stat-card label="Absen" :value="$stats['absent_today']" icon="x" color="bg-red-500" />
@@ -77,34 +77,4 @@
     </div>
   </div>
 
-  {{-- Upcoming holidays --}}
-  <div class="card overflow-hidden">
-    <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-      <h2 class="font-semibold text-black">Hari Libur Terdekat</h2>
-      <a wire:navigate href="{{ route('admin.holidays') }}" class="text-sm text-brand-600 hover:underline">Kelola</a>
-    </div>
-    <div class="divide-y divide-slate-100">
-      @forelse ($upcomingHolidays as $h)
-        <div class="px-5 py-3 flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex flex-col items-center justify-center shrink-0">
-            <span class="text-[10px] font-medium uppercase">{{ $h->date->translatedFormat('M') }}</span>
-            <span class="text-base font-bold leading-none">{{ $h->date->format('d') }}</span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="font-medium text-black truncate">{{ $h->name }}</p>
-            <p class="text-xs text-slate-500">
-              {{ $h->date->translatedFormat('l, d F Y') }} · {{ $h->date->diffForHumans() }}
-            </p>
-          </div>
-          @if ($h->is_national)
-            <span class="badge bg-red-100 text-red-700">Nasional</span>
-          @else
-            <span class="badge bg-slate-100 text-slate-700">Internal</span>
-          @endif
-        </div>
-      @empty
-        <p class="px-5 py-8 text-center text-sm text-slate-500">Belum ada hari libur terjadwal.</p>
-      @endforelse
-    </div>
-  </div>
 </div>

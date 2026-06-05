@@ -7,7 +7,7 @@
   </x-page-header>
 
   {{-- Filter bar --}}
-  <div class="card p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+  <div class="card p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
     <div class="flex-1 relative">
       <x-icon name="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
       <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama, nomor karyawan, atau NIK…"

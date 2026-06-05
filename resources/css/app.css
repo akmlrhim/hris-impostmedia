@@ -5,6 +5,9 @@
 @source '../**/*.js';
 @source '../../app/Livewire/**/*.php';
 
+/* Dynamic color classes that Tailwind's scanner cannot detect from concatenated strings */
+@source inline("bg-{amber,blue}-600 bg-{green,yellow,gray}-100 text-{yellow,gray}-700");
+
 @theme {
     --font-sans:
         "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
@@ -82,7 +85,7 @@
         @apply block text-sm font-medium text-black mb-1;
     }
     .card {
-        @apply bg-white border border-slate-200;
+        @apply bg-white border border-slate-200 rounded-2xl shadow-sm;
     }
     .badge {
         @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;

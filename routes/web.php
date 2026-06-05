@@ -10,7 +10,6 @@ use App\Livewire\Admin\Attendance as AdminAttendance;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Employee\Index as AdminEmployee;
 use App\Livewire\Admin\Employee\Show as AdminEmployeeShow;
-use App\Livewire\Admin\Holiday as AdminHoliday;
 use App\Livewire\Admin\Leave as AdminLeave;
 use App\Livewire\Admin\OfficeLocation as AdminOfficeLocation;
 use App\Livewire\Admin\Payroll\Index as AdminPayroll;
@@ -106,7 +105,6 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/payroll/{period}/pdf', PayrollPdfController::class)->name('payroll.period.pdf')->middleware('can:manage_payroll');
         Route::get('/payroll/{period}', AdminPayrollShow::class)->name('payroll.show')->middleware('can:manage_payroll');
         Route::get('/announcements', AdminAnnouncements::class)->name('announcements')->middleware('can:manage_announcements');
-        Route::get('/holidays', AdminHoliday::class)->name('holidays')->middleware('can:manage_holidays');
         Route::get('/office-locations', AdminOfficeLocation::class)->name('office-locations')->middleware('can:manage_office_locations');
 
         // Pengaturan (SuperAdmin only)

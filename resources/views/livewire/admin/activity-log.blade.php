@@ -2,7 +2,7 @@
   <x-page-header title="Log Aktivitas" description="Riwayat tindakan sensitif: hapus, finalisasi, perubahan akses." />
 
   {{-- Filter --}}
-  <div class="card p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+  <div class="card p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
     <div class="relative">
       <x-icon name="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
       <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari deskripsi..."

@@ -1,5 +1,5 @@
 <div class="space-y-4">
-  <div class="card p-4 flex flex-col md:flex-row gap-3">
+  <div class="card p-4 flex flex-col sm:flex-row gap-3">
     <input wire:model.live="date" type="date" onclick="this.showPicker()" class="input md:w-52">
 
     <select wire:model.live="status" class="input md:w-52">

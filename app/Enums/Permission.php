@@ -7,7 +7,6 @@ enum Permission: string
     case ManageEmployees = 'manage_employees';
     case ManagePayroll = 'manage_payroll';
     case ManageAttendance = 'manage_attendance';
-    case ManageHolidays = 'manage_holidays';
     case ManageAnnouncements = 'manage_announcements';
     case ManageOfficeLocations = 'manage_office_locations';
     case ManageRemoteWork = 'manage_remote_work';
@@ -20,7 +19,6 @@ enum Permission: string
             self::ManageEmployees => 'Kelola Karyawan',
             self::ManagePayroll => 'Kelola Payroll',
             self::ManageAttendance => 'Kelola Absensi',
-            self::ManageHolidays => 'Kelola Hari Libur',
             self::ManageAnnouncements => 'Kelola Pengumuman',
             self::ManageOfficeLocations => 'Kelola Lokasi Kantor',
             self::ManageRemoteWork => 'Kelola Pengajuan WFA/WFH',
@@ -35,7 +33,6 @@ enum Permission: string
             self::ManageEmployees => 'Menambah, mengedit, dan menonaktifkan data karyawan',
             self::ManagePayroll => 'Membuat dan memproses payroll karyawan',
             self::ManageAttendance => 'Melihat dan mengelola data absensi seluruh karyawan',
-            self::ManageHolidays => 'Mengelola hari libur nasional dan internal',
             self::ManageAnnouncements => 'Membuat dan menerbitkan pengumuman',
             self::ManageOfficeLocations => 'Mengelola lokasi kantor dan radius geofencing',
             self::ManageRemoteWork => 'Menyetujui atau menolak pengajuan WFA/WFH karyawan',

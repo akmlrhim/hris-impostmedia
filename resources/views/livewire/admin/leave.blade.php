@@ -46,7 +46,7 @@
 
   {{-- Tabel --}}
   <div class="card overflow-hidden">
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto" wire:loading.class="opacity-50 pointer-events-none" wire:target="filterStatus,filterType">
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
@@ -111,7 +111,25 @@
                 </span>
               </td>
               <td class="px-3 sm:px-5 py-3">
-                <div class="flex items-center justify-end gap-1 sm:gap-1.5">
+                {{-- Mobile: icon buttons --}}
+                @if ($req->status === \App\Enums\LeaveStatus::Pending)
+                  <div class="flex items-center justify-end gap-1 sm:hidden">
+                    <button wire:click="approve({{ $req->id }})" title="Setujui"
+                      class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">
+                      <x-icon name="check" class="w-4 h-4" />
+                    </button>
+                    <button type="button" @click="$wire.set('showRejectForm', true, true); $wire.openRejectForm({{ $req->id }})" title="Tolak"
+                      class="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">
+                      <x-icon name="x" class="w-4 h-4" />
+                    </button>
+                    <button wire:click="delete({{ $req->id }})" wire:confirm="Hapus pengajuan ini?" title="Hapus"
+                      class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                      <x-icon name="trash-2" class="w-4 h-4" />
+                    </button>
+                  </div>
+                @endif
+                {{-- Desktop: text buttons --}}
+                <div class="hidden sm:flex items-center justify-end gap-1.5">
                   @if ($req->status === \App\Enums\LeaveStatus::Pending)
                     <button wire:click="approve({{ $req->id }})"
                       class="px-2 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">
@@ -121,16 +139,14 @@
                       class="px-2 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
                       Tolak
                     </button>
-                  @else
-                    <span class="text-xs text-slate-400 hidden sm:inline">
-                      {{ $req->reviewer?->name ?? '-' }} · {{ $req->reviewed_at?->diffForHumans() }}
-                    </span>
-                  @endif
-                  @if ($req->status === \App\Enums\LeaveStatus::Pending)
                     <button wire:click="delete({{ $req->id }})" wire:confirm="Hapus pengajuan ini?"
                       class="px-2 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
                       Hapus
                     </button>
+                  @else
+                    <span class="text-xs text-slate-400">
+                      {{ $req->reviewer?->name ?? '-' }} · {{ $req->reviewed_at?->diffForHumans() }}
+                    </span>
                   @endif
                 </div>
               </td>
