@@ -31,7 +31,7 @@
             <div class="grid grid-cols-2 gap-3 py-4 border-b text-sm">
                 <div>
                     <p class="text-xs text-slate-500">Hari Kerja</p>
-                    <p class="font-semibold">{{ $payroll->present_days }} / {{ $payroll->working_days }}</p>
+                    <p class="font-semibold">{{ $payroll->present_days }} hari</p>
                 </div>
                 <div>
                     <p class="text-xs text-slate-500">Tidak Hadir</p>

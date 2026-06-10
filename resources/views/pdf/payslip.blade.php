@@ -12,31 +12,31 @@
     }
 
     body {
-      font-family: 'DejaVu Sans', Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
       font-size: 12px;
-      color: #0f172a;
+      color: #1a1a1a;
       background: #fff;
-      padding: 32px 36px;
+      padding: 30px 34px;
     }
 
     /* ── HEADER ── */
     .header {
       display: table;
       width: 100%;
-      border-bottom: 3px solid #1e293b;
-      padding-bottom: 14px;
-      margin-bottom: 20px;
+      border-bottom: 3px solid #1a1a1a;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .header-logo {
       display: table-cell;
       vertical-align: middle;
-      width: 58px;
+      width: 50px;
     }
 
     .header-logo img {
-      width: 50px;
-      height: 50px;
+      width: 44px;
+      height: 44px;
     }
 
     .header-company {
@@ -46,14 +46,13 @@
     }
 
     .company-name {
-      font-size: 17px;
-      font-weight: 700;
-      color: #0f172a;
+      font-size: 16px;
+      font-weight: bold;
     }
 
     .company-sub {
       font-size: 10.5px;
-      color: #64748b;
+      color: #555;
       margin-top: 2px;
     }
 
@@ -64,177 +63,127 @@
     }
 
     .slip-title {
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 26px;
+      font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #1e293b;
     }
 
-    .slip-period {
-      font-size: 11px;
-      color: #475569;
-      margin-top: 4px;
-      line-height: 1.6;
-    }
-
-    .slip-period strong {
-      color: #0f172a;
-    }
-
-    /* ── INFO BOX ── */
-    .info-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
-
-    .info-table {
+    /* ── EMPLOYEE INFO ── */
+    .info-section {
       display: table;
       width: 100%;
-    }
-
-    .info-row {
-      display: table-row;
-    }
-
-    .info-label {
-      display: table-cell;
-      font-size: 11px;
-      color: #64748b;
-      padding: 3.5px 0;
-      width: 140px;
-    }
-
-    .info-sep {
-      display: table-cell;
-      color: #cbd5e1;
-      padding: 3.5px 10px;
-      font-size: 11px;
-    }
-
-    .info-value {
-      display: table-cell;
-      font-size: 12px;
-      font-weight: 700;
-      color: #0f172a;
-      padding: 3.5px 0;
-    }
-
-    /* ── SECTION ── */
-    .section-title {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #64748b;
-      margin-bottom: 8px;
-    }
-
-    /* ── ITEMS TABLE ── */
-    .items-table {
-      width: 100%;
-      border-collapse: collapse;
       margin-bottom: 16px;
     }
 
-    .items-table thead th {
-      background: #f1f5f9;
-      padding: 7px 10px;
-      font-size: 10px;
-      font-weight: 700;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border: 1px solid #e2e8f0;
+    .info-col {
+      display: table-cell;
+      width: 50%;
+      vertical-align: top;
     }
 
-    .items-table thead th.right {
-      text-align: right;
+    .info-row {
+      padding: 2px 0;
     }
 
-    .items-table tbody td {
-      padding: 8px 10px;
+    .info-label {
+      display: inline-block;
+      width: 120px;
+      color: #555;
+    }
+
+    .info-sep {
+      display: inline-block;
+      width: 12px;
+    }
+
+    .info-value {
+      font-weight: bold;
+    }
+
+    /* ── PENDAPATAN / POTONGAN ── */
+    .columns {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+      margin-bottom: 16px;
+    }
+
+    .col {
+      display: table-cell;
+      width: 50%;
+      vertical-align: top;
+    }
+
+    .col + .col {
+      padding-left: 18px;
+    }
+
+    .section-header {
+      background: #e5e7eb;
+      font-weight: bold;
       font-size: 12px;
-      border: 1px solid #e2e8f0;
-      color: #1e293b;
+      padding: 6px 8px;
+      margin-bottom: 4px;
     }
 
-    .items-table tbody td.amount {
+    table.items {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table.items td {
+      padding: 4px 8px;
+      font-size: 12px;
+      vertical-align: top;
+    }
+
+    table.items td.amount {
       text-align: right;
-      font-weight: 600;
+      white-space: nowrap;
     }
 
-    .items-table tbody td.notes {
+    table.items td.notes {
       font-size: 10px;
-      color: #94a3b8;
+      color: #777;
     }
 
-    .items-table tfoot td {
-      padding: 9px 10px;
-      font-size: 12.5px;
-      font-weight: 700;
-      border-top: 2px solid #cbd5e1;
-      border-left: 1px solid #e2e8f0;
-      border-right: 1px solid #e2e8f0;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .earn-total {
-      color: #059669;
-    }
-
-    .ded-total {
-      color: #dc2626;
-    }
-
-    .earn-amount {
-      color: #059669;
-      font-weight: 600;
-    }
-
-    .ded-amount {
-      color: #dc2626;
-      font-weight: 600;
+    .total-row td {
+      border-top: 2px solid #1a1a1a;
+      font-weight: bold;
+      padding-top: 6px;
     }
 
     /* ── NET BOX ── */
     .net-box {
-      background: #0f172a;
-      border-radius: 8px;
-      padding: 16px 18px;
       display: table;
       width: 100%;
-      margin-top: 4px;
+      border: 2px solid #1a1a1a;
+      padding: 12px 14px;
+      margin-bottom: 16px;
     }
 
     .net-label {
       display: table-cell;
       vertical-align: middle;
       font-size: 13px;
-      font-weight: 700;
-      color: #f1f5f9;
+      font-weight: bold;
     }
 
     .net-amount {
       display: table-cell;
       vertical-align: middle;
       text-align: right;
-      font-size: 22px;
-      font-weight: 700;
-      color: #34d399;
+      font-size: 20px;
+      font-weight: bold;
     }
 
     /* ── BANK BOX ── */
     .bank-box {
       display: table;
       width: 100%;
-      margin-top: 14px;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 12px 14px;
+      margin-bottom: 16px;
+      border: 1px solid #cbd5e1;
+      padding: 10px 14px;
     }
 
     .bank-col {
@@ -242,29 +191,26 @@
       vertical-align: middle;
     }
 
-    .bank-col+.bank-col {
-      border-left: 1px solid #e2e8f0;
+    .bank-col + .bank-col {
+      border-left: 1px solid #cbd5e1;
       padding-left: 16px;
     }
 
     .bank-label {
       font-size: 10px;
-      color: #64748b;
+      color: #555;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 700;
     }
 
     .bank-value {
-      font-size: 13px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-top: 3px;
+      font-size: 12.5px;
+      font-weight: bold;
+      margin-top: 2px;
     }
 
     .bank-sub {
       font-size: 10.5px;
-      color: #475569;
+      color: #555;
       margin-top: 2px;
     }
 
@@ -272,16 +218,16 @@
     .footer {
       display: table;
       width: 100%;
-      margin-top: 28px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
+      margin-top: 24px;
+      padding-top: 10px;
+      border-top: 1px solid #cbd5e1;
     }
 
     .footer-note {
       display: table-cell;
       vertical-align: bottom;
       font-size: 9px;
-      color: #94a3b8;
+      color: #777;
       line-height: 1.6;
     }
 
@@ -294,7 +240,7 @@
 
     .ttd-label {
       font-size: 10px;
-      color: #475569;
+      color: #555;
     }
 
     .ttd-space {
@@ -303,9 +249,8 @@
 
     .ttd-line {
       font-size: 11px;
-      font-weight: 700;
-      color: #0f172a;
-      border-top: 1.5px solid #64748b;
+      font-weight: bold;
+      border-top: 1.5px solid #555;
       padding-top: 5px;
     }
   </style>
@@ -326,112 +271,117 @@
     </div>
     <div class="header-title">
       <div class="slip-title">Slip Gaji</div>
-      <div class="slip-period">
-        Periode: <strong>{{ $payroll->period->code }}</strong><br>
-        {{ \Carbon\Carbon::create()->month($payroll->period->month)->translatedFormat('F') }}
-        {{ $payroll->period->year }}<br>
-        {{ $payroll->period->start_date->translatedFormat('d M Y') }} &ndash;
-        {{ $payroll->period->end_date->translatedFormat('d M Y') }}<br>
-        @if ($payroll->period->payment_date)
-          Tgl. Bayar: <strong>{{ $payroll->period->payment_date->translatedFormat('d M Y') }}</strong>
-        @endif
-      </div>
+      <div class="company-sub">Periode: {{ $payroll->period->code }}</div>
     </div>
   </div>
 
   {{-- INFO KARYAWAN --}}
-  <div class="info-box">
-    <div class="info-table">
+  <div class="info-section">
+    <div class="info-col">
       <div class="info-row">
-        <span class="info-label">Nama Karyawan</span>
-        <span class="info-sep">:</span>
-        <span class="info-value">{{ $payroll->employee->full_name }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Nomor Karyawan</span>
-        <span class="info-sep">:</span>
-        <span class="info-value">{{ $payroll->employee->employee_number }}</span>
+        <span class="info-label">Nama Karyawan</span><span class="info-sep">:</span>
+        <span class="info-value">{{ $payroll->employee->full_name }} ({{ $payroll->employee->employee_number }})</span>
       </div>
       @if ($payroll->employee->position)
         <div class="info-row">
-          <span class="info-label">Jabatan</span>
-          <span class="info-sep">:</span>
+          <span class="info-label">Jabatan</span><span class="info-sep">:</span>
           <span class="info-value">{{ $payroll->employee->position }}</span>
         </div>
       @endif
+      @if ($payroll->employee->contract_start_date)
+        <div class="info-row">
+          <span class="info-label">Tgl Mulai Bekerja</span><span class="info-sep">:</span>
+          <span class="info-value">{{ $payroll->employee->contract_start_date->translatedFormat('d M Y') }}</span>
+        </div>
+      @endif
+    </div>
+    <div class="info-col">
       <div class="info-row">
-        <span class="info-label">Hadir / Hari Kerja</span>
-        <span class="info-sep">:</span>
-        <span class="info-value">{{ $payroll->present_days }} hari / {{ $payroll->working_days }} hari</span>
+        <span class="info-label">Periode Gaji</span><span class="info-sep">:</span>
+        <span class="info-value">
+          {{ \Carbon\Carbon::create()->month($payroll->period->month)->translatedFormat('F') }}
+          {{ $payroll->period->year }}
+        </span>
       </div>
+      <div class="info-row">
+        <span class="info-label">Hari Kerja</span><span class="info-sep">:</span>
+        <span class="info-value">{{ $payroll->present_days }} hari</span>
+      </div>
+      @if ($payroll->period->payment_date)
+        <div class="info-row">
+          <span class="info-label">Tgl. Bayar</span><span class="info-sep">:</span>
+          <span class="info-value">{{ $payroll->period->payment_date->translatedFormat('d M Y') }}</span>
+        </div>
+      @endif
     </div>
   </div>
 
-  {{-- PENDAPATAN --}}
-  <div class="section-title">Pendapatan</div>
-  <table class="items-table">
-    <thead>
-      <tr>
-        <th>Komponen</th>
-        <th class="right">Jumlah</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach ($earnings as $item)
-        <tr>
-          <td>{{ $item->component_name }}</td>
-          <td class="amount earn-amount">Rp {{ number_format((float) $item->amount, 0, ',', '.') }}</td>
-        </tr>
-      @endforeach
-    </tbody>
-    <tfoot>
-      <tr>
-        <td class="earn-total">Total Pendapatan</td>
-        <td class="earn-total" style="text-align:right;">Rp
-          {{ number_format((float) $payroll->total_earnings, 0, ',', '.') }}</td>
-      </tr>
-    </tfoot>
-  </table>
-
-  {{-- POTONGAN --}}
-  @if ($deductions->isNotEmpty())
-    <div class="section-title">Potongan</div>
-    <table class="items-table">
-      <thead>
-        <tr>
-          <th>Komponen</th>
-          <th class="right">Jumlah</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach ($deductions as $item)
-          <tr>
-            <td>
-              {{ $item->component_name }}
-              @if ($item->notes)
-                <br><span class="notes">{{ $item->notes }}</span>
-              @endif
-            </td>
-            <td class="amount ded-amount">Rp {{ number_format((float) $item->amount, 0, ',', '.') }}</td>
+  {{-- PENDAPATAN / POTONGAN --}}
+  <div class="columns">
+    {{-- PENDAPATAN --}}
+    <div class="col">
+      <div class="section-header">Pendapatan</div>
+      <table class="items">
+        <tbody>
+          @foreach ($earnings as $item)
+            <tr>
+              <td>{{ $item->component_name }}</td>
+              <td class="amount">{{ rupiah($item->amount) }}</td>
+            </tr>
+          @endforeach
+          @if ($payroll->overtime_amount > 0)
+            <tr>
+              <td>Lembur ({{ number_format($payroll->overtime_minutes / 60, 1) }} Jam)</td>
+              <td class="amount">{{ rupiah($payroll->overtime_amount) }}</td>
+            </tr>
+          @endif
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Total Pendapatan</td>
+            <td class="amount">{{ rupiah((float) $payroll->total_earnings + (float) $payroll->overtime_amount) }}</td>
           </tr>
-        @endforeach
-      </tbody>
-      <tfoot>
-        <tr>
-          <td class="ded-total">Total Potongan</td>
-          <td class="ded-total" style="text-align:right;">
-            Rp
-            {{ number_format((float) ($payroll->total_deductions + $payroll->total_tax_pph21 + $payroll->total_bpjs), 0, ',', '.') }}
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-  @endif
+        </tfoot>
+      </table>
+    </div>
+
+    {{-- POTONGAN --}}
+    <div class="col">
+      <div class="section-header">Potongan</div>
+      <table class="items">
+        <tbody>
+          @forelse ($deductions as $item)
+            <tr>
+              <td>
+                {{ $item->component_name }}
+                @if ($item->notes)
+                  <br><span class="notes">{{ $item->notes }}</span>
+                @endif
+              </td>
+              <td class="amount">{{ rupiah($item->amount) }}</td>
+            </tr>
+          @empty
+            <tr>
+              <td colspan="2" class="notes">Tidak ada potongan</td>
+            </tr>
+          @endforelse
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Total Potongan</td>
+            <td class="amount">
+              {{ rupiah($payroll->total_deductions + $payroll->total_tax_pph21 + $payroll->total_bpjs) }}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
 
   {{-- GAJI DITERIMA --}}
   <div class="net-box">
     <div class="net-label">Gaji Diterima (Bersih)</div>
-    <div class="net-amount">Rp {{ number_format((float) $payroll->net_salary, 0, ',', '.') }}</div>
+    <div class="net-amount">{{ rupiah($payroll->net_salary) }}</div>
   </div>
 
   {{-- INFO REKENING --}}

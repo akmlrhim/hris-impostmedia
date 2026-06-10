@@ -53,9 +53,12 @@ class Attendance extends Component
 
         $tz = in_array($timezone, self::VALID_TIMEZONES) ? $timezone : config('app.timezone');
         $localNow = now($tz);
-        $today = $localNow->toDateString();
+        // attendance_date must match the date render() uses (app default timezone),
+        // otherwise an employee in a different timezone gets a record under a
+        // different date and the page keeps showing the check-in button.
+        $today = now()->toDateString();
 
-        if ($localNow->isSunday()) {
+        if (now()->isSunday()) {
             $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
 
             return;
@@ -167,9 +170,10 @@ class Attendance extends Component
 
         $tz = in_array($timezone, self::VALID_TIMEZONES) ? $timezone : config('app.timezone');
         $localNow = now($tz);
-        $todayDate = $localNow->toDateString();
+        // Must match the date checkIn() stored attendance_date under (app default timezone).
+        $todayDate = now()->toDateString();
 
-        if ($localNow->isSunday()) {
+        if (now()->isSunday()) {
             $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
 
             return;
@@ -293,7 +297,7 @@ class Attendance extends Component
         $user = auth()->user();
         $employee = $user?->employee;
         $today = now()->toDateString();
-        $isAdminPanelUser = $user?->role?->isAdminPanel() ?? false;
+        $isAdminPanelUser = $user?->isAdminPanel() ?? false;
 
         $isSunday = now()->isSunday();
         $isOffDay = $isSunday;
