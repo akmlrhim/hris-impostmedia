@@ -13,138 +13,138 @@ use Livewire\Component;
 #[Title('Pengajuan WFA')]
 class RemoteWork extends Component
 {
-	public string $work_type = WorkType::WFA->value;
+    public string $work_type = WorkType::WFA->value;
 
-	public string $start_date = '';
+    public string $start_date = '';
 
-	public string $end_date = '';
+    public string $end_date = '';
 
-	public string $reason = '';
+    public string $reason = '';
 
-	public bool $showForm = false;
+    public bool $showForm = false;
 
-	public bool $showConfirm = false;
+    public bool $showConfirm = false;
 
-	public function mount(): void
-	{
-		$this->resetDates();
-	}
+    public function mount(): void
+    {
+        $this->resetDates();
+    }
 
-	private function resetDates(): void
-	{
-		$start = now()->addDay()->setTime(9, 0);
-		$end = $start->copy()->setTime(18, 0);
-		$this->start_date = $start->format('Y-m-d\TH:i');
-		$this->end_date = $end->format('Y-m-d\TH:i');
-	}
+    private function resetDates(): void
+    {
+        $start = now()->setTime(9, 0);
+        $end = $start->copy()->setTime(18, 0);
+        $this->start_date = $start->format('Y-m-d\TH:i');
+        $this->end_date = $end->format('Y-m-d\TH:i');
+    }
 
-	public function openForm(): void
-	{
-		$employee = auth()->user()?->employee;
+    public function openForm(): void
+    {
+        $employee = auth()->user()?->employee;
 
-		if ($employee?->work_type !== WorkType::WFO) {
-			$this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
+        if ($employee?->work_type !== WorkType::WFO) {
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
 
-			return;
-		}
+            return;
+        }
 
-		$this->reset(['reason']);
-		$this->work_type = WorkType::WFA->value;
-		$this->resetDates();
-		$this->resetValidation();
-		$this->showForm = true;
-		$this->showConfirm = false;
-	}
+        $this->reset(['reason']);
+        $this->work_type = WorkType::WFA->value;
+        $this->resetDates();
+        $this->resetValidation();
+        $this->showForm = true;
+        $this->showConfirm = false;
+    }
 
-	private function validationRules(): array
-	{
-		return [
-			'work_type' => 'required|in:' . implode(',', array_map(fn($t) => $t->value, WorkType::remoteRequestable())),
-			'start_date' => 'required|date|after_or_equal:' . now()->startOfDay()->toDateTimeString(),
-			'end_date' => 'required|date|after_or_equal:start_date',
-			'reason' => 'required|string|min:10|max:500',
-		];
-	}
+    private function validationRules(): array
+    {
+        return [
+            'work_type' => 'required|in:'.implode(',', array_map(fn ($t) => $t->value, WorkType::remoteRequestable())),
+            'start_date' => 'required|date|after_or_equal:'.now()->startOfDay()->toDateTimeString(),
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string|min:10|max:500',
+        ];
+    }
 
-	public function requestConfirm(): void
-	{
-		$employee = auth()->user()?->employee;
+    public function requestConfirm(): void
+    {
+        $employee = auth()->user()?->employee;
 
-		if (! $employee || $employee->work_type !== WorkType::WFO) {
-			$this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
+        if (! $employee || $employee->work_type !== WorkType::WFO) {
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
 
-			return;
-		}
+            return;
+        }
 
-		$this->validate($this->validationRules());
+        $this->validate($this->validationRules());
 
-		$this->showConfirm = true;
-	}
+        $this->showConfirm = true;
+    }
 
-	public function submit(): void
-	{
-		$employee = auth()->user()?->employee;
+    public function submit(): void
+    {
+        $employee = auth()->user()?->employee;
 
-		if (! $employee) {
-			$this->dispatch('notify', type: 'error', message: 'Akun belum terhubung ke data karyawan.');
+        if (! $employee) {
+            $this->dispatch('notify', type: 'error', message: 'Akun belum terhubung ke data karyawan.');
 
-			return;
-		}
+            return;
+        }
 
-		if ($employee->work_type !== WorkType::WFO) {
-			$this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
+        if ($employee->work_type !== WorkType::WFO) {
+            $this->dispatch('notify', type: 'warning', message: 'Hanya karyawan WFO yang dapat mengajukan WFA.');
 
-			return;
-		}
+            return;
+        }
 
-		$this->validate($this->validationRules());
+        $this->validate($this->validationRules());
 
-		RemoteWorkRequest::create([
-			'employee_id' => $employee->id,
-			'work_type' => $this->work_type,
-			'start_date' => $this->start_date,
-			'end_date' => $this->end_date,
-			'reason' => $this->reason,
-			'status' => RemoteWorkStatus::Pending,
-		]);
+        RemoteWorkRequest::create([
+            'employee_id' => $employee->id,
+            'work_type' => $this->work_type,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'reason' => $this->reason,
+            'status' => RemoteWorkStatus::Pending,
+        ]);
 
-		$this->showForm = false;
-		$this->showConfirm = false;
-		$this->dispatch('notify', type: 'success', message: 'Pengajuan berhasil dikirim.');
-	}
+        $this->showForm = false;
+        $this->showConfirm = false;
+        $this->dispatch('notify', type: 'success', message: 'Pengajuan berhasil dikirim.');
+    }
 
-	public function cancel(int $id): void
-	{
-		$employee = auth()->user()?->employee;
+    public function cancel(int $id): void
+    {
+        $employee = auth()->user()?->employee;
 
-		$request = RemoteWorkRequest::where('id', $id)
-			->where('employee_id', $employee?->id)
-			->where('status', RemoteWorkStatus::Pending->value)
-			->firstOrFail();
+        $request = RemoteWorkRequest::where('id', $id)
+            ->where('employee_id', $employee?->id)
+            ->where('status', RemoteWorkStatus::Pending->value)
+            ->firstOrFail();
 
-		$request->delete();
-		$this->dispatch('notify', type: 'success', message: 'Pengajuan dibatalkan.');
-	}
+        $request->delete();
+        $this->dispatch('notify', type: 'success', message: 'Pengajuan dibatalkan.');
+    }
 
-	public function render(): mixed
-	{
-		$employee = auth()->user()?->employee;
+    public function render(): mixed
+    {
+        $employee = auth()->user()?->employee;
 
-		$requests = $employee
-			? RemoteWorkRequest::where('employee_id', $employee->id)
-			->orderByDesc('created_at')
-			->limit(20)
-			->get()
-			: collect();
+        $requests = $employee
+            ? RemoteWorkRequest::where('employee_id', $employee->id)
+                ->orderByDesc('created_at')
+                ->limit(20)
+                ->get()
+            : collect();
 
-		$isWfo = $employee?->work_type === WorkType::WFO;
-		$todayApproved = $employee ? RemoteWorkRequest::approvedFor($employee->id, now()->toDateString()) : null;
+        $isWfo = $employee?->work_type === WorkType::WFO;
+        $todayApproved = $employee ? RemoteWorkRequest::approvedFor($employee->id, now()->toDateString()) : null;
 
-		return view('livewire.employee.remote-work', [
-			'requests' => $requests,
-			'isWfo' => $isWfo,
-			'todayApproved' => $todayApproved,
-			'requestableTypes' => WorkType::remoteRequestable(),
-		]);
-	}
+        return view('livewire.employee.remote-work', [
+            'requests' => $requests,
+            'isWfo' => $isWfo,
+            'todayApproved' => $todayApproved,
+            'requestableTypes' => WorkType::remoteRequestable(),
+        ]);
+    }
 }
