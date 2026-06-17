@@ -85,11 +85,11 @@
         <div class="grid grid-cols-2 gap-3 text-center">
           <div class="bg-white rounded-xl p-3 border border-emerald-100">
             <p class="text-[11px] text-slate-500 mb-0.5">Masuk</p>
-            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_in_at->format('H:i') }}</p>
+            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_in_at?->format('H:i') ?? '-' }}</p>
           </div>
           <div class="bg-white rounded-xl p-3 border border-emerald-100">
             <p class="text-[11px] text-slate-500 mb-0.5">Keluar</p>
-            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_out_at->format('H:i') }}</p>
+            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_out_at?->format('H:i') ?? '-' }}</p>
           </div>
         </div>
         <p class="text-xs text-emerald-700">

@@ -41,9 +41,11 @@ window.attendanceBiometric = function ({ workType, officeLocations, credentialId
         },
 
         get canProceed() {
-            const locationOk = !this.needsGeofence || this.geofenceOk;
+            // WFO requires GPS to be resolved and within radius.
+            // WFA/Hybrid-WFA never needs GPS so we never block on it.
+            const locationOk = !this.needsGeofence || (this.gpsStatus === 'ok' && this.geofenceOk);
             const authOk = this.hasCredential || this.password.length > 0;
-            return locationOk && this.gpsStatus !== 'loading' && authOk;
+            return locationOk && authOk;
         },
 
         init() {
