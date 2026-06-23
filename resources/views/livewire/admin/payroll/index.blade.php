@@ -7,17 +7,17 @@
 
   <x-modal show="showForm" max-width="2xl" title="Generate Periode Payroll">
     <form wire:submit="createPeriod" class="space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="label">Tahun</label>
-          <input type="number" wire:model="year" min="2020" max="2099" class="input" placeholder="{{ now()->year }}">
+          <input type="number" wire:model.live="year" min="2020" max="2099" class="input" placeholder="{{ now()->year }}">
           @error('year')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
         </div>
         <div>
           <label class="label">Bulan</label>
-          <select wire:model="month" class="input">
+          <select wire:model.live="month" class="input">
             @foreach (range(1, 12) as $m)
               <option value="{{ $m }}">{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
               </option>
@@ -28,9 +28,23 @@
           @enderror
         </div>
         <div>
-          <label class="label">Tanggal Pembayaran</label>
-          <input type="date" onclick="this.showPicker()" wire:model="payment_date" class="input">
+          <label class="label">Tanggal Mulai Periode</label>
+          <input type="date" onclick="this.showPicker()" wire:model="start_date" class="input">
+          @error('start_date')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
         </div>
+        <div>
+          <label class="label">Tanggal Selesai Periode</label>
+          <input type="date" onclick="this.showPicker()" wire:model="end_date" class="input">
+          @error('end_date')
+            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+      </div>
+      <div>
+        <label class="label">Tanggal Pembayaran</label>
+        <input type="date" onclick="this.showPicker()" wire:model="payment_date" class="input">
       </div>
       <p class="text-xs text-slate-500">
         Sistem akan menghitung gaji untuk semua karyawan aktif berdasarkan kehadiran, cuti, lembur,

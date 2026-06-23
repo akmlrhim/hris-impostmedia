@@ -40,11 +40,16 @@ class Dashboard extends Component
                 ->first()
             : null;
 
+        $isLateAlert = $myEmployee
+            && ! $myAttendance?->check_in_at
+            && now('Asia/Makassar')->hour >= 9;
+
         return view('livewire.admin.dashboard', compact(
             'stats',
             'recentAttendance',
             'myEmployee',
-            'myAttendance'
+            'myAttendance',
+            'isLateAlert'
         ));
     }
 }

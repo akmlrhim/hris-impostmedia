@@ -34,14 +34,10 @@
     </div>
 
     {{-- Stats --}}
-    <div class="grid grid-cols-2 gap-4 py-5 border-b text-sm">
-      <div>
-        <p class="text-xs text-slate-500">Hari Kerja</p>
-        <p class="font-semibold text-slate-900">{{ $payroll->working_days }}</p>
-      </div>
+    <div class="py-5 border-b text-sm">
       <div>
         <p class="text-xs text-slate-500">Hadir</p>
-        <p class="font-semibold text-slate-900">{{ $payroll->present_days }}</p>
+        <p class="font-semibold text-slate-900">{{ $payroll->present_days }} hari</p>
       </div>
     </div>
 

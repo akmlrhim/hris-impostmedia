@@ -33,41 +33,33 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-3 sm:px-5 py-3">Waktu</th>
-            <th class="hidden sm:table-cell px-5 py-3">Pengguna</th>
-            <th class="px-3 sm:px-5 py-3">Aksi</th>
-            <th class="px-3 sm:px-5 py-3">Deskripsi</th>
-            <th class="hidden md:table-cell px-5 py-3">IP</th>
+            <th class="px-5 py-3 whitespace-nowrap">Waktu</th>
+            <th class="px-5 py-3 whitespace-nowrap">Pengguna</th>
+            <th class="px-5 py-3 whitespace-nowrap">Aksi</th>
+            <th class="px-5 py-3 whitespace-nowrap">Deskripsi</th>
+            <th class="px-5 py-3 whitespace-nowrap">IP</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($logs as $log)
             <tr class="hover:bg-slate-50 align-top">
-              <td class="px-3 sm:px-5 py-3 whitespace-nowrap">
+              <td class="px-5 py-3 whitespace-nowrap">
                 <p class="font-medium text-slate-900 text-xs">{{ $log->created_at->translatedFormat('d M Y') }}</p>
                 <p class="text-[11px] text-slate-500">{{ $log->created_at->format('H:i') }}</p>
-                {{-- Mobile only: user info --}}
-                <div class="sm:hidden mt-1">
-                  @if ($log->user)
-                    <p class="text-[11px] font-medium text-slate-700">{{ $log->user->name }}</p>
-                  @else
-                    <p class="text-[11px] italic text-slate-400">(dihapus)</p>
-                  @endif
-                </div>
               </td>
-              <td class="hidden sm:table-cell px-5 py-3">
+              <td class="px-5 py-3 whitespace-nowrap">
                 @if ($log->user)
                   <p class="font-medium text-slate-900">{{ $log->user->name }}</p>
-                  <p class="text-xs text-slate-500 truncate">{{ $log->user->email }}</p>
+                  <p class="text-xs text-slate-500">{{ $log->user->email }}</p>
                 @else
                   <span class="text-xs italic text-slate-400">(pengguna dihapus)</span>
                 @endif
               </td>
-              <td class="px-3 sm:px-5 py-3">
-                <span class="badge bg-slate-100 text-slate-700 font-mono text-[10px] sm:text-xs">{{ $log->action }}</span>
+              <td class="px-5 py-3 whitespace-nowrap">
+                <span class="badge bg-slate-100 text-slate-700 font-mono text-xs">{{ $log->action }}</span>
               </td>
-              <td class="px-3 sm:px-5 py-3 text-slate-700">
-                <p class="text-xs sm:text-sm">{{ $log->description }}</p>
+              <td class="px-5 py-3 text-slate-700 min-w-[200px]">
+                <p class="text-sm">{{ $log->description }}</p>
                 @if (!empty($log->properties))
                   <details class="mt-1">
                     <summary class="text-xs text-slate-400 cursor-pointer hover:text-slate-600">Properti</summary>
@@ -75,7 +67,7 @@
                   </details>
                 @endif
               </td>
-              <td class="hidden md:table-cell px-5 py-3 text-xs text-slate-500 font-mono">{{ $log->ip_address ?? '-' }}</td>
+              <td class="px-5 py-3 text-xs text-slate-500 font-mono whitespace-nowrap">{{ $log->ip_address ?? '-' }}</td>
             </tr>
           @empty
             <tr>

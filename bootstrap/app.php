@@ -6,6 +6,7 @@ use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin.panel' => EnsureAdminPanel::class,
             'employee.active' => EnsureActiveEmployee::class,
+        ]);
+
+        // Throttle the Livewire AJAX endpoint: 120 requests/minute per IP
+        $middleware->web(append: [
+            ThrottleRequests::class.':120,1',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -37,47 +37,33 @@
       <table class="min-w-full divide-y divide-x divide-slate-200 border-l border-r border-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-3 sm:px-5 py-3">Karyawan</th>
-            <th class="hidden sm:table-cell px-5 py-3">NIK</th>
-            <th class="hidden sm:table-cell px-5 py-3">Tipe Kerja</th>
-            <th class="px-3 sm:px-5 py-3">Status</th>
-            <th class="px-3 sm:px-5 py-3 text-right">Aksi</th>
+            <th class="px-5 py-3 whitespace-nowrap">Karyawan</th>
+            <th class="px-5 py-3 whitespace-nowrap">NIK</th>
+            <th class="px-5 py-3 whitespace-nowrap">Tipe Kerja</th>
+            <th class="px-5 py-3 whitespace-nowrap">Status</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($employees as $emp)
             <tr class="hover:bg-slate-50">
-              <td class="px-3 sm:px-5 py-3">
+              <td class="px-5 py-3">
                 <div class="flex items-center gap-2.5">
-                  <div
-                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
+                  <div class="w-9 h-9 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
                     @if ($emp->avatar_path)
                       <img src="{{ route('files.avatar', $emp) }}" class="w-full h-full object-cover">
                     @else
                       {{ strtoupper(substr($emp->full_name, 0, 1)) }}
                     @endif
                   </div>
-                  <div class="min-w-0">
-                    <p class="font-medium text-slate-900 truncate">{{ $emp->full_name }}</p>
+                  <div class="whitespace-nowrap">
+                    <p class="font-medium text-slate-900">{{ $emp->full_name }}</p>
                     <p class="text-xs text-slate-500">{{ $emp->employee_number }}</p>
-                    {{-- Mobile only: NIK + work type --}}
-                    <div class="flex flex-wrap items-center gap-1.5 mt-0.5 sm:hidden">
-                      @if ($emp->nik)
-                        <span class="text-[11px] text-slate-400">{{ $emp->nik }}</span>
-                      @endif
-                      @if ($emp->work_type)
-                        @if ($emp->nik)
-                          <span class="text-slate-300 text-[11px]">·</span>
-                        @endif
-                        <span
-                          class="badge bg-{{ $emp->work_type->color() }}-100 text-{{ $emp->work_type->color() }}-700 text-[10px] py-0">{{ $emp->work_type->shortLabel() }}</span>
-                      @endif
-                    </div>
                   </div>
                 </div>
               </td>
-              <td class="hidden sm:table-cell px-5 py-3 text-slate-600">{{ $emp->nik ?: '-' }}</td>
-              <td class="hidden sm:table-cell px-5 py-3">
+              <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ $emp->nik ?: '-' }}</td>
+              <td class="px-5 py-3 whitespace-nowrap">
                 @if ($emp->work_type)
                   <span class="badge bg-{{ $emp->work_type->color() }}-100 text-{{ $emp->work_type->color() }}-700">
                     {{ $emp->work_type->shortLabel() }}
@@ -86,15 +72,15 @@
                   <span class="text-slate-400">-</span>
                 @endif
               </td>
-              <td class="px-3 sm:px-5 py-3">
+              <td class="px-5 py-3 whitespace-nowrap">
                 @if ($emp->is_active)
                   <span class="badge bg-emerald-100 text-emerald-700">Aktif</span>
                 @else
                   <span class="badge bg-red-100 text-red-700">Nonaktif</span>
                 @endif
               </td>
-              <td class="px-3 sm:px-5 py-3">
-                <div class="flex items-center justify-end gap-1 sm:gap-2">
+              <td class="px-5 py-3">
+                <div class="flex items-center justify-end gap-2 whitespace-nowrap">
                   <a wire:navigate href="{{ route('admin.employees.show', $emp) }}"
                     class="px-2 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                     Detail
@@ -105,7 +91,7 @@
                   </button>
                   <button wire:click="toggleActive({{ $emp->id }})"
                     wire:confirm="{{ $emp->is_active ? 'Nonaktifkan' : 'Aktifkan' }} karyawan {{ $emp->full_name }}?"
-                    class="hidden sm:inline-flex px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $emp->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $emp->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
                     {{ $emp->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                   </button>
                 </div>

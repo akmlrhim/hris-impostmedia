@@ -50,12 +50,12 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-3 sm:px-5 py-3">Karyawan</th>
-            <th class="hidden sm:table-cell px-5 py-3">Jenis</th>
-            <th class="hidden sm:table-cell px-5 py-3">Tanggal</th>
-            <th class="hidden md:table-cell px-5 py-3">Keterangan</th>
-            <th class="px-3 sm:px-5 py-3">Status</th>
-            <th class="px-3 sm:px-5 py-3 text-right">Aksi</th>
+            <th class="px-5 py-3 whitespace-nowrap">Karyawan</th>
+            <th class="px-5 py-3 whitespace-nowrap">Jenis</th>
+            <th class="px-5 py-3 whitespace-nowrap">Tanggal</th>
+            <th class="px-5 py-3 whitespace-nowrap">Keterangan</th>
+            <th class="px-5 py-3 whitespace-nowrap">Status</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
@@ -65,7 +65,7 @@
               $typeColor   = $req->type->color();
             @endphp
             <tr class="hover:bg-slate-50" wire:key="row-{{ $req->id }}">
-              <td class="px-3 sm:px-5 py-3">
+              <td class="px-5 py-3">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
                     @if ($req->employee->avatar_path)
@@ -74,62 +74,34 @@
                       {{ strtoupper(substr($req->employee->full_name, 0, 1)) }}
                     @endif
                   </div>
-                  <div>
+                  <div class="whitespace-nowrap">
                     <p class="font-medium text-slate-900">{{ $req->employee->full_name }}</p>
                     <p class="text-xs text-slate-500">{{ $req->employee->employee_number }}</p>
-                    {{-- Mobile only: type badge + date range --}}
-                    <div class="sm:hidden mt-1 space-y-0.5">
-                      <span class="badge bg-{{ $typeColor }}-100 text-{{ $typeColor }}-700 text-[10px] py-0">{{ $req->type->label() }}</span>
-                      <p class="text-[11px] text-slate-500 mt-1">
-                        {{ $req->start_date->translatedFormat('d M Y') }}
-                        @if ($req->start_date->toDateString() !== $req->end_date->toDateString())
-                          – {{ $req->end_date->translatedFormat('d M Y') }}
-                        @endif
-                      </p>
-                    </div>
                   </div>
                 </div>
               </td>
-              <td class="hidden sm:table-cell px-5 py-3">
+              <td class="px-5 py-3 whitespace-nowrap">
                 <span class="badge bg-{{ $typeColor }}-100 text-{{ $typeColor }}-700">
                   {{ $req->type->label() }}
                 </span>
               </td>
-              <td class="hidden sm:table-cell px-5 py-3 text-slate-600 text-xs">
+              <td class="px-5 py-3 text-slate-600 text-xs whitespace-nowrap">
                 {{ $req->start_date->translatedFormat('d M Y H:i') }}
                 <br>s/d {{ $req->end_date->translatedFormat('d M Y H:i') }}
               </td>
-              <td class="hidden md:table-cell px-5 py-3 max-w-xs">
+              <td class="px-5 py-3 max-w-xs">
                 <p class="text-slate-600 text-xs line-clamp-2">{{ $req->reason }}</p>
                 @if ($req->rejection_reason)
                   <p class="text-red-600 text-xs mt-1 italic">Ditolak: {{ $req->rejection_reason }}</p>
                 @endif
               </td>
-              <td class="px-3 sm:px-5 py-3">
+              <td class="px-5 py-3 whitespace-nowrap">
                 <span class="badge bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700">
                   {{ $req->status->label() }}
                 </span>
               </td>
-              <td class="px-3 sm:px-5 py-3">
-                {{-- Mobile: icon buttons --}}
-                @if ($req->status === \App\Enums\LeaveStatus::Pending)
-                  <div class="flex items-center justify-end gap-1 sm:hidden">
-                    <button wire:click="approve({{ $req->id }})" title="Setujui"
-                      class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">
-                      <x-icon name="check" class="w-4 h-4" />
-                    </button>
-                    <button type="button" @click="$wire.set('showRejectForm', true, true); $wire.openRejectForm({{ $req->id }})" title="Tolak"
-                      class="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">
-                      <x-icon name="x" class="w-4 h-4" />
-                    </button>
-                    <button wire:click="delete({{ $req->id }})" wire:confirm="Hapus pengajuan ini?" title="Hapus"
-                      class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
-                      <x-icon name="trash-2" class="w-4 h-4" />
-                    </button>
-                  </div>
-                @endif
-                {{-- Desktop: text buttons --}}
-                <div class="hidden sm:flex items-center justify-end gap-1.5">
+              <td class="px-5 py-3">
+                <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
                   @if ($req->status === \App\Enums\LeaveStatus::Pending)
                     <button wire:click="approve({{ $req->id }})"
                       class="px-2 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">
@@ -144,7 +116,7 @@
                       Hapus
                     </button>
                   @else
-                    <span class="text-xs text-slate-400">
+                    <span class="text-xs text-slate-400 whitespace-nowrap">
                       {{ $req->reviewer?->name ?? '-' }} · {{ $req->reviewed_at?->diffForHumans() }}
                     </span>
                   @endif

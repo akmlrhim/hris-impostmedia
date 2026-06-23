@@ -380,7 +380,12 @@
     {{-- Riwayat --}}
     @if ($history->isNotEmpty())
       <div class="mt-2">
-        <h3 class="text-sm font-semibold text-slate-900 mb-3">Riwayat Terakhir</h3>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold text-slate-900">Riwayat Absensi</h3>
+          @if (method_exists($history, 'total'))
+            <span class="text-xs text-slate-500">{{ $history->total() }} data</span>
+          @endif
+        </div>
         <div class="card overflow-hidden divide-y divide-slate-100">
           @foreach ($history as $h)
             <div class="px-4 py-3 flex items-center justify-between">
@@ -388,6 +393,9 @@
                 <p class="text-sm font-medium text-slate-900">{{ $h->attendance_date->translatedFormat('d M Y') }}</p>
                 <p class="text-xs text-slate-500">
                   {{ $h->check_in_at?->format('H:i') ?? '-' }} – {{ $h->check_out_at?->format('H:i') ?? '-' }}
+                  @if ($h->work_minutes)
+                    · {{ floor($h->work_minutes / 60) }}j {{ $h->work_minutes % 60 }}m
+                  @endif
                 </p>
               </div>
               <span
@@ -397,6 +405,11 @@
             </div>
           @endforeach
         </div>
+        @if (method_exists($history, 'hasPages') && $history->hasPages())
+          <div class="mt-3 card px-4 py-3">
+            {{ $history->links() }}
+          </div>
+        @endif
       </div>
     @endif
 

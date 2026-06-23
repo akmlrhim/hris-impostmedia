@@ -1,3 +1,37 @@
+# -----------------------------------------------------------------------
+# Block access to sensitive files and directories
+# -----------------------------------------------------------------------
+
+# Block .git directory and all its contents
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^\.git(/.*)?$ - [F,L]
+</IfModule>
+
+# Block common sensitive files by extension / name
+<FilesMatch "(^\.env|^\.env\..+|composer\.(json|lock)$|package(-lock)?\.json$|webpack\.mix\.js$|artisan$|server\.php$|phpunit\.xml$|_ide_helper.*\.php$)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block hidden files (dot-files like .htpasswd, .DS_Store, etc.)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block PHP execution in the storage and vendor directories if accidentally symlinked
+<FilesMatch "^(storage|vendor)/.*\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Disable server signature
+ServerSignature Off
+
+# -----------------------------------------------------------------------
+# Standard Laravel rewrites
+# -----------------------------------------------------------------------
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

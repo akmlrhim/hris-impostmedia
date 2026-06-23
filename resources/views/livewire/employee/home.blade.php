@@ -51,6 +51,46 @@
     </div>
   </div>
 
+  {{-- Late alert --}}
+  @if ($isLateAlert)
+    <div class="px-4 mt-4">
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-200">
+        <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+          <x-icon name="alert-circle" class="w-4 h-4 text-red-600" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-red-800">Belum absen!</p>
+          <p class="text-xs text-red-600">Sudah lewat pukul 09.00 WITA. Segera lakukan check-in.</p>
+        </div>
+        <a wire:navigate href="{{ route('mobile.attendance') }}"
+          class="shrink-0 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold">
+          Absen
+        </a>
+      </div>
+    </div>
+  @endif
+
+  {{-- Monthly attendance stats --}}
+  @if ($monthStats !== null)
+    <div class="px-4 mt-4">
+      <h3 class="text-sm font-semibold text-slate-900 mb-3">Statistik Bulan Ini</h3>
+      <div class="grid grid-cols-3 gap-2">
+        <div class="card p-3 text-center">
+          <p class="text-2xl font-bold text-emerald-600">{{ $monthStats['hadir'] }}</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Hadir</p>
+        </div>
+        <div class="card p-3 text-center">
+          <p class="text-2xl font-bold text-amber-500">{{ $monthStats['terlambat'] }}</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Terlambat</p>
+        </div>
+        <div class="card p-3 text-center">
+          <p class="text-2xl font-bold text-red-500">{{ $monthStats['tidak_hadir'] }}</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Tidak Hadir</p>
+        </div>
+      </div>
+    </div>
+  @endif
+
   {{-- Quick menu --}}
   <div class="px-4 mt-6">
     <h3 class="text-sm font-semibold text-slate-900 mb-3">Menu Cepat</h3>

@@ -69,25 +69,24 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-3 sm:px-5 py-3">Karyawan</th>
-            <th class="hidden sm:table-cell px-5 py-3 text-right">Hadir</th>
-            <th class="hidden sm:table-cell px-5 py-3 text-right">Gaji Kotor</th>
-            <th class="px-3 sm:px-5 py-3 text-right">Gaji Net</th>
-            <th class="px-3 sm:px-5 py-3 text-right">Aksi</th>
+            <th class="px-5 py-3 whitespace-nowrap">Karyawan</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Hadir (hari)</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Gaji Kotor</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Gaji Net</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($payrolls as $pr)
             <tr class="hover:bg-slate-50">
-              <td class="px-3 sm:px-5 py-3">
+              <td class="px-5 py-3 whitespace-nowrap">
                 <p class="font-medium text-slate-900">{{ $pr->employee->full_name }}</p>
                 <p class="text-xs text-slate-500">{{ $pr->employee->employee_number }}</p>
-                <p class="text-[11px] text-slate-400 sm:hidden mt-0.5">Hadir: {{ $pr->present_days }}/{{ $pr->working_days }} hari</p>
               </td>
-              <td class="hidden sm:table-cell px-5 py-3 text-right text-slate-600">{{ $pr->present_days }}/{{ $pr->working_days }}</td>
-              <td class="hidden sm:table-cell px-5 py-3 text-right text-slate-700">{{ rupiah($pr->gross_salary) }}</td>
-              <td class="px-3 sm:px-5 py-3 text-right font-semibold text-emerald-600">{{ rupiah($pr->net_salary) }}</td>
-              <td class="px-3 sm:px-5 py-3 text-right">
+              <td class="px-5 py-3 text-right text-slate-600 whitespace-nowrap">{{ $pr->present_days }}</td>
+              <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ rupiah($pr->gross_salary) }}</td>
+              <td class="px-5 py-3 text-right font-semibold text-emerald-600 whitespace-nowrap">{{ rupiah($pr->net_salary) }}</td>
+              <td class="px-5 py-3 text-right whitespace-nowrap">
                 <a wire:navigate href="{{ route('admin.payroll.payslip', $pr) }}"
                   class="px-2 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                   Lihat Slip

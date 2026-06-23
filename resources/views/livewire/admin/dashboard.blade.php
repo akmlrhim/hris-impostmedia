@@ -6,7 +6,7 @@
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-            {{ $myAttendance?->check_out_at ? 'bg-emerald-100 text-emerald-600' : ($myAttendance?->check_in_at ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500') }}">
+            {{ $myAttendance?->check_out_at ? 'bg-emerald-100 text-emerald-600' : ($myAttendance?->check_in_at ? 'bg-amber-100 text-amber-600' : ($isLateAlert ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500')) }}">
             <x-icon name="scan-face" class="w-5 h-5" />
           </div>
           <div>
@@ -23,6 +23,8 @@
                   · <span class="text-red-600 font-normal text-sm">Terlambat {{ $myAttendance->late_minutes }} mnt</span>
                 @endif
               </p>
+            @elseif ($isLateAlert)
+              <p class="font-semibold text-red-700">Belum absen! Sudah lewat pukul 09.00 WITA</p>
             @else
               <p class="font-semibold text-slate-700">Belum absen hari ini</p>
             @endif
