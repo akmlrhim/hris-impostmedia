@@ -303,10 +303,11 @@
               class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-white border border-amber-200 text-amber-800 active:bg-amber-100 transition">
               Batal
             </button>
-            <button @click="doCheckOut()" :disabled="processing"
+            <button wire:click="confirmEarlyCheckout" wire:target="confirmEarlyCheckout"
+              wire:loading.attr="disabled"
               class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-amber-500 text-white active:bg-amber-600 disabled:opacity-50 transition">
-              <span x-show="!processing">Tetap Check-out</span>
-              <span x-show="processing" class="flex items-center justify-center gap-1.5">
+              <span wire:loading.remove wire:target="confirmEarlyCheckout">Tetap Check-out</span>
+              <span wire:loading wire:target="confirmEarlyCheckout" class="flex items-center justify-center gap-1.5">
                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                     stroke-width="4"></circle>

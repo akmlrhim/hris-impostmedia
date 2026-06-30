@@ -46,9 +46,39 @@
         <label class="label">Tanggal Pembayaran</label>
         <input type="date" onclick="this.showPicker()" wire:model="payment_date" class="input">
       </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="label mb-0">Pilih Karyawan</label>
+          <span class="text-xs text-slate-500">{{ count($selectedEmployees) }} / {{ $employees->count() }} dipilih</span>
+        </div>
+        @if ($employees->isEmpty())
+          <p class="text-sm text-slate-500 rounded-lg border border-slate-200 p-3">Tidak ada karyawan aktif.</p>
+        @else
+          <div class="rounded-lg border border-slate-200 divide-y divide-slate-100 max-h-64 overflow-y-auto">
+            <label class="flex items-center gap-3 px-3 py-2.5 bg-slate-50 cursor-pointer sticky top-0">
+              <input type="checkbox" wire:model.live="selectAll"
+                class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+              <span class="text-sm font-semibold text-slate-700">Pilih Semua</span>
+            </label>
+            @foreach ($employees as $emp)
+              <label class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 cursor-pointer">
+                <input type="checkbox" value="{{ $emp->id }}" wire:model.live="selectedEmployees"
+                  class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                <span class="text-sm text-slate-900">{{ $emp->full_name }}</span>
+                <span class="text-xs text-slate-400 ml-auto">{{ $emp->employee_number }}</span>
+              </label>
+            @endforeach
+          </div>
+        @endif
+        @error('selectedEmployees')
+          <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+        @enderror
+      </div>
+
       <p class="text-xs text-slate-500">
-        Sistem akan menghitung gaji untuk semua karyawan aktif berdasarkan kehadiran, cuti, lembur,
-        dan komponen yang tersedia. Periode existing dengan status <em>draft</em> akan ditimpa.
+        Sistem akan menghitung gaji untuk karyawan yang dipilih berdasarkan kehadiran, cuti, lembur,
+        dan komponen yang tersedia. Slip dengan status <em>draft</em> untuk karyawan terpilih akan ditimpa.
       </p>
       <div class="flex flex-wrap gap-2 justify-end pt-2 border-t border-slate-100">
         <button type="button" @click="$wire.set('showForm', false, true)" class="btn-secondary">Batal</button>
@@ -65,32 +95,24 @@
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            <th class="px-3 sm:px-5 py-3">Periode</th>
-            <th class="hidden sm:table-cell px-5 py-3">Tanggal</th>
-            <th class="hidden sm:table-cell px-5 py-3">Pembayaran</th>
-            <th class="hidden sm:table-cell px-5 py-3 text-right">Karyawan</th>
-            <th class="px-3 sm:px-5 py-3">Status</th>
-            <th class="px-3 sm:px-5 py-3 text-right">Aksi</th>
+            <th class="px-5 py-3 whitespace-nowrap">Periode</th>
+            <th class="px-5 py-3 whitespace-nowrap">Tanggal</th>
+            <th class="px-5 py-3 whitespace-nowrap">Pembayaran</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Karyawan</th>
+            <th class="px-5 py-3 whitespace-nowrap">Status</th>
+            <th class="px-5 py-3 text-right whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
           @forelse ($periods as $p)
             <tr class="hover:bg-slate-50">
-              <td class="px-3 sm:px-5 py-3">
+              <td class="px-5 py-3 whitespace-nowrap">
                 <p class="font-medium text-slate-900">{{ $p->code }}</p>
-                {{-- Mobile only: date range + payment date --}}
-                <div class="sm:hidden mt-0.5 space-y-0.5">
-                  <p class="text-xs text-slate-500">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</p>
-                  @if ($p->payment_date)
-                    <p class="text-[11px] text-slate-400">Bayar: {{ $p->payment_date->translatedFormat('d M Y') }}</p>
-                  @endif
-                  <p class="text-[11px] text-slate-400">{{ $p->payrolls_count }} karyawan</p>
-                </div>
               </td>
-              <td class="hidden sm:table-cell px-5 py-3">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</td>
-              <td class="hidden sm:table-cell px-5 py-3">{{ $p->payment_date?->translatedFormat('d M Y') ?? '-' }}</td>
-              <td class="hidden sm:table-cell px-5 py-3 text-right">{{ $p->payrolls_count }}</td>
-              <td class="px-3 sm:px-5 py-3">
+              <td class="px-5 py-3 whitespace-nowrap">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</td>
+              <td class="px-5 py-3 whitespace-nowrap">{{ $p->payment_date?->translatedFormat('d M Y') ?? '-' }}</td>
+              <td class="px-5 py-3 text-right whitespace-nowrap">{{ $p->payrolls_count }}</td>
+              <td class="px-5 py-3 whitespace-nowrap">
                 @php
                   $color = match ($p->status) {
                       'paid' => 'emerald',
@@ -102,8 +124,8 @@
                 <span
                   class="badge bg-{{ $color }}-100 text-{{ $color }}-700 capitalize">{{ $p->status }}</span>
               </td>
-              <td class="px-3 sm:px-5 py-3">
-                <div class="flex items-center justify-end gap-1 sm:gap-2">
+              <td class="px-5 py-3">
+                <div class="flex items-center justify-end gap-2 whitespace-nowrap">
                   <a wire:navigate href="{{ route('admin.payroll.show', $p) }}"
                     class="px-2 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                     Detail

@@ -3,9 +3,11 @@
 namespace App\Livewire\Admin\Payroll;
 
 use App\Concerns\HandlesAdminActions;
+use App\Models\Employee;
 use App\Models\PayrollPeriod;
 use App\Services\Payroll\PayrollGenerator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -34,6 +36,11 @@ class Index extends Component
     public ?string $end_date = null;
 
     public ?string $payment_date = null;
+
+    /** @var array<int, int> */
+    public array $selectedEmployees = [];
+
+    public bool $selectAll = true;
 
     public function mount(): void
     {
@@ -67,12 +74,42 @@ class Index extends Component
     public function openForm(): void
     {
         $this->resetValidation();
+        $this->selectedEmployees = $this->activeEmployees()->pluck('id')->all();
+        $this->selectAll = true;
         $this->showForm = true;
+    }
+
+    public function updatedSelectAll(bool $value): void
+    {
+        $this->selectedEmployees = $value
+            ? $this->activeEmployees()->pluck('id')->all()
+            : [];
+    }
+
+    public function updatedSelectedEmployees(): void
+    {
+        $this->selectAll = count($this->selectedEmployees) === $this->activeEmployees()->count();
+    }
+
+    /**
+     * @return Collection<int, Employee>
+     */
+    private function activeEmployees(): Collection
+    {
+        return Employee::where('is_active', true)
+            ->orderBy('full_name')
+            ->get(['id', 'full_name', 'employee_number']);
     }
 
     public function createPeriod(PayrollGenerator $generator): mixed
     {
         $this->validate();
+
+        if (empty($this->selectedEmployees)) {
+            $this->addError('selectedEmployees', 'Pilih minimal satu karyawan untuk digenerate.');
+
+            return null;
+        }
 
         return $this->safeAction(function () use ($generator) {
             $period = PayrollPeriod::firstOrCreate(
@@ -86,7 +123,7 @@ class Index extends Component
                 ]
             );
 
-            $generator->generateForPeriod($period);
+            $generator->generateForPeriod($period, $this->selectedEmployees);
 
             $this->showForm = false;
             $this->logActivity('payroll.period_created', "Generate periode payroll {$period->code}", $period);
@@ -119,6 +156,9 @@ class Index extends Component
             ->orderByDesc('month')
             ->paginate(12);
 
-        return view('livewire.admin.payroll.index', compact('periods'));
+        return view('livewire.admin.payroll.index', [
+            'periods' => $periods,
+            'employees' => $this->showForm ? $this->activeEmployees() : collect(),
+        ]);
     }
 }

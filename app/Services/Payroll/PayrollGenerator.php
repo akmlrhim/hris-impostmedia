@@ -16,20 +16,26 @@ use Illuminate\Support\Facades\DB;
 class PayrollGenerator
 {
     /**
-     * Generate payrolls for all active employees in a period.
+     * Generate payrolls for active employees in a period.
      *
+     * @param  int[]|null  $employeeIds  When provided, only generate for these employees; otherwise all active employees.
      * @return int Number of payroll records generated
      */
-    public function generateForPeriod(PayrollPeriod $period): int
+    public function generateForPeriod(PayrollPeriod $period, ?array $employeeIds = null): int
     {
-        return DB::transaction(function () use ($period): int {
-            // Wipe existing draft payrolls so this is idempotent
+        return DB::transaction(function () use ($period, $employeeIds): int {
+            // Wipe existing draft payrolls so this is idempotent. When a subset of
+            // employees is selected, only their drafts are replaced so previously
+            // generated payrolls for other employees stay intact.
             Payroll::where('payroll_period_id', $period->id)
                 ->where('status', 'draft')
+                ->when($employeeIds !== null, fn ($q) => $q->whereIn('employee_id', $employeeIds))
                 ->delete();
 
             $components = PayrollComponent::where('is_active', true)->get()->keyBy('code');
-            $employees = Employee::where('is_active', true)->get();
+            $employees = Employee::where('is_active', true)
+                ->when($employeeIds !== null, fn ($q) => $q->whereIn('id', $employeeIds))
+                ->get();
             $count = 0;
 
             foreach ($employees as $emp) {

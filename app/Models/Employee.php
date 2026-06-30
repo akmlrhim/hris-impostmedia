@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use App\Enums\WorkType;
+use App\Observers\EmployeeObserver;
 use App\Traits\HasRouteHash;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy(EmployeeObserver::class)]
 #[Fillable([
     'user_id',
     'employee_number',

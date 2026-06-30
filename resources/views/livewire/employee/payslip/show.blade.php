@@ -27,19 +27,7 @@
                 @endif
             </div>
 
-            {{-- Stats kehadiran --}}
-            <div class="flex gap-6 py-4 border-b text-sm">
-                <div>
-                    <p class="text-xs text-slate-500">Hadir</p>
-                    <p class="font-semibold">{{ $payroll->present_days }} hari</p>
-                </div>
-                <div>
-                    <p class="text-xs text-slate-500">Tidak Hadir</p>
-                    <p class="font-semibold">{{ $payroll->absent_days }} hari</p>
-                </div>
-            </div>
-
-            {{-- Pendapatan --}}
+{{-- Pendapatan --}}
             <div class="py-4 border-b">
                 <p class="text-xs uppercase text-slate-500 mb-2">Pendapatan</p>
                 @foreach ($earnings as $item)

@@ -303,11 +303,7 @@
           {{ $payroll->period->year }}
         </span>
       </div>
-      <div class="info-row">
-        <span class="info-label">Hari Kerja</span><span class="info-sep">:</span>
-        <span class="info-value">{{ $payroll->present_days }} hari</span>
-      </div>
-      @if ($payroll->period->payment_date)
+@if ($payroll->period->payment_date)
         <div class="info-row">
           <span class="info-label">Tgl. Bayar</span><span class="info-sep">:</span>
           <span class="info-value">{{ $payroll->period->payment_date->translatedFormat('d M Y') }}</span>

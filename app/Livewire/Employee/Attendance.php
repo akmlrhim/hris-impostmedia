@@ -6,9 +6,11 @@ use App\Enums\AttendanceStatus;
 use App\Enums\WorkType;
 use App\Models\Attendance as AttendanceModel;
 use App\Models\AttendanceLog;
+use App\Models\Employee;
 use App\Models\OfficeLocation;
 use App\Models\RemoteWorkRequest;
 use App\Models\WebauthnCredential;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -27,6 +29,17 @@ class Attendance extends Component
     public int $workedMinutes = 0;
 
     public string $webauthnChallenge = '';
+
+    // Location captured during the (already biometric-verified) check-out attempt
+    // that triggered the early-checkout warning, reused when the user confirms so
+    // they don't have to scan their biometric a second time.
+    public ?float $pendingCheckoutLatitude = null;
+
+    public ?float $pendingCheckoutLongitude = null;
+
+    public ?string $pendingCheckoutAddress = null;
+
+    public ?string $pendingCheckoutTimezone = null;
 
     private const MINIMUM_WORK_MINUTES = 480;
 
@@ -157,8 +170,6 @@ class Attendance extends Component
 
         $tz = in_array($timezone, self::VALID_TIMEZONES) ? $timezone : config('app.timezone');
         $localNow = now($tz);
-        // Must match the date checkIn() stored attendance_date under (app default timezone).
-        $todayDate = now()->toDateString();
 
         if (now()->isSunday()) {
             $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
@@ -170,18 +181,7 @@ class Attendance extends Component
             return;
         }
 
-        // Find today's attendance, or yesterday's if employee worked past midnight.
-        $attendance = AttendanceModel::where('employee_id', $employee->id)
-            ->where(function ($q) use ($todayDate) {
-                $q->whereDate('attendance_date', $todayDate)
-                    ->orWhere(function ($q2) {
-                        $q2->whereDate('attendance_date', now()->subDay()->toDateString())
-                            ->whereNotNull('check_in_at')
-                            ->whereNull('check_out_at');
-                    });
-            })
-            ->orderByDesc('attendance_date')
-            ->first();
+        $attendance = $this->findOpenAttendance($employee->id);
 
         if (! $attendance || ! $attendance->check_in_at) {
             $this->dispatch('notify', message: 'Anda belum check-in hari ini.', type: 'warning');
@@ -198,16 +198,106 @@ class Attendance extends Component
         // diffInMinutes is UTC-based — accurate regardless of timezone
         $workedMinutes = (int) $attendance->check_in_at->diffInMinutes($localNow);
 
-        if ($workedMinutes < self::MINIMUM_WORK_MINUTES && ! $this->showEarlyCheckoutWarning) {
+        if ($workedMinutes < self::MINIMUM_WORK_MINUTES) {
+            // Biometric already verified above. Stash the verified location so the
+            // confirmation step can finalize without asking for biometrics again.
             $this->workedMinutes = $workedMinutes;
             $this->showEarlyCheckoutWarning = true;
+            $this->pendingCheckoutLatitude = $latitude;
+            $this->pendingCheckoutLongitude = $longitude;
+            $this->pendingCheckoutAddress = $address;
+            $this->pendingCheckoutTimezone = $tz;
+            // Refresh so that cancelling and retrying check-out has a valid challenge
+            // (the one just used above was consumed during verification).
             $this->refreshChallenge();
 
             return;
         }
 
-        $this->showEarlyCheckoutWarning = false;
+        $this->finalizeCheckOut($attendance, $localNow, $workedMinutes, $latitude, $longitude, $address, $employee);
+    }
 
+    /**
+     * Finalize an early check-out the user confirmed after the warning.
+     * No biometric re-verification: the originating checkOut() call already
+     * verified the credential before the warning was shown.
+     */
+    public function confirmEarlyCheckout(): void
+    {
+        // Guard: only reachable after a verified checkOut() raised the warning.
+        if (! $this->showEarlyCheckoutWarning) {
+            return;
+        }
+
+        $user = auth()->user();
+        $employee = $user?->employee;
+
+        if (! $employee) {
+            $this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
+
+            return;
+        }
+
+        if (now()->isSunday()) {
+            $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
+
+            return;
+        }
+
+        $tz = in_array($this->pendingCheckoutTimezone, self::VALID_TIMEZONES) ? $this->pendingCheckoutTimezone : config('app.timezone');
+        $localNow = now($tz);
+
+        $attendance = $this->findOpenAttendance($employee->id);
+
+        if (! $attendance || ! $attendance->check_in_at) {
+            $this->resetEarlyCheckout();
+            $this->dispatch('notify', message: 'Anda belum check-in hari ini.', type: 'warning');
+
+            return;
+        }
+
+        if ($attendance->check_out_at) {
+            $this->resetEarlyCheckout();
+            $this->dispatch('notify', message: 'Anda sudah check-out.', type: 'warning');
+
+            return;
+        }
+
+        $workedMinutes = (int) $attendance->check_in_at->diffInMinutes($localNow);
+
+        $this->finalizeCheckOut(
+            $attendance,
+            $localNow,
+            $workedMinutes,
+            $this->pendingCheckoutLatitude,
+            $this->pendingCheckoutLongitude,
+            $this->pendingCheckoutAddress,
+            $employee,
+        );
+    }
+
+    /**
+     * Find today's open attendance, or yesterday's if the employee worked past midnight.
+     */
+    private function findOpenAttendance(int $employeeId): ?AttendanceModel
+    {
+        $todayDate = now()->toDateString();
+
+        return AttendanceModel::where('employee_id', $employeeId)
+            ->where(function ($q) use ($todayDate) {
+                $q->whereDate('attendance_date', $todayDate)
+                    ->orWhere(function ($q2) {
+                        $q2->whereDate('attendance_date', now()->subDay()->toDateString())
+                            ->whereNotNull('check_in_at')
+                            ->whereNull('check_out_at');
+                    });
+            })
+            ->orderByDesc('attendance_date')
+            ->first();
+    }
+
+    private function finalizeCheckOut(AttendanceModel $attendance, Carbon $localNow, int $workedMinutes, ?float $latitude, ?float $longitude, ?string $address, Employee $employee): void
+    {
         DB::transaction(function () use ($attendance, $localNow, $workedMinutes, $latitude, $longitude, $address, $employee) {
             $attendance->update([
                 'check_out_at' => $localNow->format('Y-m-d H:i:s'),
@@ -231,14 +321,24 @@ class Attendance extends Component
             ]);
         });
 
+        $this->resetEarlyCheckout();
         $this->dispatch('notify', message: 'Check-out berhasil! Terima kasih.', type: 'success');
         $this->dispatch('attendance-recorded');
     }
 
-    public function cancelEarlyCheckout(): void
+    private function resetEarlyCheckout(): void
     {
         $this->showEarlyCheckoutWarning = false;
         $this->workedMinutes = 0;
+        $this->pendingCheckoutLatitude = null;
+        $this->pendingCheckoutLongitude = null;
+        $this->pendingCheckoutAddress = null;
+        $this->pendingCheckoutTimezone = null;
+    }
+
+    public function cancelEarlyCheckout(): void
+    {
+        $this->resetEarlyCheckout();
     }
 
     private function verifyAuthCredential(?string $credentialId, ?string $clientDataJSON, ?string $password): bool
