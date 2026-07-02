@@ -8,7 +8,7 @@
       <h1 class="text-lg font-bold text-slate-900">Cuti & Izin</h1>
       <p class="text-xs text-slate-400 mt-0.5">Pengajuan cuti, izin sakit, dan izin</p>
     </div>
-    <button type="button" @click="$wire.set('showForm', true, true); $wire.openForm()" class="btn-primary text-sm px-3 py-1.5">Ajukan</button>
+    <button type="button" @click="$wire.set('showForm', true, false); $wire.openForm()" class="btn-primary text-sm px-3 py-1.5">Ajukan</button>
   </div>
 
   {{-- Form modal --}}

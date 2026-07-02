@@ -1,7 +1,7 @@
 <div class="space-y-4">
   <x-page-header title="Manajemen Pengguna" description="Kelola akun pengguna dan peran sistem.">
     <x-slot:action>
-      <button type="button" @click="$wire.set('showForm', true, true); $wire.open()" class="btn-primary">Tambah Pengguna</button>
+      <button type="button" @click="$wire.set('showForm', true, false); $wire.open()" class="btn-primary">Tambah Pengguna</button>
     </x-slot:action>
   </x-page-header>
 
@@ -98,7 +98,7 @@
               </td>
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                  <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $u->id }})"
+                  <button type="button" @click="$wire.set('showForm', true, false); $wire.open({{ $u->id }})"
                     class="px-2 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
                   </button>

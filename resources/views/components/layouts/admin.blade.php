@@ -79,7 +79,7 @@
           @if (!$item['gate'] || auth()->user()?->can($item['gate']))
             @php $isActive = request()->routeIs($item['route'].'*'); @endphp
             <a wire:navigate href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
-              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ $isActive ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ $isActive ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
               <x-icon :name="$item['icon']" class="w-5 h-5 shrink-0" />
               <span class="flex-1">{{ $item['label'] }}</span>
               @if ($item['route'] === 'admin.remote-work' && $pendingWfa > 0)
@@ -101,17 +101,17 @@
           <div class="pt-3 mt-1 border-t border-slate-200 space-y-1">
             <p class="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Pengaturan</p>
             <a wire:navigate href="{{ route('admin.users') }}"
-              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.users') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.users') ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
               <x-icon name="users" class="w-5 h-5 shrink-0" />
               <span>Pengguna</span>
             </a>
             <a wire:navigate href="{{ route('admin.access-control') }}"
-              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.access-control') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.access-control') ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
               <x-icon name="shield-check" class="w-5 h-5 shrink-0" />
               <span>Hak Akses</span>
             </a>
             <a wire:navigate href="{{ route('admin.activity-log') }}"
-              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.activity-log') ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+              class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.activity-log') ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
               <x-icon name="clock" class="w-5 h-5 shrink-0" />
               <span>Log Aktivitas</span>
             </a>

@@ -8,13 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['date', 'holiday_name', 'description'])]
 class Holiday extends Model
 {
+    protected $table = 'company_holidays';
+
     protected function casts(): array
     {
-        return ['date' => 'date'];
+        return ['date' => 'date:Y-m-d'];
     }
 
     public static function isHoliday(string $date): bool
     {
-        return self::where('date', $date)->exists();
+        return self::whereDate('date', $date)->exists();
     }
 }

@@ -1,7 +1,7 @@
 <div class="space-y-4">
   <x-page-header title="Hari Libur" description="Kelola daftar hari libur nasional & cuti bersama. Karyawan tidak wajib absen pada tanggal ini.">
     <x-slot:action>
-      <button type="button" @click="$wire.set('showForm', true, true); $wire.open()" class="btn-primary">Tambah Hari Libur</button>
+      <button type="button" @click="$wire.set('showForm', true, false); $wire.open()" class="btn-primary">Tambah Hari Libur</button>
     </x-slot:action>
   </x-page-header>
 
@@ -49,7 +49,7 @@
               <td class="px-5 py-3 text-slate-500">{{ $holiday->description ?: '-' }}</td>
               <td class="px-5 py-3">
                 <div class="flex items-center justify-end gap-2 whitespace-nowrap">
-                  <button type="button" @click="$wire.set('showForm', true, true); $wire.open({{ $holiday->id }})"
+                  <button type="button" @click="$wire.set('showForm', true, false); $wire.open({{ $holiday->id }})"
                     class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
                     Edit
                   </button>

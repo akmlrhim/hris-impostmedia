@@ -1,7 +1,7 @@
 <div class="space-y-4">
   <x-page-header title="Periode Payroll" description="Generate & kelola perhitungan gaji bulanan.">
     <x-slot:action>
-      <button type="button" @click="$wire.set('showForm', true, true); $wire.openForm()" class="btn-primary">Generate Periode</button>
+      <button type="button" @click="$wire.set('showForm', true, false); $wire.openForm()" class="btn-primary">Generate Periode</button>
     </x-slot:action>
   </x-page-header>
 

@@ -435,7 +435,7 @@ class Attendance extends Component
             && $attendance->attendance_date->toDateString() !== $today;
 
         $isSunday = now()->isSunday();
-        $holidayToday = Holiday::where('date', $today)->first();
+        $holidayToday = Holiday::whereDate('date', $today)->first();
         $isOffDay = ($isSunday || $holidayToday) && ! $hasOpenSessionFromPreviousDay;
         $offDayName = $holidayToday?->holiday_name ?? ($isSunday ? 'Hari Minggu' : '');
 

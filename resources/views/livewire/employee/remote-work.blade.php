@@ -9,7 +9,7 @@
       <p class="text-xs text-slate-400 mt-0.5">Kerja dari luar kantor</p>
     </div>
     @if ($isWfo)
-      <button type="button" @click="$wire.set('showForm', true, true); $wire.openForm()" class="btn-primary text-sm px-3 py-1.5">Ajukan</button>
+      <button type="button" @click="$wire.set('showForm', true, false); $wire.openForm()" class="btn-primary text-sm px-3 py-1.5">Ajukan</button>
     @endif
   </div>
 
