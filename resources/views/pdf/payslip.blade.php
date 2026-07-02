@@ -13,47 +13,47 @@
 
     body {
       font-family: Arial, Helvetica, sans-serif;
-      font-size: 12px;
+      font-size: 9.5px;
       color: #1a1a1a;
       background: #fff;
-      padding: 30px 34px;
+      padding: 16px 18px;
     }
 
     /* ── HEADER ── */
     .header {
       display: table;
       width: 100%;
-      border-bottom: 3px solid #1a1a1a;
-      padding-bottom: 12px;
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 8px;
       margin-bottom: 16px;
     }
 
     .header-logo {
       display: table-cell;
       vertical-align: middle;
-      width: 50px;
+      width: 34px;
     }
 
     .header-logo img {
-      width: 44px;
-      height: 44px;
+      width: 30px;
+      height: 30px;
     }
 
     .header-company {
       display: table-cell;
       vertical-align: middle;
-      padding-left: 10px;
+      padding-left: 8px;
     }
 
     .company-name {
-      font-size: 16px;
+      font-size: 12.5px;
       font-weight: bold;
     }
 
     .company-sub {
-      font-size: 10.5px;
+      font-size: 8px;
       color: #555;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     .header-title {
@@ -63,7 +63,7 @@
     }
 
     .slip-title {
-      font-size: 26px;
+      font-size: 16px;
       font-weight: bold;
       text-transform: uppercase;
     }
@@ -87,43 +87,31 @@
 
     .info-label {
       display: inline-block;
-      width: 120px;
+      width: 80px;
       color: #555;
     }
 
     .info-sep {
       display: inline-block;
-      width: 12px;
+      width: 8px;
     }
 
     .info-value {
       font-weight: bold;
     }
 
-    /* ── PENDAPATAN / POTONGAN ── */
-    .columns {
-      display: table;
+    /* ── PENDAPATAN / POTONGAN (stacked, not side-by-side, to stay legible on small paper) ── */
+    .section {
       width: 100%;
-      table-layout: fixed;
-      margin-bottom: 16px;
-    }
-
-    .col {
-      display: table-cell;
-      width: 50%;
-      vertical-align: top;
-    }
-
-    .col + .col {
-      padding-left: 18px;
+      margin-bottom: 14px;
     }
 
     .section-header {
       background: #e5e7eb;
       font-weight: bold;
-      font-size: 12px;
-      padding: 6px 8px;
-      margin-bottom: 4px;
+      font-size: 9.5px;
+      padding: 4px 6px;
+      margin-bottom: 5px;
     }
 
     table.items {
@@ -132,8 +120,8 @@
     }
 
     table.items td {
-      padding: 4px 8px;
-      font-size: 12px;
+      padding: 4px 6px;
+      font-size: 9.5px;
       vertical-align: top;
     }
 
@@ -143,12 +131,12 @@
     }
 
     table.items td.notes {
-      font-size: 10px;
+      font-size: 8px;
       color: #777;
     }
 
     .total-row td {
-      border-top: 2px solid #1a1a1a;
+      border-top: 1.5px solid #1a1a1a;
       font-weight: bold;
       padding-top: 6px;
     }
@@ -157,15 +145,15 @@
     .net-box {
       display: table;
       width: 100%;
-      border: 2px solid #1a1a1a;
-      padding: 12px 14px;
+      border: 1.5px solid #1a1a1a;
+      padding: 8px 10px;
       margin-bottom: 16px;
     }
 
     .net-label {
       display: table-cell;
       vertical-align: middle;
-      font-size: 13px;
+      font-size: 10px;
       font-weight: bold;
     }
 
@@ -173,7 +161,7 @@
       display: table-cell;
       vertical-align: middle;
       text-align: right;
-      font-size: 20px;
+      font-size: 15px;
       font-weight: bold;
     }
 
@@ -183,7 +171,7 @@
       width: 100%;
       margin-bottom: 16px;
       border: 1px solid #cbd5e1;
-      padding: 10px 14px;
+      padding: 6px 10px;
     }
 
     .bank-col {
@@ -193,65 +181,65 @@
 
     .bank-col + .bank-col {
       border-left: 1px solid #cbd5e1;
-      padding-left: 16px;
+      padding-left: 12px;
     }
 
     .bank-label {
-      font-size: 10px;
+      font-size: 8px;
       color: #555;
       text-transform: uppercase;
     }
 
     .bank-value {
-      font-size: 12.5px;
+      font-size: 10px;
       font-weight: bold;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     .bank-sub {
-      font-size: 10.5px;
+      font-size: 8px;
       color: #555;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     /* ── FOOTER ── */
     .footer {
       display: table;
       width: 100%;
-      margin-top: 24px;
-      padding-top: 10px;
+      margin-top: 20px;
+      padding-top: 7px;
       border-top: 1px solid #cbd5e1;
     }
 
     .footer-note {
       display: table-cell;
       vertical-align: bottom;
-      font-size: 9px;
+      font-size: 7px;
       color: #777;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .footer-ttd {
       display: table-cell;
       vertical-align: bottom;
       text-align: center;
-      width: 180px;
+      width: 120px;
     }
 
     .ttd-label {
-      font-size: 10px;
+      font-size: 8px;
       color: #555;
     }
 
     .ttd-space {
-      height: 50px;
+      height: 32px;
     }
 
     .ttd-line {
-      font-size: 11px;
+      font-size: 9px;
       font-weight: bold;
       border-top: 1.5px solid #555;
-      padding-top: 5px;
+      padding-top: 4px;
     }
   </style>
 </head>

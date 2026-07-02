@@ -21,6 +21,7 @@ class RolePermissionSeeder extends Seeder
                 'manage_leave',
                 'manage_remote_work',
                 'manage_office_locations',
+                'manage_holidays',
             ],
         ];
 

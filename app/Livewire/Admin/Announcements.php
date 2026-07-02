@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Concerns\HandlesAdminActions;
 use App\Models\Announcement;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -33,9 +34,12 @@ class Announcements extends Component
 
     public bool $publish_now = true;
 
+    #[Validate('nullable|date|after_or_equal:today')]
+    public string $expires_at = '';
+
     public function open(?int $id = null): void
     {
-        $this->reset(['title', 'content', 'audience', 'is_pinned', 'publish_now', 'editingId']);
+        $this->reset(['title', 'content', 'audience', 'is_pinned', 'publish_now', 'expires_at', 'editingId']);
         $this->resetValidation();
 
         if ($id) {
@@ -46,6 +50,7 @@ class Announcements extends Component
             $this->audience = $a->audience;
             $this->is_pinned = (bool) $a->is_pinned;
             $this->publish_now = (bool) $a->published_at;
+            $this->expires_at = $a->expires_at?->toDateString() ?? '';
         }
 
         $this->showForm = true;
@@ -61,6 +66,7 @@ class Announcements extends Component
             'audience' => $this->audience,
             'is_pinned' => $this->is_pinned,
             'published_at' => $this->publish_now ? now() : null,
+            'expires_at' => $this->expires_at ? Carbon::parse($this->expires_at)->endOfDay() : null,
             'author_id' => auth()->id(),
         ];
 

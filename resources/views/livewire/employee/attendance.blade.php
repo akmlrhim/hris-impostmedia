@@ -15,6 +15,11 @@
       <h1 class="text-lg font-bold text-slate-900">Absensi</h1>
       <p class="text-xs text-slate-400 mt-0.5">{{ now()->translatedFormat('l, d F Y') }}</p>
     </div>
+    @if ($hasOpenSessionFromPreviousDay)
+      <span class="badge text-xs px-2 py-0.5 bg-amber-100 text-amber-700">
+        Sesi {{ $attendance->attendance_date->translatedFormat('d M') }}
+      </span>
+    @endif
     @if ($employee)
       <span
         class="badge text-xs px-2 py-0.5
@@ -85,11 +90,11 @@
         <div class="grid grid-cols-2 gap-3 text-center">
           <div class="bg-white rounded-xl p-3 border border-emerald-100">
             <p class="text-[11px] text-slate-500 mb-0.5">Masuk</p>
-            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_in_at?->format('H:i') ?? '-' }}</p>
+            <p class="text-xl font-bold text-emerald-700 tabular-nums">{{ $attendance->check_in_at?->format('H:i') ?? '-' }}</p>
           </div>
           <div class="bg-white rounded-xl p-3 border border-emerald-100">
             <p class="text-[11px] text-slate-500 mb-0.5">Keluar</p>
-            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_out_at?->format('H:i') ?? '-' }}</p>
+            <p class="text-xl font-bold text-emerald-700 tabular-nums">{{ $attendance->check_out_at?->format('H:i') ?? '-' }}</p>
           </div>
         </div>
         <p class="text-xs text-emerald-700">
@@ -122,6 +127,15 @@
         </div>
       </div>
 
+      @if ($hasOpenSessionFromPreviousDay)
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 text-xs flex items-start gap-2">
+          <x-icon name="clock" class="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+          <span>Anda masih memiliki sesi kerja tanggal
+            <strong>{{ $attendance->attendance_date->translatedFormat('d M Y') }}</strong> yang belum check-out.
+            Selesaikan sesi tersebut terlebih dahulu sebelum check-in hari ini.</span>
+        </div>
+      @endif
+
       {{-- Step indicator --}}
       <div class="flex items-center gap-2">
         <div class="flex items-center gap-1.5 flex-1">
@@ -134,7 +148,7 @@
               1
             @endif
           </div>
-          <span class="text-xs font-medium {{ $attendance?->check_in_at ? 'text-emerald-600' : 'text-slate-900' }}">
+          <span class="text-xs font-medium tabular-nums {{ $attendance?->check_in_at ? 'text-emerald-600' : 'text-slate-900' }}">
             Check-in {{ $attendance?->check_in_at ? '(' . $attendance->check_in_at->format('H:i') . ')' : '' }}
           </span>
         </div>
@@ -264,7 +278,7 @@
         <div
           class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm flex items-center gap-2">
           <x-icon name="check" class="w-4 h-4 shrink-0" />
-          <span>Masuk pukul <strong>{{ $attendance->check_in_at->format('H:i') }}</strong>
+          <span>Masuk pukul <strong class="tabular-nums">{{ $attendance->check_in_at->format('H:i') }}</strong>
             @if ($attendance->late_minutes > 0)
               - terlambat {{ $attendance->late_minutes }} mnt
             @endif
@@ -392,7 +406,7 @@
             <div class="px-4 py-3 flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-slate-900">{{ $h->attendance_date->translatedFormat('d M Y') }}</p>
-                <p class="text-xs text-slate-500">
+                <p class="text-xs text-slate-500 tabular-nums">
                   {{ $h->check_in_at?->format('H:i') ?? '-' }} – {{ $h->check_out_at?->format('H:i') ?? '-' }}
                   @if ($h->work_minutes)
                     · {{ floor($h->work_minutes / 60) }}j {{ $h->work_minutes % 60 }}m

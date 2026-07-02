@@ -54,6 +54,12 @@
                   'icon' => 'map-pin',
                   'gate' => 'manage_office_locations',
               ],
+              [
+                  'label' => 'Hari Libur',
+                  'route' => 'admin.holidays',
+                  'icon' => 'flag',
+                  'gate' => 'manage_holidays',
+              ],
           ];
           $pendingWfa = auth()->user()?->can('manage_remote_work')
               ? \App\Models\RemoteWorkRequest::where('status', 'pending')->count()

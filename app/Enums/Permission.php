@@ -11,6 +11,7 @@ enum Permission: string
     case ManageOfficeLocations = 'manage_office_locations';
     case ManageRemoteWork = 'manage_remote_work';
     case ManageLeave = 'manage_leave';
+    case ManageHolidays = 'manage_holidays';
     case ManageUsers = 'manage_users';
 
     public function label(): string
@@ -23,6 +24,7 @@ enum Permission: string
             self::ManageOfficeLocations => 'Kelola Lokasi Kantor',
             self::ManageRemoteWork => 'Kelola Pengajuan WFA/WFH',
             self::ManageLeave => 'Kelola Pengajuan Cuti & Izin',
+            self::ManageHolidays => 'Kelola Hari Libur',
             self::ManageUsers => 'Kelola Pengguna & Hak Akses',
         };
     }
@@ -37,6 +39,7 @@ enum Permission: string
             self::ManageOfficeLocations => 'Mengelola lokasi kantor dan radius geofencing',
             self::ManageRemoteWork => 'Menyetujui atau menolak pengajuan WFA/WFH karyawan',
             self::ManageLeave => 'Menyetujui atau menolak pengajuan cuti dan izin karyawan',
+            self::ManageHolidays => 'Mengelola daftar hari libur nasional & cuti bersama',
             self::ManageUsers => 'Mengelola akun pengguna dan konfigurasi hak akses (Super Admin)',
         };
     }

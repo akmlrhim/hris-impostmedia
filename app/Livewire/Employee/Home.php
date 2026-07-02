@@ -6,6 +6,7 @@ use App\Enums\AttendanceStatus;
 use App\Enums\WorkType;
 use App\Models\Announcement;
 use App\Models\Attendance;
+use App\Services\AttendanceLatenessService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -14,7 +15,7 @@ use Livewire\Component;
 #[Title('Beranda')]
 class Home extends Component
 {
-    public function render(): mixed
+    public function render(AttendanceLatenessService $lateness): mixed
     {
         $employee = auth()->user()?->employee;
         $today = now()->toDateString();
@@ -58,7 +59,7 @@ class Home extends Component
 
         $isLateAlert = $employee
             && ! $todayAttendance?->check_in_at
-            && now('Asia/Makassar')->hour >= 9;
+            && $lateness->isLate(now('Asia/Makassar'));
 
         return view('livewire.employee.home', compact(
             'employee',

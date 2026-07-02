@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Services\AttendanceLatenessService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -13,7 +14,7 @@ use Livewire\Component;
 #[Layout('components.layouts.admin')]
 class Dashboard extends Component
 {
-    public function render(): mixed
+    public function render(AttendanceLatenessService $lateness): mixed
     {
         $today = now()->toDateString();
 
@@ -42,7 +43,7 @@ class Dashboard extends Component
 
         $isLateAlert = $myEmployee
             && ! $myAttendance?->check_in_at
-            && now('Asia/Makassar')->hour >= 9;
+            && $lateness->isLate(now('Asia/Makassar'));
 
         return view('livewire.admin.dashboard', compact(
             'stats',

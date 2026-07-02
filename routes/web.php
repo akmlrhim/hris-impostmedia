@@ -10,6 +10,7 @@ use App\Livewire\Admin\Attendance as AdminAttendance;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Employee\Index as AdminEmployee;
 use App\Livewire\Admin\Employee\Show as AdminEmployeeShow;
+use App\Livewire\Admin\Holiday as AdminHoliday;
 use App\Livewire\Admin\Leave as AdminLeave;
 use App\Livewire\Admin\OfficeLocation as AdminOfficeLocation;
 use App\Livewire\Admin\Payroll\Index as AdminPayroll;
@@ -24,6 +25,7 @@ use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Auth\VerifyEmail;
 use App\Livewire\Employee\AnnouncementShow as MobileAnnouncementShow;
 use App\Livewire\Employee\Attendance as MobileAttendance;
+use App\Livewire\Employee\Calendar as MobileCalendar;
 use App\Livewire\Employee\Directory as MobileDirectory;
 use App\Livewire\Employee\Home as MobileHome;
 use App\Livewire\Employee\Leave as MobileLeave;
@@ -106,6 +108,7 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/payroll/{period}', AdminPayrollShow::class)->name('payroll.show')->middleware('can:manage_payroll');
         Route::get('/announcements', AdminAnnouncements::class)->name('announcements')->middleware('can:manage_announcements');
         Route::get('/office-locations', AdminOfficeLocation::class)->name('office-locations')->middleware('can:manage_office_locations');
+        Route::get('/holidays', AdminHoliday::class)->name('holidays')->middleware('can:manage_holidays');
 
         // Pengaturan (SuperAdmin only)
         Route::get('/users', AdminUserManagement::class)->name('users')->middleware('can:manage_users');
@@ -122,6 +125,7 @@ Route::middleware(['auth', 'employee.active'])
     ->group(function () {
         Route::get('/', MobileHome::class)->name('home');
         Route::get('/attendance', MobileAttendance::class)->name('attendance');
+        Route::get('/calendar', MobileCalendar::class)->name('calendar');
         Route::get('/directory', MobileDirectory::class)->name('directory');
         Route::get('/payslip', MobilePayslip::class)->name('payslip');
         Route::get('/payslip/{payroll}', MobilePayslipShow::class)->name('payslip.show');

@@ -7,9 +7,11 @@ use App\Enums\WorkType;
 use App\Models\Attendance as AttendanceModel;
 use App\Models\AttendanceLog;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\OfficeLocation;
 use App\Models\RemoteWorkRequest;
 use App\Models\WebauthnCredential;
+use App\Services\AttendanceLatenessService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -75,7 +77,7 @@ class Attendance extends Component
         // different date and the page keeps showing the check-in button.
         $today = now()->toDateString();
 
-        if (now()->isSunday()) {
+        if ($this->isNonWorkingDay($today)) {
             $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
 
             return;
@@ -127,16 +129,21 @@ class Attendance extends Component
             }
         }
 
-        DB::transaction(function () use ($attendance, $localNow, $latitude, $longitude, $address, $effectiveWorkType, $tz, $employee) {
+        // Lateness applies the same way to every work type (WFO/WFA/Hybrid) — an
+        // approved remote-work request changes where an employee works, not when.
+        $lateness = app(AttendanceLatenessService::class);
+        $isLate = $lateness->isLate($localNow);
+
+        DB::transaction(function () use ($attendance, $localNow, $latitude, $longitude, $address, $effectiveWorkType, $tz, $employee, $lateness, $isLate) {
             $attendance->fill([
                 'check_in_at' => $localNow->format('Y-m-d H:i:s'),
                 'check_in_latitude' => $latitude,
                 'check_in_longitude' => $longitude,
                 'check_in_address' => $address,
                 'check_in_photo_path' => null,
-                'status' => AttendanceStatus::Present,
+                'status' => $isLate ? AttendanceStatus::Late : AttendanceStatus::Present,
                 'work_type' => $effectiveWorkType->value,
-                'late_minutes' => 0,
+                'late_minutes' => $lateness->lateMinutes($localNow),
                 'timezone' => $tz,
             ])->save();
 
@@ -171,16 +178,14 @@ class Attendance extends Component
         $tz = in_array($timezone, self::VALID_TIMEZONES) ? $timezone : config('app.timezone');
         $localNow = now($tz);
 
-        if (now()->isSunday()) {
-            $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
-
-            return;
-        }
-
         if (! $this->verifyAuthCredential($credentialId, $clientDataJSON, $password)) {
             return;
         }
 
+        // No holiday guard here: an open attendance means the employee already
+        // checked in on a valid working day and must be allowed to finish that
+        // session even if the calendar day has since rolled over (e.g. an
+        // overnight shift started Saturday and finishing after midnight Sunday).
         $attendance = $this->findOpenAttendance($employee->id);
 
         if (! $attendance || ! $attendance->check_in_at) {
@@ -238,12 +243,7 @@ class Attendance extends Component
             return;
         }
 
-        if (now()->isSunday()) {
-            $this->dispatch('notify', message: 'Absensi tidak tersedia pada hari libur.', type: 'warning');
-
-            return;
-        }
-
+        // No holiday guard here either — see the matching comment in checkOut().
         $tz = in_array($this->pendingCheckoutTimezone, self::VALID_TIMEZONES) ? $this->pendingCheckoutTimezone : config('app.timezone');
         $localNow = now($tz);
 
@@ -294,6 +294,11 @@ class Attendance extends Component
             })
             ->orderByDesc('attendance_date')
             ->first();
+    }
+
+    private function isNonWorkingDay(string $date): bool
+    {
+        return Carbon::parse($date)->isSunday() || Holiday::isHoliday($date);
     }
 
     private function finalizeCheckOut(AttendanceModel $attendance, Carbon $localNow, int $workedMinutes, ?float $latitude, ?float $longitude, ?string $address, Employee $employee): void
@@ -406,10 +411,6 @@ class Attendance extends Component
         $today = now()->toDateString();
         $isAdminPanelUser = $user?->isAdminPanel() ?? false;
 
-        $isSunday = now()->isSunday();
-        $isOffDay = $isSunday;
-        $offDayName = $isSunday ? 'Hari Minggu' : '';
-
         // Also pick up yesterday's unchecked-out attendance for employees who work past midnight.
         $attendance = $employee
             ? AttendanceModel::where('employee_id', $employee->id)
@@ -424,6 +425,19 @@ class Attendance extends Component
                 ->orderByDesc('attendance_date')
                 ->first()
             : null;
+
+        // An open session carried over from a previous day (overnight shift) must
+        // stay completable even if "today" has since become a holiday — the
+        // holiday guard only prevents *starting* new attendance, not finishing one.
+        $hasOpenSessionFromPreviousDay = $attendance
+            && $attendance->check_in_at
+            && ! $attendance->check_out_at
+            && $attendance->attendance_date->toDateString() !== $today;
+
+        $isSunday = now()->isSunday();
+        $holidayToday = Holiday::where('date', $today)->first();
+        $isOffDay = ($isSunday || $holidayToday) && ! $hasOpenSessionFromPreviousDay;
+        $offDayName = $holidayToday?->holiday_name ?? ($isSunday ? 'Hari Minggu' : '');
 
         $history = $employee
             ? AttendanceModel::where('employee_id', $employee->id)
@@ -455,7 +469,8 @@ class Attendance extends Component
             'webauthnCredential',
             'isAdminPanelUser',
             'isOffDay',
-            'offDayName'
+            'offDayName',
+            'hasOpenSessionFromPreviousDay'
         ));
     }
 }

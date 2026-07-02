@@ -49,6 +49,12 @@
           Publikasikan sekarang
         </label>
       </div>
+      <div>
+        <label class="label">Berlaku Sampai (opsional)</label>
+        <input type="date" wire:model="expires_at" class="input">
+        <p class="text-[11px] text-slate-500 mt-1">Setelah tanggal ini, pengumuman otomatis tidak lagi tampil di beranda karyawan. Kosongkan jika tidak ada batas waktu.</p>
+        @error('expires_at') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+      </div>
       <x-form-actions />
     </form>
   </x-modal>
@@ -66,6 +72,9 @@
                 <span class="badge bg-emerald-100 text-emerald-700">Published</span>
               @else
                 <span class="badge bg-slate-100 text-slate-700">Draft</span>
+              @endif
+              @if ($a->expires_at?->isPast())
+                <span class="badge bg-slate-100 text-slate-500">Kedaluwarsa</span>
               @endif
             </div>
             <h3 class="font-semibold text-slate-900">{{ $a->title }}</h3>

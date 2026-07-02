@@ -95,7 +95,7 @@
         @apply min-h-screen max-w-md mx-auto bg-slate-50 relative;
     }
     .safe-bottom {
-        padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 5rem);
     }
     .safe-top {
         padding-top: env(safe-area-inset-top);

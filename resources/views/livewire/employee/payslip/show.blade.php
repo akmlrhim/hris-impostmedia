@@ -67,7 +67,7 @@
             {{-- Diterima bersih --}}
             <div class="pt-4 text-center">
                 <p class="text-xs uppercase text-slate-500">Diterima</p>
-                <p class="text-3xl font-bold text-emerald-600 mt-1 tabular-nums">{{ rupiah($payroll->net_salary) }}</p>
+                <p class="text-2xl font-bold text-emerald-600 mt-1 tabular-nums">{{ rupiah($payroll->net_salary) }}</p>
             </div>
         </div>
     </div>
