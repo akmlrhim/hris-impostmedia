@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['date', 'holiday_name', 'description'])]
 class Holiday extends Model
 {
-    protected $table = 'company_holidays';
+    protected $table = 'days_off';
 
     protected function casts(): array
     {

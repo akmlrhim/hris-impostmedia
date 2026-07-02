@@ -30,7 +30,7 @@ class Holiday extends Component
     public function rules(): array
     {
         return [
-            'date' => ['required', 'date', Rule::unique('company_holidays', 'date')->ignore($this->editingId)],
+            'date' => ['required', 'date', Rule::unique('days_off', 'date')->ignore($this->editingId)],
             'holiday_name' => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
         ];
