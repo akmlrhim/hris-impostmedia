@@ -5,7 +5,9 @@ namespace App\Livewire\Admin;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Services\AttendanceLatenessService;
+use Illuminate\Support\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -41,7 +43,10 @@ class Dashboard extends Component
                 ->first()
             : null;
 
+        $isOffDay = Carbon::parse($today)->isSunday() || Holiday::isHoliday($today);
+
         $isLateAlert = $myEmployee
+            && ! $isOffDay
             && ! $myAttendance?->check_in_at
             && $lateness->isLate(now('Asia/Makassar'));
 
