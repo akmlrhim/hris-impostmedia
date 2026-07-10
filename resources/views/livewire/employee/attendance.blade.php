@@ -15,11 +15,6 @@
       <h1 class="text-lg font-bold text-slate-900">Absensi</h1>
       <p class="text-xs text-slate-400 mt-0.5">{{ now()->translatedFormat('l, d F Y') }}</p>
     </div>
-    @if ($hasOpenSessionFromPreviousDay)
-      <span class="badge text-xs px-2 py-0.5 bg-amber-100 text-amber-700">
-        Sesi {{ $attendance->attendance_date->translatedFormat('d M') }}
-      </span>
-    @endif
     @if ($employee)
       <span
         class="badge text-xs px-2 py-0.5
@@ -126,15 +121,6 @@
           </p>
         </div>
       </div>
-
-      @if ($hasOpenSessionFromPreviousDay)
-        <div class="p-3 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 text-xs flex items-start gap-2">
-          <x-icon name="clock" class="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
-          <span>Anda masih memiliki sesi kerja tanggal
-            <strong>{{ $attendance->attendance_date->translatedFormat('d M Y') }}</strong> yang belum check-out.
-            Selesaikan sesi tersebut terlebih dahulu sebelum check-in hari ini.</span>
-        </div>
-      @endif
 
       {{-- Step indicator --}}
       <div class="flex items-center gap-2">
