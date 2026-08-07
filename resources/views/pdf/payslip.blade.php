@@ -119,10 +119,12 @@
       border-collapse: collapse;
     }
 
+    /* Full grid: every row and column is fenced off. */
     table.items td {
       padding: 4px 6px;
       font-size: 9.5px;
       vertical-align: top;
+      border: 1px solid #cbd5e1;
     }
 
     table.items td.amount {
@@ -136,7 +138,7 @@
     }
 
     .total-row td {
-      border-top: 1.5px solid #1a1a1a;
+      border: 1px solid #1a1a1a;
       font-weight: bold;
       padding-top: 6px;
     }

@@ -19,9 +19,9 @@
   </div>
 
   {{-- Matrix Table --}}
-  <div class="card overflow-hidden">
+  <div class="card-table">
     <div class="overflow-x-auto">
-      <table class="min-w-full">
+      <table class="table-grid">
         <thead class="bg-slate-50 border-b border-slate-200">
           <tr>
             <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
@@ -41,7 +41,7 @@
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody>
           @foreach ($permissions as $permission)
             <tr class="hover:bg-slate-50/60 transition">
               <td class="px-5 py-4">

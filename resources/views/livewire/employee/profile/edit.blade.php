@@ -1,17 +1,12 @@
 <div>
-  <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 z-10">
-    <a wire:navigate href="{{ route('mobile.profile') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
-      <x-icon name="arrow-left" class="w-5 h-5" />
-    </a>
-    <h1 class="text-lg font-bold text-slate-900">Edit Profil</h1>
-  </div>
+  <x-mobile-header title="Edit Profil" subtitle="Perbarui data diri Anda" :back="route('mobile.profile')" />
 
-  <div class="p-4 space-y-4 pb-32">
+  <div class="px-4 -mt-10 space-y-4 pb-32">
     {{-- Profile form --}}
     <form wire:submit="saveProfile" class="space-y-4">
 
       {{-- Avatar (auto-save) --}}
-      <div class="card p-5" x-data="{ preview: null }">
+      <div class="card-float p-5" x-data="{ preview: null }">
         <div class="flex items-center gap-4">
           <div class="w-20 h-20 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-2xl font-bold text-slate-500 shrink-0 relative">
             <template x-if="preview">
@@ -60,7 +55,7 @@
       </div>
 
       {{-- Akun --}}
-      <div class="card p-5 space-y-5">
+      <div class="card-float p-5 space-y-5">
         <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Akun</h3>
 
         <div>
@@ -108,7 +103,7 @@
       </div>
 
       {{-- Data pribadi --}}
-      <div class="card p-5 space-y-5">
+      <div class="card-float p-5 space-y-5">
         <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Data Pribadi</h3>
 
         <div>
@@ -123,7 +118,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="label">Tanggal Lahir</label>
-            <input type="date" onclick="this.showPicker()" wire:model="date_of_birth" class="input">
+            <input type="date" wire:model="date_of_birth" class="input">
             @error('date_of_birth')
               <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
             @enderror
@@ -144,7 +139,7 @@
       </div>
 
       {{-- Pendidikan --}}
-      <div class="card p-5 space-y-5">
+      <div class="card-float p-5 space-y-5">
         <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Pendidikan</h3>
 
         <div>
@@ -177,7 +172,7 @@
       </div>
 
       {{-- Kontak Darurat --}}
-      <div class="card p-5 space-y-5">
+      <div class="card-float p-5 space-y-5">
         <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Kontak Darurat</h3>
 
         <div>
@@ -200,7 +195,7 @@
       </div>
 
       {{-- Bank --}}
-      <div class="card p-5 space-y-5">
+      <div class="card-float p-5 space-y-5">
         <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Rekening Bank</h3>
 
         <div>
@@ -219,7 +214,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn-primary w-full" wire:loading.attr="disabled" wire:target="saveProfile">
+      <button type="submit" class="btn-accent" wire:loading.attr="disabled" wire:target="saveProfile">
         <span wire:loading.remove wire:target="saveProfile">Simpan Profil</span>
         <span wire:loading wire:target="saveProfile">Menyimpan…</span>
       </button>
@@ -229,7 +224,7 @@
     @php $biometricEnrolled = \App\Models\WebauthnCredential::where('user_id', auth()->id())->exists(); @endphp
     <a wire:navigate href="{{ route('mobile.profile.biometric') }}"
       x-data
-      class="card p-4 flex items-center justify-between gap-3 active:scale-[0.99] transition">
+      class="card-float p-4 flex items-center justify-between gap-3 active:scale-[0.99] transition">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl {{ $biometricEnrolled ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-50 text-rose-500' }} flex items-center justify-center shrink-0">
           <x-icon name="scan-face" class="w-5 h-5" />
@@ -248,14 +243,14 @@
     </a>
 
     {{-- Password --}}
-    <form wire:submit="changePassword" class="card p-5 space-y-4">
+    <form wire:submit="changePassword" class="card-float p-5 space-y-4">
       <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400 pb-2.5 border-b border-slate-100">Ubah Kata Sandi</h3>
 
       <x-password-input name="current_password" label="Kata Sandi Saat Ini" />
       <x-password-input name="new_password" label="Kata Sandi Baru" autocomplete="new-password" />
       <x-password-input name="new_password_confirmation" label="Konfirmasi Kata Sandi Baru" autocomplete="new-password" />
 
-      <button type="submit" class="btn-primary w-full" wire:loading.attr="disabled" wire:target="changePassword">
+      <button type="submit" class="btn-accent" wire:loading.attr="disabled" wire:target="changePassword">
         <span wire:loading.remove wire:target="changePassword">Ubah Kata Sandi</span>
         <span wire:loading wire:target="changePassword">Memproses…</span>
       </button>

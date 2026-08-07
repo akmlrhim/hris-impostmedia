@@ -81,7 +81,7 @@
         </div>
         <div>
           <label class="label">Tanggal Lahir</label>
-          <input type="date" onclick="this.showPicker()" wire:model="date_of_birth" class="input">
+          <input type="date" wire:model="date_of_birth" class="input">
           @error('date_of_birth')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
@@ -154,14 +154,14 @@
         </div>
         <div>
           <label class="label">Mulai Kontrak</label>
-          <input type="date" onclick="this.showPicker()" wire:model="contract_start_date" class="input">
+          <input type="date" wire:model="contract_start_date" class="input">
           @error('contract_start_date')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
         </div>
         <div>
           <label class="label">Akhir Kontrak</label>
-          <input type="date" onclick="this.showPicker()" wire:model="contract_end_date" class="input">
+          <input type="date" wire:model="contract_end_date" class="input">
           @error('contract_end_date')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror

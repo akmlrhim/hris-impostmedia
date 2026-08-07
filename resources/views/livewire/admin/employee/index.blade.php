@@ -32,9 +32,9 @@
   @include('livewire.admin.employee.partials.form-modal')
 
   {{-- Table --}}
-  <div class="card overflow-hidden">
+  <div class="card-table">
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-x divide-slate-200 border-l border-r border-slate-200">
+      <table class="table-grid">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
             <th class="px-5 py-3 whitespace-nowrap">Karyawan</th>
@@ -44,7 +44,7 @@
             <th class="px-5 py-3 text-right whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 text-sm">
+        <tbody class="text-sm">
           @forelse ($employees as $emp)
             <tr class="hover:bg-slate-50">
               <td class="px-5 py-3">

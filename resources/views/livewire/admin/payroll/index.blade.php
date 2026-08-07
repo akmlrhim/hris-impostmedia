@@ -29,14 +29,14 @@
         </div>
         <div>
           <label class="label">Tanggal Mulai Periode</label>
-          <input type="date" onclick="this.showPicker()" wire:model="start_date" class="input">
+          <input type="date" wire:model="start_date" class="input">
           @error('start_date')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
         </div>
         <div>
           <label class="label">Tanggal Selesai Periode</label>
-          <input type="date" onclick="this.showPicker()" wire:model="end_date" class="input">
+          <input type="date" wire:model="end_date" class="input">
           @error('end_date')
             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
           @enderror
@@ -44,7 +44,7 @@
       </div>
       <div>
         <label class="label">Tanggal Pembayaran</label>
-        <input type="date" onclick="this.showPicker()" wire:model="payment_date" class="input">
+        <input type="date" wire:model="payment_date" class="input">
       </div>
 
       <div>
@@ -90,9 +90,9 @@
     </form>
   </x-modal>
 
-  <div class="card overflow-hidden">
+  <div class="card-table">
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-slate-200">
+      <table class="table-grid">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
             <th class="px-5 py-3 whitespace-nowrap">Periode</th>
@@ -103,7 +103,7 @@
             <th class="px-5 py-3 text-right whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 text-sm">
+        <tbody class="text-sm">
           @forelse ($periods as $p)
             <tr class="hover:bg-slate-50">
               <td class="px-5 py-3 whitespace-nowrap">

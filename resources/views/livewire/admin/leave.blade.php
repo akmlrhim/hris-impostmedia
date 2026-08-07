@@ -45,9 +45,9 @@
   </div>
 
   {{-- Tabel --}}
-  <div class="card overflow-hidden">
+  <div class="card-table">
     <div class="overflow-x-auto" wire:loading.class="opacity-50 pointer-events-none" wire:target="filterStatus,filterType">
-      <table class="min-w-full divide-y divide-slate-200">
+      <table class="table-grid">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
             <th class="px-5 py-3 whitespace-nowrap">Karyawan</th>
@@ -58,7 +58,7 @@
             <th class="px-5 py-3 text-right whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 text-sm">
+        <tbody class="text-sm">
           @forelse ($requests as $req)
             @php
               $statusColor = $req->status->color();

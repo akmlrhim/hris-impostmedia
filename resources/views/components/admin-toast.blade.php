@@ -59,7 +59,7 @@
   class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-2rem)] sm:w-auto sm:max-w-md"
   style="display: none;">
   <div :class="classes[type]"
-    class="flex items-center gap-2.5 pl-3 pr-4 py-3 rounded-lg shadow-lg shadow-slate-900/20 text-sm cursor-pointer">
+    class="flex items-center gap-2.5 pl-3 pr-4 py-3 rounded-lg text-sm cursor-pointer">
     <template x-if="icons[type] === 'check'">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"
         stroke="currentColor" stroke-width="2.5">

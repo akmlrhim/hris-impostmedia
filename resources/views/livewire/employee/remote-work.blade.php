@@ -1,17 +1,15 @@
 <div>
   {{-- Header --}}
-  <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 z-10">
-    <a wire:navigate href="{{ route('mobile.home') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
-      <x-icon name="arrow-left" class="w-5 h-5" />
-    </a>
-    <div class="flex-1">
-      <h1 class="text-lg font-bold text-slate-900">Pengajuan WFA</h1>
-      <p class="text-xs text-slate-400 mt-0.5">Kerja dari luar kantor</p>
-    </div>
+  <x-mobile-header title="Pengajuan WFA" subtitle="Kerja dari luar kantor" :back="route('mobile.home')">
     @if ($isWfo)
-      <button type="button" @click="$wire.set('showForm', true, false); $wire.openForm()" class="btn-primary text-sm px-3 py-1.5">Ajukan</button>
+      <x-slot:action>
+        <button type="button" @click="$wire.set('showForm', true, false); $wire.openForm()" class="hero-action">
+          <x-icon name="plus" class="w-4 h-4" />
+          Ajukan
+        </button>
+      </x-slot:action>
     @endif
-  </div>
+  </x-mobile-header>
 
   {{-- Form modal (hanya untuk WFO) --}}
   @if ($isWfo)
@@ -26,15 +24,15 @@
               <label wire:key="wt-{{ $wtype->value }}"
                 @click="wt = '{{ $wtype->value }}'"
                 :class="wt === '{{ $wtype->value }}'
-                  ? 'border-brand-500 bg-brand-50'
+                  ? 'border-accent-500 bg-accent-50'
                   : 'border-slate-200 hover:border-slate-300'"
                 class="relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150">
                 <input type="radio" x-model="wt" value="{{ $wtype->value }}" class="sr-only">
-                <div :class="wt === '{{ $wtype->value }}' ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-500'"
+                <div :class="wt === '{{ $wtype->value }}' ? 'bg-accent-100 text-accent-600' : 'bg-slate-100 text-slate-500'"
                   class="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-150">
                   <x-icon :name="$wtype->icon()" class="w-5 h-5" />
                 </div>
-                <span :class="wt === '{{ $wtype->value }}' ? 'text-brand-700' : 'text-slate-600'"
+                <span :class="wt === '{{ $wtype->value }}' ? 'text-accent-700' : 'text-slate-600'"
                   class="text-xs font-medium text-center leading-tight transition-colors duration-150">
                   {{ $wtype->shortLabel() }}
                 </span>
@@ -55,14 +53,14 @@
         <div class="space-y-3">
           <div>
             <label class="label">Mulai <span class="text-red-500">*</span></label>
-            <input type="datetime-local" onclick="this.showPicker()" wire:model="start_date" class="input">
+            <input type="datetime-local" wire:model="start_date" class="input">
             <div class="min-h-[18px] mt-1">
               @error('start_date') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
           </div>
           <div>
             <label class="label">Selesai <span class="text-red-500">*</span></label>
-            <input type="datetime-local" onclick="this.showPicker()" wire:model="end_date" class="input">
+            <input type="datetime-local" wire:model="end_date" class="input">
             <div class="min-h-[18px] mt-1">
               @error('end_date') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -80,7 +78,7 @@
 
         <div class="flex gap-2 justify-end pt-2 border-t border-slate-100">
           <button type="button" @click="$wire.set('showForm', false, true)" class="btn-secondary">Batal</button>
-          <button type="submit" class="btn-primary">Lanjutkan</button>
+          <button type="submit" class="btn-accent py-2.5">Lanjutkan</button>
         </div>
       </form>
     </x-modal>
@@ -123,7 +121,7 @@
           <button type="button" @click="$wire.set('showConfirm', false, true)" class="btn-secondary flex-1">
             Ubah Data
           </button>
-          <button type="button" wire:click="submit" wire:loading.attr="disabled" class="btn-primary flex-1">
+          <button type="button" wire:click="submit" wire:loading.attr="disabled" class="btn-accent flex-1 py-2.5">
             <span wire:loading.remove wire:target="submit">Ya, Kirim</span>
             <span wire:loading wire:target="submit">Mengirim…</span>
           </button>
@@ -132,10 +130,10 @@
     </x-modal>
   @endif
 
-  <div class="px-5 pt-4 pb-32 space-y-4">
+  <div class="px-4 -mt-10 pb-32 space-y-4">
 
     @if (! $isWfo)
-      <div class="card p-6 text-center space-y-3 mt-2">
+      <div class="card-float p-6 text-center space-y-3">
         <div class="w-14 h-14 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center mx-auto">
           <x-icon name="laptop" class="w-7 h-7" />
         </div>
@@ -152,7 +150,7 @@
 
       @if ($todayApproved)
         @php $todayType = $todayApproved->work_type; @endphp
-        <div class="card p-4 bg-{{ $todayType->color() }}-50 border-{{ $todayType->color() }}-100 flex items-center gap-3">
+        <div class="card-float p-4 bg-{{ $todayType->color() }}-50 border-{{ $todayType->color() }}-100 flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-{{ $todayType->color() }}-100 text-{{ $todayType->color() }}-600 flex items-center justify-center shrink-0">
             <x-icon name="check-circle" class="w-5 h-5" />
           </div>
@@ -163,47 +161,72 @@
         </div>
       @endif
 
-      @forelse ($requests as $req)
+      {{-- Filters --}}
+      <x-request-filters :statuses="$statuses" :total="$requests->count()">
+        <x-slot:leading>
+          <select wire:model.live="typeFilter" class="chip-select">
+            <option value="">Semua Jenis</option>
+            @foreach ($requestableTypes as $wtype)
+              <option value="{{ $wtype->value }}">{{ $wtype->shortLabel() }}</option>
+            @endforeach
+          </select>
+        </x-slot:leading>
+      </x-request-filters>
+
+      <div class="space-y-4 transition-opacity" wire:loading.class="opacity-40"
+        wire:target="statusFilter,typeFilter">
+        @forelse ($requests as $req)
         @php $color = $req->status->color(); $typeColor = $req->work_type->color(); @endphp
-        <div class="card p-4 space-y-2">
+        <div class="card-float p-4" wire:key="rw-{{ $req->id }}">
           <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="badge bg-{{ $typeColor }}-100 text-{{ $typeColor }}-700 text-xs">{{ $req->work_type->shortLabel() }}</span>
-                <span class="badge bg-{{ $color }}-100 text-{{ $color }}-700 text-xs">
-                  {{ $req->status->label() }}
-                </span>
+            <div class="flex items-start gap-2.5 min-w-0 flex-1">
+              <div
+                class="w-9 h-9 rounded-full bg-{{ $typeColor }}-100 text-{{ $typeColor }}-600 flex items-center justify-center shrink-0">
+                <x-icon :name="$req->work_type->icon()" class="w-4 h-4" />
               </div>
-              <p class="text-xs text-slate-500 mt-1.5">
-                {{ $req->start_date->translatedFormat('d M Y H:i') }}
-                – {{ $req->end_date->translatedFormat('d M Y H:i') }}
-              </p>
+              <div class="min-w-0">
+                <p class="font-bold text-navy-800">{{ $req->work_type->label() }}</p>
+                <p class="text-xs text-navy-400 mt-0.5">
+                  Mulai: {{ $req->start_date->translatedFormat('d M Y, H:i') }}
+                </p>
+                <p class="text-xs text-navy-400">
+                  Selesai: {{ $req->end_date->translatedFormat('d M Y, H:i') }}
+                </p>
+              </div>
             </div>
-            @if ($req->status === \App\Enums\RemoteWorkStatus::Pending)
-              <button wire:click="cancel({{ $req->id }})" wire:confirm="Batalkan pengajuan ini?"
-                class="text-xs text-red-500 hover:text-red-700 font-medium shrink-0">
-                Batalkan
-              </button>
-            @endif
+            <div class="text-right shrink-0">
+              <p class="text-[11px] text-navy-400">{{ $req->created_at->translatedFormat('d M') }}</p>
+              <span class="badge mt-1.5 bg-{{ $color }}-100 text-{{ $color }}-700">{{ $req->status->label() }}</span>
+            </div>
           </div>
 
-          <p class="text-xs text-slate-600 leading-relaxed">{{ $req->reason }}</p>
+          <p class="text-xs text-slate-600 leading-relaxed mt-2.5">{{ $req->reason }}</p>
 
           @if ($req->rejection_reason)
-            <div class="pt-2 border-t border-slate-100">
-              <p class="text-xs text-red-600 italic">Ditolak: {{ $req->rejection_reason }}</p>
-            </div>
+            <p class="text-xs text-red-600 italic mt-2 pt-2 border-t border-slate-100">
+              Ditolak: {{ $req->rejection_reason }}
+            </p>
           @endif
 
-          <p class="text-[10px] text-slate-400">Diajukan {{ $req->created_at->diffForHumans() }}</p>
+          @if ($req->status === \App\Enums\RemoteWorkStatus::Pending)
+            <button wire:click="cancel({{ $req->id }})" wire:confirm="Batalkan pengajuan ini?"
+              class="mt-2.5 text-xs text-red-500 hover:text-red-700 font-semibold">
+              Batalkan pengajuan
+            </button>
+          @endif
         </div>
       @empty
-        <div class="card p-8 text-center space-y-2">
+        <div class="card-float p-8 text-center space-y-2">
           <x-icon name="laptop" class="w-10 h-10 text-slate-300 mx-auto" />
-          <p class="text-sm text-slate-500">Belum ada pengajuan.</p>
-          <p class="text-xs text-slate-400">Tap "Ajukan" jika ingin bekerja dari luar kantor.</p>
+          <p class="text-sm text-slate-500">
+            {{ $statusFilter || $typeFilter ? 'Tidak ada pengajuan pada filter ini.' : 'Belum ada pengajuan.' }}
+          </p>
+          <p class="text-xs text-slate-400">
+            {{ $statusFilter || $typeFilter ? 'Coba ubah filter di atas.' : 'Tap "Ajukan" jika ingin bekerja dari luar kantor.' }}
+          </p>
         </div>
-      @endforelse
+        @endforelse
+      </div>
 
     @endif
 

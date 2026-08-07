@@ -5,12 +5,15 @@
 @source '../**/*.js';
 @source '../../app/Livewire/**/*.php';
 
-/* Dynamic color classes that Tailwind's scanner cannot detect from concatenated strings */
-@source inline("bg-{amber,blue}-600 bg-{green,yellow,gray}-100 text-{yellow,gray}-700");
+/* Dynamic color classes that Tailwind's scanner cannot detect from concatenated
+   strings — enum color() helpers and the calendar's JSON day details. */
+@source inline("bg-{amber,blue}-600");
+@source inline("bg-{green,yellow,red,blue,gray,slate,emerald,amber,rose,sky,indigo,purple,teal}-{100,500}");
+@source inline("text-{green,yellow,red,blue,gray,slate,emerald,amber,rose,sky,indigo,purple,teal}-{600,700}");
 
 @theme {
     --font-sans:
-        "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+        "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
     --color-brand-50: #f8fafc;
@@ -23,6 +26,31 @@
     --color-brand-700: #0f172a;
     --color-brand-800: #020617;
     --color-brand-900: #000000;
+
+    /* Employee (mobile) palette — deep navy surfaces, violet actions, amber accent */
+    --color-navy-50: #eff2fb;
+    --color-navy-100: #d3dbf3;
+    --color-navy-200: #a8b6e4;
+    --color-navy-300: #6d80c4;
+    --color-navy-400: #3d529c;
+    --color-navy-500: #263c80;
+    --color-navy-600: #1c2d6a;
+    --color-navy-700: #152355;
+    --color-navy-800: #0e1940;
+    --color-navy-900: #080f28;
+
+    --color-accent-50: #f3f0ff;
+    --color-accent-100: #e8e2ff;
+    --color-accent-200: #d2c6ff;
+    --color-accent-300: #b3a0fc;
+    --color-accent-400: #9279fa;
+    --color-accent-500: #7c5cf5;
+    --color-accent-600: #6a45ea;
+    --color-accent-700: #5734cc;
+
+    --color-sun-300: #ffd970;
+    --color-sun-400: #fdc73c;
+    --color-sun-500: #f5b21f;
 }
 
 @media print {
@@ -43,6 +71,14 @@
 @layer base {
     html {
         -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Phones get a slightly smaller type scale — every rem-based size in
+       Tailwind follows the root, so employee and admin screens shrink alike. */
+    @media (max-width: 40rem) {
+        html {
+            font-size: 93.75%;
+        }
     }
 
     body {
@@ -81,14 +117,119 @@
         background-position: right 0.75rem center;
         background-size: 1.1rem 1.1rem;
     }
+    /* Native date & time fields: draw our own icon at the same inset as the
+       select chevron and hide the cramped browser glyph sitting on the edge. */
+    input.input[type="date"],
+    input.input[type="time"],
+    input.input[type="datetime-local"] {
+        @apply relative appearance-none pr-10 bg-no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.15rem 1.15rem;
+        min-height: 2.625rem;
+    }
+    input.input[type="date"],
+    input.input[type="datetime-local"] {
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M8 2v3m8-3v3M3.5 9.5h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Z'/%3E%3C/svg%3E");
+    }
+    input.input[type="time"] {
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M12 7.5V12l2.75 1.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'/%3E%3C/svg%3E");
+    }
+    /* Invisible native trigger parked exactly under the drawn icon. */
+    input.input[type="date"]::-webkit-calendar-picker-indicator,
+    input.input[type="time"]::-webkit-calendar-picker-indicator,
+    input.input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        position: absolute;
+        top: 50%;
+        right: 0.75rem;
+        transform: translateY(-50%);
+        width: 1.15rem;
+        height: 1.15rem;
+        margin: 0;
+        padding: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    /* Touch devices: the whole field opens the picker, not just the icon. */
+    @media (pointer: coarse) {
+        input.input[type="date"]::-webkit-calendar-picker-indicator,
+        input.input[type="time"]::-webkit-calendar-picker-indicator,
+        input.input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            inset: 0;
+            width: auto;
+            height: auto;
+            transform: none;
+        }
+    }
     .label {
         @apply block text-sm font-medium text-black mb-1;
     }
     .card {
-        @apply bg-white border border-slate-200 rounded-2xl shadow-sm;
+        @apply bg-white border border-slate-200 rounded-2xl;
+    }
+    /* Admin data tables sit in a squared-off shell, not a pill-rounded card. */
+    .card-table {
+        @apply bg-white border border-slate-200 rounded-sm overflow-hidden;
+    }
+    /* Hairline grid: every row and column is fenced off. */
+    .table-grid {
+        @apply min-w-full border-collapse;
+    }
+    .table-grid th,
+    .table-grid td {
+        @apply border border-slate-200;
     }
     .badge {
         @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    /* ── Employee (mobile) design language ───────────────────────────────
+       Navy hero panels, flat white cards and a violet primary action. */
+    .btn-accent {
+        @apply inline-flex items-center justify-center gap-2 w-full px-5 py-3.5 rounded-xl text-sm font-bold transition bg-accent-500 text-white hover:bg-accent-600 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    /* White card that sits over the navy hero. Hairline border instead of a
+       shadow, so it still reads as a surface on the light page background. */
+    .card-float {
+        @apply bg-white border border-slate-200 rounded-2xl;
+    }
+    .hero {
+        @apply bg-navy-700 text-white rounded-b-[2rem];
+    }
+    /* Translucent pill action sitting inside a hero. */
+    .hero-action {
+        @apply inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 text-white text-xs font-semibold active:bg-white/25 transition shrink-0;
+    }
+    .section-title {
+        @apply text-base font-bold text-navy-800;
+    }
+    /* Filter pills on the request pages. */
+    .chip {
+        @apply inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-semibold text-navy-500 transition active:scale-95;
+    }
+    .chip-active {
+        @apply border-accent-500 bg-accent-500 text-white;
+    }
+    .chip-select {
+        @apply inline-flex shrink-0 items-center px-3 py-1.5 pr-8 rounded-full border border-slate-200 bg-white text-xs font-semibold text-navy-500 appearance-none bg-no-repeat;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%23263c80' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+        background-position: right 0.6rem center;
+        background-size: 0.9rem 0.9rem;
+    }
+    /* Horizontal filter rows scroll without showing a bar on mobile. */
+    .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .link-accent {
+        @apply text-sm font-semibold text-accent-500 active:text-accent-700;
+    }
+    /* Amber slab sitting flush under the navy hero; wraps the cards that
+       overlap the hero so the two colours always meet without a white seam. */
+    .sun-slab {
+        @apply bg-sun-400 rounded-b-[2rem];
     }
 
     .mobile-shell {
@@ -102,6 +243,16 @@
     }
     .pb-safe {
         padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    }
+    /* Bottom sheet body: keeps content clear of the home indicator while the
+       sheet itself stays flush against the bottom edge. */
+    .pb-sheet {
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    }
+    @media (min-width: 40rem) {
+        .pb-sheet {
+            padding-bottom: 1.25rem;
+        }
     }
 
     /* Quill editor — match Tailwind look */

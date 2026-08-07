@@ -21,7 +21,7 @@
   class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4" style="display: none;">
 
   <div x-show="open" x-transition.scale.origin.center @click.stop
-    class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-5 md:p-6">
+    class="relative bg-white rounded-xl w-full max-w-md p-5 md:p-6">
 
     <button type="button" @click="cancel()"
       class="absolute top-3 right-3 w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900">

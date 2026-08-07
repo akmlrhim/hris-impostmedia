@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Enums\RemoteWorkStatus;
 use App\Enums\WorkType;
+use Database\Factories\RemoteWorkRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -21,6 +23,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class RemoteWorkRequest extends Model
 {
+    /** @use HasFactory<RemoteWorkRequestFactory> */
+    use HasFactory;
+
     protected function casts(): array
     {
         return [

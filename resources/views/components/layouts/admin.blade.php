@@ -36,6 +36,12 @@
                   'gate' => 'manage_remote_work',
               ],
               [
+                  'label' => 'Pengajuan Lembur',
+                  'route' => 'admin.overtime',
+                  'icon' => 'clock',
+                  'gate' => 'manage_overtime',
+              ],
+              [
                   'label' => 'Cuti & Izin',
                   'route' => 'admin.leave',
                   'icon' => 'calendar',
@@ -67,6 +73,9 @@
           $pendingLeave = auth()->user()?->can('manage_leave')
               ? \App\Models\LeaveRequest::where('status', 'pending')->count()
               : 0;
+          $pendingOvertime = auth()->user()?->can('manage_overtime')
+              ? \App\Models\OvertimeRequest::where('status', 'pending')->count()
+              : 0;
           $myEmployee = auth()->user()?->employee;
           $myTodayAttendance = $myEmployee
               ? \App\Models\Attendance::where('employee_id', $myEmployee->id)
@@ -85,6 +94,11 @@
               @if ($item['route'] === 'admin.remote-work' && $pendingWfa > 0)
                 <span class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
                   {{ $pendingWfa }}
+                </span>
+              @endif
+              @if ($item['route'] === 'admin.overtime' && $pendingOvertime > 0)
+                <span class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
+                  {{ $pendingOvertime }}
                 </span>
               @endif
               @if ($item['route'] === 'admin.leave' && $pendingLeave > 0)
@@ -153,7 +167,7 @@
             </button>
 
             <div x-show="open" x-transition
-              class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-30"
+              class="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-slate-200 py-1 z-30"
               style="display: none;">
               <div class="px-4 py-2 border-b border-slate-100">
                 <p class="text-sm font-medium text-slate-900 truncate">{{ auth()->user()?->name }}</p>

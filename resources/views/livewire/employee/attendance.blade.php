@@ -6,29 +6,20 @@
 })" @attendance-recorded.window="onAttendanceRecorded()" wire:ignore.self>
 
   {{-- Header --}}
-  <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 z-10">
-    <a wire:navigate href="{{ $isAdminPanelUser ? route('admin.dashboard') : route('mobile.home') }}"
-      class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
-      <x-icon name="arrow-left" class="w-5 h-5" />
-    </a>
-    <div class="flex-1">
-      <h1 class="text-lg font-bold text-slate-900">Absensi</h1>
-      <p class="text-xs text-slate-400 mt-0.5">{{ now()->translatedFormat('l, d F Y') }}</p>
-    </div>
+  <x-mobile-header title="Absensi" :subtitle="now()->translatedFormat('l, d F Y')"
+    :back="$isAdminPanelUser ? route('admin.dashboard') : route('mobile.home')">
     @if ($employee)
-      <span
-        class="badge text-xs px-2 py-0.5
-        {{ $workType->value === 'wfo' ? 'bg-blue-100 text-blue-700' : ($workType->value === 'hybrid' ? 'bg-teal-100 text-teal-700' : 'bg-purple-100 text-purple-700') }}">
-        {{ $workType->label() }}
-      </span>
+      <x-slot:action>
+        <span class="hero-action">{{ $workType->label() }}</span>
+      </x-slot:action>
     @endif
-  </div>
+  </x-mobile-header>
 
-  <div class="px-5 pt-4 space-y-4 pb-32">
+  <div class="px-4 -mt-10 space-y-4 pb-32">
 
     {{-- STATE: Tidak ada data karyawan --}}
     @if (!$employee)
-      <div class="card p-6 text-center space-y-4 mt-4">
+      <div class="card-float p-6 text-center space-y-4">
         <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto">
           <x-icon name="alert-triangle" class="w-8 h-8" />
         </div>
@@ -38,7 +29,7 @@
           </p>
         </div>
         @if ($isAdminPanelUser)
-          <a wire:navigate href="{{ route('admin.employees') }}" class="btn-primary text-sm">
+          <a wire:navigate href="{{ route('admin.employees') }}" class="btn-accent py-2.5">
             Kelola Karyawan
           </a>
         @endif
@@ -46,19 +37,19 @@
 
       {{-- STATE: Hari Libur --}}
     @elseif ($isOffDay)
-      <div class="card p-6 text-center space-y-4 mt-4 bg-slate-50 border-slate-100">
-        <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-          <x-icon name="calendar" class="w-9 h-9" />
+      <div class="card-float p-6 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-sun-400/20 text-sun-500 flex items-center justify-center mx-auto">
+          <x-icon name="coffee" class="w-9 h-9" />
         </div>
         <div>
-          <p class="font-bold text-slate-700 text-lg">{{ $offDayName }}</p>
+          <p class="font-bold text-navy-800 text-lg">{{ $offDayName }}</p>
           <p class="text-sm text-slate-500 mt-1">Absensi tidak tersedia pada hari libur. Selamat beristirahat!</p>
         </div>
       </div>
 
       {{-- STATE: Sudah check-out --}}
     @elseif ($attendance?->check_out_at)
-      <div class="card p-4 flex items-center gap-3">
+      <div class="card-float p-4 flex items-center gap-3">
         <div
           class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
           @if ($employee->avatar_path)
@@ -73,7 +64,7 @@
         </div>
       </div>
 
-      <div class="card p-6 text-center space-y-4 bg-emerald-50 border-emerald-100">
+      <div class="card-float p-6 text-center space-y-4 bg-emerald-50">
         <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
           <x-icon name="check-circle" class="w-9 h-9" />
         </div>
@@ -85,11 +76,11 @@
         <div class="grid grid-cols-2 gap-3 text-center">
           <div class="bg-white rounded-xl p-3 border border-emerald-100">
             <p class="text-[11px] text-slate-500 mb-0.5">Masuk</p>
-            <p class="text-xl font-bold text-emerald-700 tabular-nums">{{ $attendance->check_in_at?->format('H:i') ?? '-' }}</p>
+            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_in_at?->format('H:i') ?? '-' }}</p>
           </div>
           <div class="bg-white rounded-xl p-3 border border-emerald-100">
             <p class="text-[11px] text-slate-500 mb-0.5">Keluar</p>
-            <p class="text-xl font-bold text-emerald-700 tabular-nums">{{ $attendance->check_out_at?->format('H:i') ?? '-' }}</p>
+            <p class="text-xl font-bold text-emerald-700">{{ $attendance->check_out_at?->format('H:i') ?? '-' }}</p>
           </div>
         </div>
         <p class="text-xs text-emerald-700">
@@ -101,7 +92,7 @@
       {{-- STATE: Proses absensi --}}
     @else
       {{-- Info karyawan + jam --}}
-      <div class="card p-4 flex items-center gap-3">
+      <div class="card-float p-4 flex items-center gap-3">
         <div
           class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-lg font-bold text-slate-500 shrink-0">
           @if ($employee->avatar_path)
@@ -117,7 +108,7 @@
         <div class="text-right">
           <p x-data="{ t: '' }" x-init="setInterval(() => t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 1000)"
             x-text="t || new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'})"
-            class="text-xl font-bold text-slate-900 tabular-nums">
+            class="text-xl font-bold text-slate-900">
           </p>
         </div>
       </div>
@@ -127,14 +118,14 @@
         <div class="flex items-center gap-1.5 flex-1">
           <div
             class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-            {{ $attendance?->check_in_at ? 'bg-emerald-500 text-white' : 'bg-brand-600 text-white' }}">
+            {{ $attendance?->check_in_at ? 'bg-emerald-500 text-white' : 'bg-accent-500 text-white' }}">
             @if ($attendance?->check_in_at)
               <x-icon name="check" class="w-3.5 h-3.5" />
             @else
               1
             @endif
           </div>
-          <span class="text-xs font-medium tabular-nums {{ $attendance?->check_in_at ? 'text-emerald-600' : 'text-slate-900' }}">
+          <span class="text-xs font-medium {{ $attendance?->check_in_at ? 'text-emerald-600' : 'text-slate-900' }}">
             Check-in {{ $attendance?->check_in_at ? '(' . $attendance->check_in_at->format('H:i') . ')' : '' }}
           </span>
         </div>
@@ -153,7 +144,7 @@
 
       {{-- Verifikasi kata sandi (fallback jika biometrik tidak terdaftar) --}}
       @if (!$webauthnCredential)
-        <div class="card p-4 space-y-3">
+        <div class="card-float p-4 space-y-3">
           <div class="flex items-center gap-2">
             <x-icon name="lock" class="w-4 h-4 text-amber-500 shrink-0" />
             <p class="text-sm font-semibold text-slate-900">Verifikasi Kata Sandi</p>
@@ -191,7 +182,7 @@
 
       {{-- Pilihan mode untuk karyawan Hybrid --}}
       @if ($baseWorkType === \App\Enums\WorkType::Hybrid && !$attendance?->check_in_at)
-        <div class="card p-4 space-y-2">
+        <div class="card-float p-4 space-y-2">
           <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Mode Kerja Hari Ini</p>
           <div class="grid grid-cols-2 gap-2">
             <button type="button" @click="setWorkType('wfa')"
@@ -223,7 +214,7 @@
       @endif
 
       {{-- Status GPS + Biometrik --}}
-      <div class="card grid divide-x divide-slate-100" :class="needsGeofence ? 'grid-cols-2' : 'grid-cols-1'">
+      <div class="card-float grid divide-x divide-slate-100" :class="needsGeofence ? 'grid-cols-2' : 'grid-cols-1'">
         {{-- GPS — hanya tampil jika butuh geofence (WFO / Hybrid mode WFO) --}}
         <div x-show="needsGeofence" x-cloak class="p-3 flex items-center gap-2">
           <div class="w-2 h-2 rounded-full shrink-0"
@@ -239,7 +230,7 @@
             <p class="text-xs font-medium text-slate-700 leading-snug" x-text="gpsStatusText"></p>
           </div>
           <button x-show="gpsStatus === 'error'" x-cloak @click="retryLocation()"
-            class="text-[10px] text-brand-600 font-semibold underline shrink-0">
+            class="text-[10px] text-accent-600 font-semibold underline shrink-0">
             Coba lagi
           </button>
         </div>
@@ -264,7 +255,7 @@
         <div
           class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm flex items-center gap-2">
           <x-icon name="check" class="w-4 h-4 shrink-0" />
-          <span>Masuk pukul <strong class="tabular-nums">{{ $attendance->check_in_at->format('H:i') }}</strong>
+          <span>Masuk pukul <strong>{{ $attendance->check_in_at->format('H:i') }}</strong>
             @if ($attendance->late_minutes > 0)
               - terlambat {{ $attendance->late_minutes }} mnt
             @endif
@@ -323,7 +314,7 @@
       {{-- Tombol aksi --}}
       @if (!$attendance?->check_in_at)
         <button @click="doCheckIn()" :disabled="!canProceed || processing"
-          class="w-full bg-emerald-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
+          class="btn-accent py-4 text-base disabled:opacity-40">
           <span x-show="!processing" class="flex items-center justify-center gap-2">
             @if ($webauthnCredential)
               <x-icon name="scan-face" class="w-5 h-5" />
@@ -341,7 +332,7 @@
         </button>
       @elseif (!$showEarlyCheckoutWarning)
         <button @click="doCheckOut()" :disabled="!canProceed || processing"
-          class="w-full bg-rose-600 text-white rounded-xl py-4 text-base font-semibold disabled:opacity-40 transition active:scale-[0.98]">
+          class="btn-accent py-4 text-base bg-rose-500 hover:bg-rose-600 disabled:opacity-40">
           <span x-show="!processing" class="flex items-center justify-center gap-2">
             @if ($webauthnCredential)
               <x-icon name="scan-face" class="w-5 h-5" />
@@ -382,32 +373,42 @@
     @if ($history->isNotEmpty())
       <div class="mt-2">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold text-slate-900">Riwayat Absensi</h3>
+          <h3 class="section-title">Riwayat Absensi</h3>
           @if (method_exists($history, 'total'))
-            <span class="text-xs text-slate-500">{{ $history->total() }} data</span>
+            <span class="text-xs text-navy-400">{{ $history->total() }} data</span>
           @endif
         </div>
-        <div class="card overflow-hidden divide-y divide-slate-100">
+        <div class="space-y-3">
           @foreach ($history as $h)
-            <div class="px-4 py-3 flex items-center justify-between">
-              <div>
-                <p class="text-sm font-medium text-slate-900">{{ $h->attendance_date->translatedFormat('d M Y') }}</p>
-                <p class="text-xs text-slate-500 tabular-nums">
-                  {{ $h->check_in_at?->format('H:i') ?? '-' }} – {{ $h->check_out_at?->format('H:i') ?? '-' }}
-                  @if ($h->work_minutes)
-                    · {{ floor($h->work_minutes / 60) }}j {{ $h->work_minutes % 60 }}m
-                  @endif
-                </p>
+            <div class="card-float p-4" wire:key="hist-{{ $h->id }}">
+              <div class="flex items-center justify-between gap-3">
+                <p class="font-bold text-navy-800 text-sm">{{ $h->attendance_date->translatedFormat('D, d M Y') }}</p>
+                <span
+                  class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
+                  {{ $h->status?->label() ?? '-' }}
+                </span>
               </div>
-              <span
-                class="badge bg-{{ $h->status?->color() ?? 'slate' }}-100 text-{{ $h->status?->color() ?? 'slate' }}-700">
-                {{ $h->status?->label() ?? '-' }}
-              </span>
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                @foreach ([['Mulai Kerja', $h->check_in_at, 'text-navy-600'], ['Selesai Kerja', $h->check_out_at, 'text-accent-600']] as [$label, $time, $fg])
+                  <div class="flex items-center gap-2">
+                    <x-icon name="map-pin" class="w-5 h-5 text-rose-500 shrink-0" />
+                    <div class="min-w-0">
+                      <p class="text-[11px] text-navy-400 leading-tight">{{ $label }}</p>
+                      <p class="text-sm font-bold {{ $fg }}">{{ $time?->format('H:i') ?? '--:--' }}</p>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+              @if ($h->work_minutes)
+                <p class="text-[11px] text-navy-400 mt-2.5 pt-2.5 border-t border-slate-100">
+                  Durasi kerja {{ floor($h->work_minutes / 60) }}j {{ $h->work_minutes % 60 }}m
+                </p>
+              @endif
             </div>
           @endforeach
         </div>
         @if (method_exists($history, 'hasPages') && $history->hasPages())
-          <div class="mt-3 card px-4 py-3">
+          <div class="mt-3 card-float px-4 py-3">
             {{ $history->links() }}
           </div>
         @endif

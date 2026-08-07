@@ -1,26 +1,27 @@
 <div x-data="biometricEnrollment({ hasFaceId: {{ $hasFaceId ? 'true' : 'false' }} })">
 
   {{-- Header --}}
-  <div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 z-10">
-    <a wire:navigate href="{{ route('mobile.profile.edit') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
-      <x-icon name="arrow-left" class="w-5 h-5" />
-    </a>
-    <div class="flex-1">
-      <h1 class="text-lg font-bold text-slate-900" x-text="biometricLabel">Biometrik</h1>
-      <p class="text-xs text-slate-400 mt-0.5">Digunakan untuk verifikasi saat absensi</p>
+  <div class="hero px-5 pt-7 pb-16">
+    <div class="flex items-center gap-3">
+      <a wire:navigate href="{{ route('mobile.profile.edit') }}"
+        class="w-9 h-9 -ml-1 rounded-full bg-white/15 flex items-center justify-center active:bg-white/25 transition shrink-0">
+        <x-icon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <div class="flex-1 min-w-0">
+        <h1 class="text-lg font-bold leading-tight truncate" x-text="biometricLabel">Biometrik</h1>
+        <p class="text-xs text-navy-200 mt-0.5 truncate">Digunakan untuk verifikasi saat absensi</p>
+      </div>
+      <span class="hero-action {{ $hasFaceId ? 'text-emerald-200' : 'text-rose-200' }}">
+        {{ $hasFaceId ? 'Terdaftar' : 'Belum terdaftar' }}
+      </span>
     </div>
-    @if ($hasFaceId)
-      <span class="badge bg-emerald-100 text-emerald-700 text-xs">Terdaftar</span>
-    @else
-      <span class="badge bg-rose-100 text-rose-700 text-xs">Belum terdaftar</span>
-    @endif
   </div>
 
-  <div class="px-5 pt-5 pb-32 space-y-5">
+  <div class="px-4 -mt-10 pb-32 space-y-4">
 
     {{-- Perangkat tidak didukung --}}
     <template x-if="!supported">
-      <div class="card p-5 text-center space-y-3">
+      <div class="card-float p-5 text-center space-y-3">
         <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
           <x-icon name="scan-face" class="w-7 h-7" />
         </div>
@@ -34,7 +35,7 @@
     {{-- Status card --}}
     <template x-if="supported">
       <div class="space-y-4">
-        <div class="card p-5 flex items-center gap-4">
+        <div class="card-float p-5 flex items-center gap-4">
           <div class="w-14 h-14 rounded-full flex items-center justify-center shrink-0
             {{ $hasFaceId ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400' }}">
             <x-icon name="scan-face" class="w-7 h-7" />
@@ -51,7 +52,7 @@
         </div>
 
         {{-- Panduan --}}
-        <div class="card p-4 space-y-2">
+        <div class="card-float p-4 space-y-2">
           <p class="text-xs font-semibold text-slate-700">Cara kerja:</p>
           <ul class="space-y-1.5 text-xs text-slate-500">
             <li class="flex items-start gap-2">
@@ -80,7 +81,7 @@
 
         {{-- Tombol daftar --}}
         <button type="button" @click="registerBiometric()" :disabled="enrolling"
-          class="btn-primary w-full disabled:opacity-50">
+          class="btn-accent disabled:opacity-50">
           <span x-show="!enrolling" class="flex items-center justify-center gap-2">
             <x-icon name="scan-face" class="w-5 h-5" />
             <span x-text="{{ $hasFaceId ? "'Perbarui ' + biometricLabel" : "'Daftarkan ' + biometricLabel" }}"></span>

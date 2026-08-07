@@ -13,6 +13,7 @@ use App\Livewire\Admin\Employee\Show as AdminEmployeeShow;
 use App\Livewire\Admin\Holiday as AdminHoliday;
 use App\Livewire\Admin\Leave as AdminLeave;
 use App\Livewire\Admin\OfficeLocation as AdminOfficeLocation;
+use App\Livewire\Admin\Overtime as AdminOvertime;
 use App\Livewire\Admin\Payroll\Index as AdminPayroll;
 use App\Livewire\Admin\Payroll\Payslip as AdminPayslip;
 use App\Livewire\Admin\Payroll\Show as AdminPayrollShow;
@@ -29,6 +30,7 @@ use App\Livewire\Employee\Calendar as MobileCalendar;
 use App\Livewire\Employee\Directory as MobileDirectory;
 use App\Livewire\Employee\Home as MobileHome;
 use App\Livewire\Employee\Leave as MobileLeave;
+use App\Livewire\Employee\Overtime as MobileOvertime;
 use App\Livewire\Employee\Payslip\Index as MobilePayslip;
 use App\Livewire\Employee\Payslip\Show as MobilePayslipShow;
 use App\Livewire\Employee\Profile\Biometric as MobileProfileBiometric;
@@ -36,6 +38,7 @@ use App\Livewire\Employee\Profile\Edit as MobileProfileEdit;
 use App\Livewire\Employee\Profile\Index as MobileProfile;
 use App\Livewire\Employee\RemoteWork as MobileRemoteWork;
 use App\Models\Employee;
+use App\Models\OvertimeRequest;
 use App\Models\User;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
@@ -100,6 +103,7 @@ Route::middleware(['auth', 'admin.panel'])
 
         Route::get('/attendance', AdminAttendance::class)->name('attendance')->middleware('can:manage_attendance');
         Route::get('/remote-work', AdminRemoteWork::class)->name('remote-work')->middleware('can:manage_remote_work');
+        Route::get('/overtime', AdminOvertime::class)->name('overtime')->middleware('can:manage_overtime');
         Route::get('/leave', AdminLeave::class)->name('leave')->middleware('can:manage_leave');
 
         Route::get('/payroll', AdminPayroll::class)->name('payroll')->middleware('can:manage_payroll');
@@ -135,6 +139,7 @@ Route::middleware(['auth', 'employee.active'])
         Route::get('/profile/biometric', MobileProfileBiometric::class)->name('profile.biometric');
         Route::get('/announcements/{announcement}', MobileAnnouncementShow::class)->name('announcements.show');
         Route::get('/remote-work', MobileRemoteWork::class)->name('remote-work');
+        Route::get('/overtime', MobileOvertime::class)->name('overtime');
         Route::get('/leave', MobileLeave::class)->name('leave');
     });
 
@@ -147,4 +152,20 @@ Route::middleware('auth')->group(function () {
             'Cache-Control' => 'private, max-age=3600',
         ]);
     })->name('files.avatar');
+
+    // Bukti approve head - hanya pemilik pengajuan atau reviewer HR.
+    Route::get('/files/overtime-approval/{overtimeRequest}', function (OvertimeRequest $overtimeRequest) {
+        $user = Auth::user();
+        $isOwner = $user->employee !== null && $user->employee->id === $overtimeRequest->employee_id;
+
+        abort_unless($isOwner || $user->can('manage_overtime'), 403);
+        abort_unless(
+            $overtimeRequest->head_approval_path && Storage::disk('local')->exists($overtimeRequest->head_approval_path),
+            404
+        );
+
+        return Storage::disk('local')->response($overtimeRequest->head_approval_path, null, [
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
+    })->name('files.overtime-approval');
 });

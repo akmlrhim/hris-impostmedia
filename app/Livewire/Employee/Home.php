@@ -49,6 +49,15 @@ class Home extends Component
             ];
         }
 
+        $recentAttendances = $employee
+            ? Attendance::where('employee_id', $employee->id)
+                ->whereNotNull('check_in_at')
+                ->whereDate('attendance_date', '<', $today)
+                ->orderByDesc('attendance_date')
+                ->limit(3)
+                ->get()
+            : collect();
+
         $announcements = Announcement::whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
@@ -66,13 +75,18 @@ class Home extends Component
             && ! $todayAttendance?->check_in_at
             && $lateness->isLate(now('Asia/Makassar'));
 
+        $workStartLabel = $lateness->workStart(now('Asia/Makassar'))->format('H:i');
+
         return view('livewire.employee.home', compact(
             'employee',
             'todayAttendance',
             'monthStats',
+            'recentAttendances',
             'announcements',
             'isWfo',
-            'isLateAlert'
+            'isLateAlert',
+            'isOffDay',
+            'workStartLabel'
         ));
     }
 }

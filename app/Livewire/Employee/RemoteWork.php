@@ -25,6 +25,11 @@ class RemoteWork extends Component
 
     public bool $showConfirm = false;
 
+    /** List filters — empty string means "all". */
+    public string $statusFilter = '';
+
+    public string $typeFilter = '';
+
     public function mount(): void
     {
         $this->resetDates();
@@ -132,6 +137,8 @@ class RemoteWork extends Component
 
         $requests = $employee
             ? RemoteWorkRequest::where('employee_id', $employee->id)
+                ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
+                ->when($this->typeFilter !== '', fn ($q) => $q->where('work_type', $this->typeFilter))
                 ->orderByDesc('created_at')
                 ->limit(20)
                 ->get()
@@ -145,6 +152,7 @@ class RemoteWork extends Component
             'isWfo' => $isWfo,
             'todayApproved' => $todayApproved,
             'requestableTypes' => WorkType::remoteRequestable(),
+            'statuses' => RemoteWorkStatus::cases(),
         ]);
     }
 }

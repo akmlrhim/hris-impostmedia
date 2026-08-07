@@ -1,33 +1,31 @@
 <div>
-	<div class="px-5 pt-6 pb-4 bg-white border-b border-slate-200 flex items-center gap-3">
-		<a wire:navigate href="{{ route('mobile.home') }}" class="p-2 -ml-2 rounded-lg hover:bg-slate-100">
-			<x-icon name="arrow-left" class="w-5 h-5" />
-		</a>
-		<h1 class="text-xl font-bold text-slate-900">Slip Gaji</h1>
-	</div>
+	<x-mobile-header title="Slip Gaji" subtitle="Riwayat penerimaan gaji" :back="route('mobile.home')" />
 
-	<div class="p-5">
+	<div class="px-4 -mt-10 pb-32">
 		@if ($payslips->isEmpty())
-			<div class="card p-8 text-center text-sm text-slate-500">
+			<div class="card-float p-8 text-center text-sm text-navy-400">
 				Belum ada slip gaji.
 			</div>
 		@else
-			<div class="card overflow-hidden divide-y divide-slate-100">
+			<div class="space-y-3">
 				@foreach ($payslips as $p)
 					<a wire:navigate href="{{ route('mobile.payslip.show', $p) }}"
-					   class="flex items-center justify-between px-5 py-4 active:bg-slate-50 transition">
-						<div>
-							<p class="font-semibold text-slate-900">
+					   class="card-float flex items-center justify-between gap-3 p-4 active:scale-[0.99] transition">
+						<div class="w-11 h-11 rounded-2xl bg-accent-50 text-accent-500 flex items-center justify-center shrink-0">
+							<x-icon name="wallet" class="w-5 h-5" />
+						</div>
+						<div class="flex-1 min-w-0">
+							<p class="font-bold text-navy-800">
 								{{ \Carbon\Carbon::create()->month($p->period->month)->translatedFormat('F') }} {{ $p->period->year }}
 							</p>
-							<p class="text-xs text-slate-500 mt-0.5">
+							<p class="text-xs text-navy-400 mt-0.5">
 								Dibayar: {{ $p->period->payment_date?->translatedFormat('d M Y') ?? '-' }}
 							</p>
 							<p class="text-base font-bold text-emerald-600 mt-1">
 								{{ rupiah($p->net_salary) }}
 							</p>
 						</div>
-						<x-icon name="chevron-right" class="w-5 h-5 text-brand-600 shrink-0" />
+						<x-icon name="chevron-right" class="w-5 h-5 text-slate-300 shrink-0" />
 					</a>
 				@endforeach
 			</div>

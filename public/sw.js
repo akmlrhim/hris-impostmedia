@@ -1,4 +1,4 @@
-const CACHE = 'hris-im-v7';
+const CACHE = 'hris-im-v8';
 
 const PRECACHE = [
 	'/offline',
@@ -7,7 +7,15 @@ const PRECACHE = [
 	'/icons/icon-512.png',
 ];
 
+// Aset ber-hash / statis yang isinya tidak pernah berubah untuk URL yang sama.
+// Hanya ini yang boleh cache-first.
+const IMMUTABLE = /^\/(build\/|icons\/|favicon\.ico|logo\.webp|face-models\/)/i;
+const IMMUTABLE_EXT = /\.(woff2?|ttf|otf|png|jpg|jpeg|webp|svg|ico)$/i;
+
 const STATIC_EXT = /\.(css|js|woff2?|ttf|otf|png|jpg|jpeg|webp|svg|ico)$/i;
+
+// Endpoint milik Vite dev server bila kebetulan dilayani dari origin yang sama.
+const DEV_PATH = /^\/(@vite|@id|@fs|resources\/|node_modules\/|__vite)/i;
 
 // Safely put a response in cache — clone first, catch errors silently
 function tryCachePut(request, response) {
@@ -16,6 +24,10 @@ function tryCachePut(request, response) {
 		const clone = response.clone();
 		caches.open(CACHE).then((c) => c.put(request, clone).catch(() => {}));
 	} catch (_) {}
+}
+
+function isImmutable(url) {
+	return IMMUTABLE.test(url.pathname) || IMMUTABLE_EXT.test(url.pathname);
 }
 
 self.addEventListener('install', (e) => {
@@ -43,16 +55,41 @@ self.addEventListener('fetch', (e) => {
 	// Never intercept Livewire requests (Livewire 4 uses randomized prefix like /livewire-XXXX/)
 	if (/^\/livewire(-[a-z0-9]+)?\//i.test(url.pathname)) return;
 
-	// Static assets (same origin) — cache first, then network
-	if (STATIC_EXT.test(url.pathname) && url.origin === self.location.origin) {
+	// Jangan sentuh apa pun yang berasal dari Vite dev server
+	if (DEV_PATH.test(url.pathname)) return;
+
+	// Permintaan yang sengaja bypass cache (reload paksa, cache-buster) diteruskan apa adanya
+	if (request.cache === 'no-store' || request.cache === 'reload') return;
+
+	// Aset ber-hash / statis (same origin) — cache first, then network
+	if (url.origin === self.location.origin && isImmutable(url)) {
 		e.respondWith(
 			caches.match(request).then((cached) => {
 				if (cached) return cached;
 				return fetch(request).then((res) => {
 					if (res && res.ok) tryCachePut(request, res);
 					return res;
-				}).catch(() => new Response('', { status: 503 }));
+				});
 			})
+		);
+		return;
+	}
+
+	// CSS/JS non-hash — network first supaya perubahan langsung terlihat,
+	// cache hanya dipakai saat offline.
+	if (url.origin === self.location.origin && STATIC_EXT.test(url.pathname)) {
+		e.respondWith(
+			fetch(request)
+				.then((res) => {
+					if (res && res.ok) tryCachePut(request, res);
+					return res;
+				})
+				.catch(() =>
+					caches.match(request).then((r) => {
+						if (r) return r;
+						throw new Error('offline');
+					})
+				)
 		);
 		return;
 	}

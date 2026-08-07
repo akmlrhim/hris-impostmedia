@@ -12,9 +12,9 @@
 
     {{ $slot }}
 
-    {{-- Bottom nav: flush bar docked to the screen edge --}}
+    {{-- Bottom nav: white bar docked to the screen edge, active tab in a violet pill --}}
     <nav
-      class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 bg-slate-900 text-white border-t border-slate-800"
+      class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 bg-white border-t border-slate-200"
       style="padding-bottom: env(safe-area-inset-bottom);">
       @php
         $tabs = [
@@ -26,18 +26,16 @@
         ];
       @endphp
 
-      <div class="grid grid-cols-5 h-16">
+      <div class="grid grid-cols-5 h-[4.25rem] items-center px-1">
         @foreach ($tabs as $tab)
           @php $active = request()->routeIs($tab['route'] . '*'); @endphp
           <a wire:navigate href="{{ Route::has($tab['route']) ? route($tab['route']) : '#' }}"
-            class="flex flex-col items-center justify-center gap-1 transition active:scale-95 {{ $active ? 'text-white' : 'text-slate-500 hover:text-slate-300' }}">
-            <span class="relative flex items-center justify-center">
+            class="flex flex-col items-center justify-center gap-1 transition active:scale-95 {{ $active ? 'text-accent-600' : 'text-slate-400' }}">
+            <span
+              class="flex items-center justify-center h-8 w-12 rounded-full transition {{ $active ? 'bg-accent-100' : '' }}">
               <x-icon :name="$tab['icon']" class="w-5 h-5" />
-              @if ($active)
-                <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white"></span>
-              @endif
             </span>
-            <span class="text-[10px] {{ $active ? 'font-medium' : '' }}">{{ $tab['label'] }}</span>
+            <span class="text-[10px] {{ $active ? 'font-bold' : 'font-medium' }}">{{ $tab['label'] }}</span>
           </a>
         @endforeach
       </div>

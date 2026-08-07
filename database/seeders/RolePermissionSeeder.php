@@ -20,6 +20,7 @@ class RolePermissionSeeder extends Seeder
                 'manage_announcements',
                 'manage_leave',
                 'manage_remote_work',
+                'manage_overtime',
                 'manage_office_locations',
                 'manage_holidays',
             ],

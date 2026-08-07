@@ -25,12 +25,12 @@
   </div>
 
   {{-- Table --}}
-  <div class="card overflow-hidden">
+  <div class="card-table">
     <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
       <span>Menampilkan {{ $logs->firstItem() ?? 0 }}–{{ $logs->lastItem() ?? 0 }} dari {{ $logs->total() }} entri</span>
     </div>
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-slate-200">
+      <table class="table-grid">
         <thead class="bg-slate-50">
           <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
             <th class="px-5 py-3 whitespace-nowrap">Waktu</th>
@@ -40,7 +40,7 @@
             <th class="px-5 py-3 whitespace-nowrap">IP</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 text-sm">
+        <tbody class="text-sm">
           @forelse ($logs as $log)
             <tr class="hover:bg-slate-50 align-top">
               <td class="px-5 py-3 whitespace-nowrap">

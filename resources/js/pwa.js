@@ -1,10 +1,44 @@
 // ── PWA: Service Worker ──────────────────────────────────────────────────────
+// Service worker HANYA aktif di build produksi. Di development SW membuat aset
+// (CSS/JS) tersaji dari cache lama sehingga perubahan tidak pernah kelihatan,
+// jadi registrasi lama dibersihkan total.
 if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker
-            .register("/sw.js", { scope: "/" })
-            .catch((err) => console.warn("SW registration failed:", err));
-    });
+    if (import.meta.env.PROD) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker
+                .register("/sw.js", { scope: "/" })
+                .catch((err) => console.warn("SW registration failed:", err));
+        });
+    } else {
+        unregisterServiceWorkerForDev();
+    }
+}
+
+async function unregisterServiceWorkerForDev() {
+    try {
+        const registrations =
+            await navigator.serviceWorker.getRegistrations();
+
+        if (registrations.length === 0) {
+            return;
+        }
+
+        await Promise.all(registrations.map((r) => r.unregister()));
+
+        if (window.caches) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+
+        // Halaman saat ini masih memakai respons dari SW lama (CSS bisa kosong),
+        // jadi muat ulang sekali setelah pembersihan selesai.
+        if (!sessionStorage.getItem("pwa:dev-sw-cleaned")) {
+            sessionStorage.setItem("pwa:dev-sw-cleaned", "1");
+            window.location.reload();
+        }
+    } catch (err) {
+        console.warn("SW dev cleanup failed:", err);
+    }
 }
 
 // ── PWA: Install Prompt ──────────────────────────────────────────────────────

@@ -42,7 +42,7 @@
           <div class="flex justify-between items-center text-sm">
             <span class="text-slate-600">{{ $item->component_name }}</span>
             <div class="flex items-center gap-2">
-              <span class="font-medium text-slate-900 tabular-nums">{{ rupiah($item->amount) }}</span>
+              <span class="font-medium text-slate-900">{{ rupiah($item->amount) }}</span>
               @if ($item->component_code !== 'BASIC' && !$payroll->period->locked_at)
                 <button wire:click="removeItem({{ $item->id }})"
                   wire:confirm="Hapus item {{ $item->component_name }}?"
@@ -53,7 +53,7 @@
             </div>
           </div>
         @endforeach
-        <div class="tabular-nums flex justify-between pt-2 border-t font-semibold text-emerald-600">
+        <div class="flex justify-between pt-2 border-t font-semibold text-emerald-600">
           <span>Total Pendapatan</span>
           <span>{{ rupiah($payroll->total_earnings) }}</span>
         </div>
@@ -74,7 +74,7 @@
                 @endif
               </span>
               <div class="flex items-center gap-2">
-                <span class="font-medium text-red-600 tabular-nums">- {{ rupiah($item->amount) }}</span>
+                <span class="font-medium text-red-600">- {{ rupiah($item->amount) }}</span>
                 @if (!$payroll->period->locked_at)
                   <button wire:click="removeItem({{ $item->id }})"
                     wire:confirm="Hapus potongan {{ $item->component_name }}?"
@@ -85,7 +85,7 @@
               </div>
             </div>
           @endforeach
-          <div class="tabular-nums flex justify-between pt-2 border-t font-semibold text-red-600">
+          <div class="flex justify-between pt-2 border-t font-semibold text-red-600">
             <span>Total Potongan</span>
             <span>- {{ rupiah($payroll->total_deductions + $payroll->total_tax_pph21 + $payroll->total_bpjs) }}</span>
           </div>
@@ -96,7 +96,7 @@
     {{-- Net --}}
     <div class="pt-5 flex justify-between items-baseline">
       <span class="font-semibold text-slate-900">Diterima Bersih</span>
-      <span class="text-2xl font-bold tabular-nums text-emerald-600">{{ rupiah($payroll->net_salary) }}</span>
+      <span class="text-2xl font-bold text-emerald-600">{{ rupiah($payroll->net_salary) }}</span>
     </div>
   </div>
 
@@ -183,7 +183,7 @@
                   <span class="text-slate-500">
                     {{ $itemPercent }}% × {{ rupiah($payroll->gross_salary) }}
                   </span>
-                  <span class="font-semibold text-slate-900 tabular-nums">= {{ rupiah($itemAmount) }}</span>
+                  <span class="font-semibold text-slate-900">= {{ rupiah($itemAmount) }}</span>
                 </div>
               @endif
             </div>

@@ -57,7 +57,7 @@
   aria-live="polite" class="fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm"
   style="display: none; bottom: calc(env(safe-area-inset-bottom) + 6rem);">
   <div :class="classes[type]"
-    class="flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg shadow-slate-900/30 text-sm">
+    class="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm">
     <template x-if="icons[type] === 'check'">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24"
         stroke="currentColor" stroke-width="2.5">

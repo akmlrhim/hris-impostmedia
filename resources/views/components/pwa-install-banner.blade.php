@@ -38,7 +38,7 @@
   x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100"
   x-transition:leave-end="translate-y-full opacity-0"
   class="fixed bottom-0 left-0 right-0 z-50 p-4 md:bottom-6 md:left-auto md:right-6 md:max-w-sm">
-  <div class="bg-slate-900 text-white rounded-2xl shadow-2xl shadow-slate-900/50 p-4 flex items-start gap-3">
+  <div class="bg-slate-900 text-white rounded-2xl p-4 flex items-start gap-3">
     <img src="/icons/icon-72.png" alt="HRIS" class="w-12 h-12 rounded-xl shrink-0">
 
     <div class="flex-1 min-w-0">
