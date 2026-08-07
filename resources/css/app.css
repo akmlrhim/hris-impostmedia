@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+/* The framework's own pagination views are not scanned: every variant is
+   published under resources/views/vendor/pagination, and the originals only
+   contribute unused dark-mode utilities. */
 @source '../**/*.blade.php';
 @source '../**/*.js';
 @source '../../app/Livewire/**/*.php';

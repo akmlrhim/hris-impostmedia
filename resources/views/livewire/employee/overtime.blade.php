@@ -90,7 +90,7 @@
       <div>
         <label class="label">Bukti Approve Head <span class="text-red-500">*</span></label>
         <input type="file" wire:model="head_approval" accept="image/*,application/pdf"
-          class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100">
+          class="block w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100">
         <p class="text-[10px] text-slate-400 mt-1">Screenshot chat / email approval. JPG, PNG, WEBP, atau PDF. Maks 4 MB.</p>
         <div wire:loading wire:target="head_approval" class="text-xs text-slate-500 mt-1">Mengunggah...</div>
         @if ($head_approval)
