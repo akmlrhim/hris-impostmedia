@@ -42,8 +42,8 @@
           <div class="flex justify-between items-center text-sm">
             <span class="text-slate-600">{{ $item->component_name }}</span>
             <div class="flex items-center gap-2">
-              <span class="font-medium text-slate-900">{{ rupiah($item->amount) }}</span>
-              @if ($item->component_code !== 'BASIC' && !$payroll->period->locked_at)
+              <span class="font-medium text-slate-900">{{ rupiah_masked($item->amount) }}</span>
+              @if ($item->component_code !== 'BASIC' && !$payroll->period->locked_at && can_view_salary())
                 <button wire:click="removeItem({{ $item->id }})"
                   wire:confirm="Hapus item {{ $item->component_name }}?"
                   class="text-slate-300 hover:text-red-500 transition">
@@ -55,7 +55,7 @@
         @endforeach
         <div class="flex justify-between pt-2 border-t font-semibold text-emerald-600">
           <span>Total Pendapatan</span>
-          <span>{{ rupiah($payroll->total_earnings) }}</span>
+          <span>{{ rupiah_masked($payroll->total_earnings) }}</span>
         </div>
       </div>
     </div>
@@ -74,8 +74,8 @@
                 @endif
               </span>
               <div class="flex items-center gap-2">
-                <span class="font-medium text-red-600">- {{ rupiah($item->amount) }}</span>
-                @if (!$payroll->period->locked_at)
+                <span class="font-medium text-red-600">- {{ rupiah_masked($item->amount) }}</span>
+                @if (!$payroll->period->locked_at && can_view_salary())
                   <button wire:click="removeItem({{ $item->id }})"
                     wire:confirm="Hapus potongan {{ $item->component_name }}?"
                     class="text-slate-300 hover:text-red-500 transition">
@@ -87,7 +87,7 @@
           @endforeach
           <div class="flex justify-between pt-2 border-t font-semibold text-red-600">
             <span>Total Potongan</span>
-            <span>- {{ rupiah($payroll->total_deductions + $payroll->total_tax_pph21 + $payroll->total_bpjs) }}</span>
+            <span>- {{ rupiah_masked($payroll->total_deductions + $payroll->total_tax_pph21 + $payroll->total_bpjs) }}</span>
           </div>
         </div>
       </div>
@@ -96,12 +96,17 @@
     {{-- Net --}}
     <div class="pt-5 flex justify-between items-baseline">
       <span class="font-semibold text-slate-900">Diterima Bersih</span>
-      <span class="text-2xl font-bold text-emerald-600">{{ rupiah($payroll->net_salary) }}</span>
+      <span class="text-2xl font-bold text-emerald-600">{{ rupiah_masked($payroll->net_salary) }}</span>
     </div>
   </div>
 
   {{-- Tambah Item --}}
-  @if ($payroll->period->locked_at)
+  @if (! can_view_salary())
+    <div class="card p-4 bg-slate-50 border border-slate-200 text-sm text-slate-600 flex items-center gap-2">
+      <x-icon name="lock" class="w-4 h-4" />
+      Nominal gaji hanya dapat dilihat dan diubah oleh HR.
+    </div>
+  @elseif ($payroll->period->locked_at)
     <div class="card p-4 bg-amber-50 border border-amber-200 text-sm text-amber-800 flex items-center gap-2">
       <x-icon name="lock" class="w-4 h-4" />
       Periode <strong>{{ $payroll->period->code }}</strong> sudah dikunci. Item slip tidak bisa diubah lagi.
@@ -181,9 +186,9 @@
                 <div
                   class="flex items-center justify-between rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-sm">
                   <span class="text-slate-500">
-                    {{ $itemPercent }}% × {{ rupiah($payroll->gross_salary) }}
+                    {{ $itemPercent }}% × {{ rupiah_masked($payroll->gross_salary) }}
                   </span>
-                  <span class="font-semibold text-slate-900">= {{ rupiah($itemAmount) }}</span>
+                  <span class="font-semibold text-slate-900">= {{ rupiah_masked($itemAmount) }}</span>
                 </div>
               @endif
             </div>

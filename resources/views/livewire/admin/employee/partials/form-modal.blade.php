@@ -186,18 +186,26 @@
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="sm:col-span-2">
-          <label class="label">Gaji Pokok <span class="text-red-500">*</span></label>
-          <div x-show="showSalary" x-cloak>
-            <x-currency-input wire-model="basic_salary" />
-          </div>
-          <button type="button" x-show="!showSalary" class="input w-full flex items-center bg-slate-50 text-left"
-            @click="showSalary = true">
-            <span class="tracking-widest text-slate-400 text-base">••••••••</span>
-            <span class="ml-auto text-xs text-slate-400">Klik untuk tampilkan</span>
-          </button>
-          @error('basic_salary')
-            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-          @enderror
+          @can(\App\Enums\Permission::ViewSalary->value)
+            <label class="label">Gaji Pokok <span class="text-red-500">*</span></label>
+            <div x-show="showSalary" x-cloak>
+              <x-currency-input wire-model="basic_salary" />
+            </div>
+            <button type="button" x-show="!showSalary" class="input w-full flex items-center bg-slate-50 text-left"
+              @click="showSalary = true">
+              <span class="tracking-widest text-slate-400 text-base">••••••••</span>
+              <span class="ml-auto text-xs text-slate-400">Klik untuk tampilkan</span>
+            </button>
+            @error('basic_salary')
+              <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+            @enderror
+          @else
+            <label class="label">Gaji Pokok</label>
+            <div class="input w-full flex items-center bg-slate-50">
+              <span class="tracking-widest text-slate-400 text-base">*****</span>
+              <span class="ml-auto text-xs text-slate-400">Hanya HR</span>
+            </div>
+          @endcan
         </div>
         <div>
           <label class="label">Nama Bank</label>

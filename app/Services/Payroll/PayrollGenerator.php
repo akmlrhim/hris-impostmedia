@@ -9,12 +9,15 @@ use App\Models\Payroll;
 use App\Models\PayrollComponent;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
+use App\Services\WorkScheduleService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PayrollGenerator
 {
+    public function __construct(private WorkScheduleService $schedule) {}
+
     /**
      * Generate payrolls for active employees in a period.
      *
@@ -116,12 +119,9 @@ class PayrollGenerator
         $start = Carbon::parse($period->start_date);
         $end = Carbon::parse($period->end_date);
 
-        $workingDays = 0;
-        for ($d = $start->copy(); $d->lte($end); $d->addDay()) {
-            if (! $d->isWeekend()) {
-                $workingDays++;
-            }
-        }
+        // Ikut jadwal hari kerja perusahaan dan hari libur nasional, bukan
+        // asumsi Sabtu-Minggu libur.
+        $workingDays = count($this->schedule->workingDatesBetween($start, $end));
 
         $present = Attendance::where('employee_id', $employee->id)
             ->whereBetween('attendance_date', [$start, $end])

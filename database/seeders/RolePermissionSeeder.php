@@ -12,6 +12,8 @@ class RolePermissionSeeder extends Seeder
     {
         // Admin has all access via Gate::before - no DB entries needed for Admin.
         // Only HR permissions are stored; Employee has no admin panel access.
+        // view_salary is not listed here: it is bound to the HR role in
+        // AppServiceProvider and deliberately not toggleable per role.
         $defaults = [
             UserRole::HR->value => [
                 'manage_employees',

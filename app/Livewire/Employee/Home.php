@@ -6,9 +6,8 @@ use App\Enums\AttendanceStatus;
 use App\Enums\WorkType;
 use App\Models\Announcement;
 use App\Models\Attendance;
-use App\Models\Holiday;
 use App\Services\AttendanceLatenessService;
-use Illuminate\Support\Carbon;
+use App\Services\WorkScheduleService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -17,7 +16,7 @@ use Livewire\Component;
 #[Title('Beranda')]
 class Home extends Component
 {
-    public function render(AttendanceLatenessService $lateness): mixed
+    public function render(AttendanceLatenessService $lateness, WorkScheduleService $schedule): mixed
     {
         $employee = auth()->user()?->employee;
         $today = now()->toDateString();
@@ -68,7 +67,7 @@ class Home extends Component
 
         $isWfo = $employee?->work_type === WorkType::WFO;
 
-        $isOffDay = Carbon::parse($today)->isSunday() || Holiday::isHoliday($today);
+        $isOffDay = $schedule->isOffDay($today);
 
         $isLateAlert = $employee
             && ! $isOffDay

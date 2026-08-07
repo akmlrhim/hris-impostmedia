@@ -66,6 +66,12 @@
                   'icon' => 'flag',
                   'gate' => 'manage_holidays',
               ],
+              [
+                  'label' => 'Hari Kerja',
+                  'route' => 'admin.working-days',
+                  'icon' => 'calendar',
+                  'gate' => 'manage_holidays',
+              ],
           ];
           $pendingWfa = auth()->user()?->can('manage_remote_work')
               ? \App\Models\RemoteWorkRequest::where('status', 'pending')->count()

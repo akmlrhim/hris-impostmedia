@@ -14,6 +14,7 @@ enum Permission: string
     case ManageLeave = 'manage_leave';
     case ManageHolidays = 'manage_holidays';
     case ManageUsers = 'manage_users';
+    case ViewSalary = 'view_salary';
 
     public function label(): string
     {
@@ -28,6 +29,7 @@ enum Permission: string
             self::ManageLeave => 'Kelola Pengajuan Cuti & Izin',
             self::ManageHolidays => 'Kelola Hari Libur',
             self::ManageUsers => 'Kelola Pengguna & Hak Akses',
+            self::ViewSalary => 'Lihat Nominal Gaji',
         };
     }
 
@@ -44,12 +46,19 @@ enum Permission: string
             self::ManageLeave => 'Menyetujui atau menolak pengajuan cuti dan izin karyawan',
             self::ManageHolidays => 'Mengelola daftar hari libur nasional & cuti bersama',
             self::ManageUsers => 'Mengelola akun pengguna dan konfigurasi hak akses (Super Admin)',
+            self::ViewSalary => 'Melihat nominal gaji karyawan (khusus HR)',
         };
     }
 
-    /** Permissions that can be toggled per role (excludes ManageUsers - Admin only). */
+    /**
+     * Permissions that can be toggled per role. Excludes the two permissions whose
+     * holder is fixed by role: ManageUsers (Admin only) and ViewSalary (HR only).
+     */
     public static function configurable(): array
     {
-        return array_values(array_filter(self::cases(), fn ($p) => $p !== self::ManageUsers));
+        return array_values(array_filter(
+            self::cases(),
+            fn ($p) => ! in_array($p, [self::ManageUsers, self::ViewSalary], true),
+        ));
     }
 }

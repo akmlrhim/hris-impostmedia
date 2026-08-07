@@ -183,7 +183,9 @@ class Index extends Component
             $this->contract_start_date = $emp->contract_start_date?->format('Y-m-d');
             $this->contract_end_date = $emp->contract_end_date?->format('Y-m-d');
             $this->is_active = (bool) $emp->is_active;
-            $this->basic_salary = (float) $emp->basic_salary;
+            // Properti publik ikut terkirim ke browser, jadi nominal gaji hanya
+            // di-hydrate untuk HR agar tidak bocor lewat payload Livewire.
+            $this->basic_salary = can_view_salary() ? (float) $emp->basic_salary : 0;
             $this->bank_name = (string) $emp->bank_name;
             $this->bank_account_number = (string) $emp->bank_account_number;
             $this->bank_account_holder = (string) $emp->bank_account_holder;
@@ -197,6 +199,7 @@ class Index extends Component
     public function save(): void
     {
         $userId = $this->editingId ? Employee::find($this->editingId)?->user_id : null;
+        $canSetSalary = can_view_salary();
 
         $this->validate([
             'employee_number' => [
@@ -225,7 +228,7 @@ class Index extends Component
             'position' => 'nullable|string|max:100',
             'contract_start_date' => 'nullable|date',
             'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
-            'basic_salary' => 'required|numeric|min:0',
+            'basic_salary' => $canSetSalary ? 'required|numeric|min:0' : 'nullable',
             'bank_name' => 'nullable|string|max:60',
             'bank_account_number' => 'nullable|string|max:30',
             'bank_account_holder' => 'nullable|string|max:200',
@@ -233,7 +236,7 @@ class Index extends Component
             'emergency_contact_number' => 'required|string|max:24',
         ]);
 
-        $this->safeAction(function () {
+        $this->safeAction(function () use ($canSetSalary) {
             $avatarPath = $this->existing_avatar_path;
             if ($this->avatar) {
                 if ($this->existing_avatar_path) {
@@ -242,7 +245,7 @@ class Index extends Component
                 $avatarPath = $this->avatar->store('avatars', 'local');
             }
 
-            DB::transaction(function () use ($avatarPath): void {
+            DB::transaction(function () use ($avatarPath, $canSetSalary): void {
                 if ($this->editingId) {
                     $emp = Employee::findOrFail($this->editingId);
                     $emp->user?->update([
@@ -264,6 +267,12 @@ class Index extends Component
                     $emp = new Employee(['user_id' => $user->id]);
                 }
 
+                // Non-HR tidak pernah melihat nominalnya, jadi nilai lama dipertahankan
+                // dan karyawan baru dibuat dengan gaji 0 untuk diisi HR nanti.
+                $basicSalary = $canSetSalary
+                    ? $this->basic_salary
+                    : (float) ($emp->basic_salary ?? 0);
+
                 $emp->fill([
                     'employee_number' => $this->employee_number,
                     'full_name' => $this->full_name,
@@ -283,7 +292,7 @@ class Index extends Component
                     'contract_start_date' => $this->contract_start_date ?: null,
                     'contract_end_date' => $this->contract_end_date ?: null,
                     'is_active' => $this->is_active,
-                    'basic_salary' => $this->basic_salary,
+                    'basic_salary' => $basicSalary,
                     'bank_name' => $this->bank_name ?: null,
                     'bank_account_number' => $this->bank_account_number ?: null,
                     'bank_account_holder' => $this->bank_account_holder ?: null,

@@ -1,5 +1,8 @@
 <?php
 
+use App\Enums\Permission;
+use Illuminate\Support\Facades\Gate;
+
 if (! function_exists('rupiah')) {
     /**
      * Format angka jadi "Rp 1.000.000".
@@ -10,6 +13,30 @@ if (! function_exists('rupiah')) {
         $number = is_numeric($value) ? (float) $value : 0;
 
         return 'Rp '.number_format($number, $decimals, ',', '.');
+    }
+}
+
+if (! function_exists('can_view_salary')) {
+    /**
+     * Hanya HR yang boleh melihat nominal gaji. Admin sekalipun disensor,
+     * karena gate view_salary dikecualikan dari bypass Admin.
+     */
+    function can_view_salary(): bool
+    {
+        return Gate::allows(
+            Permission::ViewSalary->value,
+        );
+    }
+}
+
+if (! function_exists('rupiah_masked')) {
+    /**
+     * Sama seperti rupiah(), tapi jadi "*****" untuk pengguna tanpa hak view_salary.
+     * Pakai ini di seluruh panel admin agar nominal gaji tidak bocor ke non-HR.
+     */
+    function rupiah_masked(int|float|string|null $value, int $decimals = 0): string
+    {
+        return can_view_salary() ? rupiah($value, $decimals) : '*****';
     }
 }
 

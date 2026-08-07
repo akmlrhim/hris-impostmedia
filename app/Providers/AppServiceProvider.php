@@ -18,8 +18,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Carbon::setLocale('id');
 
-        // Admin role mendapat akses penuh ke semua gate
-        Gate::before(function (User $user) {
+        // Admin role mendapat akses penuh ke semua gate, kecuali view_salary
+        Gate::before(function (User $user, string $ability) {
+            // Nominal gaji sengaja dikecualikan dari bypass Admin, jadi biarkan
+            // gate-nya sendiri yang memutuskan (null = lanjut ke Gate::define).
+            if ($ability === Permission::ViewSalary->value) {
+                return null;
+            }
+
             if ($user->hasRole(UserRole::Admin)) {
                 return true;
             }
@@ -27,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
 
         // manage_users hanya Admin - ditangani Gate::before di atas
         Gate::define(Permission::ManageUsers->value, fn () => false);
+
+        // view_salary hanya HR - Admin pun melihat nominal gaji tersensor
+        Gate::define(
+            Permission::ViewSalary->value,
+            fn (User $user) => $user->hasRole(UserRole::HR),
+        );
 
         // Semua permission lain dicek dari role_permissions berdasarkan semua role yang dimiliki
         foreach (Permission::configurable() as $permission) {

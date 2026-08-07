@@ -4,6 +4,7 @@ namespace App\Livewire\Employee;
 
 use App\Models\Attendance as AttendanceModel;
 use App\Models\Holiday;
+use App\Services\WorkScheduleService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
@@ -110,6 +111,7 @@ class Calendar extends Component
     private function buildDayDetails(Carbon $monthStart, Carbon $monthEnd, Collection $attendances, Collection $holidays): array
     {
         $details = [];
+        $schedule = app(WorkScheduleService::class);
 
         for ($day = $monthStart->copy(); $day->lte($monthEnd); $day->addDay()) {
             $key = $day->toDateString();
@@ -130,7 +132,7 @@ class Calendar extends Component
 
             $details[$key] = [
                 'title' => $day->translatedFormat('l, d F Y'),
-                'note' => $holiday?->holiday_name ?? ($day->isSunday() ? 'Hari Minggu' : null),
+                'note' => $holiday?->holiday_name ?? $schedule->weeklyOffLabel($day),
                 'noteClass' => $holiday ? 'text-red-500' : 'text-navy-400',
                 'status' => $status?->label(),
                 'statusClass' => $status ? "bg-{$status->color()}-100 text-{$status->color()}-700" : '',

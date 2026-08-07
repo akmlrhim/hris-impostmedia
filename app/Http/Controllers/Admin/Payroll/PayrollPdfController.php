@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Payroll;
 
+use App\Enums\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\PayrollPeriod;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,6 +14,8 @@ class PayrollPdfController extends Controller
     public function __invoke(PayrollPeriod $period): Response
     {
         Gate::authorize('manage_payroll');
+        // Ekspor berisi nominal mentah, jadi hanya boleh untuk pemegang view_salary.
+        Gate::authorize(Permission::ViewSalary->value);
 
         $payrolls = $period->payrolls()
             ->with(['employee'])

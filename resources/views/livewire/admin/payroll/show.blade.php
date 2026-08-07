@@ -30,10 +30,12 @@
           Tandai Dibayar
         </button>
       @endif
-      <a href="{{ route('admin.payroll.period.pdf', $period) }}" target="_blank" class="btn-secondary flex items-center gap-2">
-        <x-icon name="printer" class="w-4 h-4" />
-        Cetak PDF
-      </a>
+      @can(\App\Enums\Permission::ViewSalary->value)
+        <a href="{{ route('admin.payroll.period.pdf', $period) }}" target="_blank" class="btn-secondary flex items-center gap-2">
+          <x-icon name="printer" class="w-4 h-4" />
+          Cetak PDF
+        </a>
+      @endcan
       @php
         $color = match ($period->status) {
             'paid' => 'emerald',
@@ -100,11 +102,11 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div class="card p-4">
       <p class="text-xs uppercase text-slate-500">Total Pendapatan Kotor</p>
-      <p class="text-xl font-bold text-slate-900 mt-1">{{ rupiah($totals->gross ?? 0) }}</p>
+      <p class="text-xl font-bold text-slate-900 mt-1">{{ rupiah_masked($totals->gross ?? 0) }}</p>
     </div>
     <div class="card p-4">
       <p class="text-xs uppercase text-slate-500">Total Net Gaji</p>
-      <p class="text-xl font-bold text-emerald-600 mt-1">{{ rupiah($totals->net ?? 0) }}</p>
+      <p class="text-xl font-bold text-emerald-600 mt-1">{{ rupiah_masked($totals->net ?? 0) }}</p>
     </div>
   </div>
 
@@ -137,8 +139,8 @@
                 <p class="text-xs text-slate-500">{{ $pr->employee->employee_number }}</p>
               </td>
               <td class="px-5 py-3 text-right text-slate-600 whitespace-nowrap">{{ $pr->present_days }}</td>
-              <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ rupiah($pr->gross_salary) }}</td>
-              <td class="px-5 py-3 text-right font-semibold text-emerald-600 whitespace-nowrap">{{ rupiah($pr->net_salary) }}</td>
+              <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ rupiah_masked($pr->gross_salary) }}</td>
+              <td class="px-5 py-3 text-right font-semibold text-emerald-600 whitespace-nowrap">{{ rupiah_masked($pr->net_salary) }}</td>
               <td class="px-5 py-3 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-2">
                   <a wire:navigate href="{{ route('admin.payroll.payslip', $pr) }}"

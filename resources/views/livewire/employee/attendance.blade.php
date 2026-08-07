@@ -185,9 +185,8 @@
                 <div
                     class="p-3 rounded-xl bg-purple-50 border border-purple-100 text-purple-800 text-xs flex items-start gap-2">
                     <x-icon name="check-circle" class="w-4 h-4 shrink-0 mt-0.5 text-purple-500" />
-                    <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong> disetujui - GPS tidak
-                        wajib hari
-                        ini.</span>
+                    <span>Pengajuan <strong>{{ $remoteRequest->work_type->label() }}</strong>
+                        disetujui - GPS tidak wajib hari ini.</span>
                 </div>
             @endif
 

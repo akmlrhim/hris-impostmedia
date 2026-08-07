@@ -74,15 +74,21 @@
         <div class="card p-4">
             <div class="flex items-center justify-between">
                 <p class="text-xs uppercase text-slate-500">Gaji Pokok</p>
-                <button type="button" @click="showSalary = !showSalary"
-                    class="text-slate-400 hover:text-slate-600 transition">
-                    <x-icon name="eye" class="w-3.5 h-3.5" x-show="!showSalary" />
-                    <x-icon name="eye-off" class="w-3.5 h-3.5" x-show="showSalary" x-cloak />
-                </button>
+                @can(\App\Enums\Permission::ViewSalary->value)
+                    <button type="button" @click="showSalary = !showSalary"
+                        class="text-slate-400 hover:text-slate-600 transition">
+                        <x-icon name="eye" class="w-3.5 h-3.5" x-show="!showSalary" />
+                        <x-icon name="eye-off" class="w-3.5 h-3.5" x-show="showSalary" x-cloak />
+                    </button>
+                @endcan
             </div>
             <p class="text-lg font-bold text-slate-900 mt-1">
-                <span x-show="showSalary" x-cloak>{{ rupiah($employee->basic_salary) }}</span>
-                <span x-show="!showSalary" class="tracking-widest text-slate-400 text-base">••••••</span>
+                @can(\App\Enums\Permission::ViewSalary->value)
+                    <span x-show="showSalary" x-cloak>{{ rupiah($employee->basic_salary) }}</span>
+                    <span x-show="!showSalary" class="tracking-widest text-slate-400 text-base">••••••</span>
+                @else
+                    <span class="tracking-widest text-slate-400 text-base">*****</span>
+                @endcan
             </p>
         </div>
         <div class="card p-4">
@@ -144,19 +150,25 @@
         <div class="card p-5">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-sm font-semibold text-slate-900">Penggajian</h3>
-                <button type="button" @click="showSalary = !showSalary"
-                    class="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition">
-                    <x-icon name="eye" class="w-3.5 h-3.5" x-show="!showSalary" />
-                    <x-icon name="eye-off" class="w-3.5 h-3.5" x-show="showSalary" x-cloak />
-                    <span x-text="showSalary ? 'Sembunyikan' : 'Tampilkan gaji'"></span>
-                </button>
+                @can(\App\Enums\Permission::ViewSalary->value)
+                    <button type="button" @click="showSalary = !showSalary"
+                        class="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition">
+                        <x-icon name="eye" class="w-3.5 h-3.5" x-show="!showSalary" />
+                        <x-icon name="eye-off" class="w-3.5 h-3.5" x-show="showSalary" x-cloak />
+                        <span x-text="showSalary ? 'Sembunyikan' : 'Tampilkan gaji'"></span>
+                    </button>
+                @endcan
             </div>
             <dl class="divide-y divide-slate-100 text-sm">
                 <div class="flex justify-between gap-3 py-2">
                     <dt class="text-slate-500">Gaji Pokok</dt>
                     <dd class="text-slate-900 font-medium text-right">
-                        <span x-show="showSalary" x-cloak>{{ rupiah($employee->basic_salary) }}</span>
-                        <span x-show="!showSalary" class="tracking-widest text-slate-400">••••••</span>
+                        @can(\App\Enums\Permission::ViewSalary->value)
+                            <span x-show="showSalary" x-cloak>{{ rupiah($employee->basic_salary) }}</span>
+                            <span x-show="!showSalary" class="tracking-widest text-slate-400">••••••</span>
+                        @else
+                            <span class="tracking-widest text-slate-400">*****</span>
+                        @endcan
                     </dd>
                 </div>
                 @php
@@ -187,7 +199,7 @@
                         <p class="font-medium text-slate-900">{{ $p->period->code }}</p>
                         <p class="text-xs text-slate-500 capitalize">{{ $p->status }}</p>
                     </div>
-                    <span class="font-semibold text-emerald-600">{{ rupiah($p->net_salary) }}</span>
+                    <span class="font-semibold text-emerald-600">{{ rupiah_masked($p->net_salary) }}</span>
                 </a>
             @empty
                 <p class="text-sm text-slate-500">Belum ada slip gaji.</p>

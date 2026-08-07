@@ -1,10 +1,16 @@
 <?php
 
+use App\Enums\LeaveStatus;
+use App\Enums\LeaveType;
 use App\Livewire\Admin\Attendance as AdminAttendance;
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\Holiday;
+use App\Models\LeaveRequest;
 use App\Models\RolePermission;
 use App\Models\User;
+use App\Models\WorkingDay;
+use App\Services\WorkScheduleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire;
@@ -67,4 +73,159 @@ test('users without the permission cannot open the page', function () {
     Livewire::actingAs($user)
         ->test(AdminAttendance::class)
         ->assertForbidden();
+});
+
+test('it opens on the daily tab with the current month preselected', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->assertSet('tab', AdminAttendance::TAB_DAILY)
+        ->assertSet('month', '2026-07')
+        ->assertSee('Rekap Bulanan');
+});
+
+test('the recap tab tallies attendance per employee for the month', function () {
+    Attendance::factory()->for($this->present)->onDate('2026-07-06')->create();
+    Attendance::factory()->for($this->present)->late()->onDate('2026-07-07')->create();
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertSet('tab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('recap', function (array $recap) {
+            $adi = $recap[$this->present->id];
+
+            // Hadir 6 & 8 Juli, terlambat 7 Juli.
+            return $adi['present'] === 2
+                && $adi['late'] === 1
+                && $adi['present_total'] === 3
+                && $adi['recorded_total'] === 3
+                && $adi['late_minutes'] > 0;
+        });
+});
+
+test('saturday counts as a working day and sunday does not', function () {
+    // 1–7 Juli 2026 tanpa Minggu (5 Juli) = 6 hari kerja; 8 Juli hari ini, belum dinilai.
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('workingDays', 6)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->missing->id]['absent'] === 6);
+});
+
+test('switching saturday off shrinks the working days', function () {
+    WorkingDay::where('weekday', 6)->update(['is_working' => false]);
+    app(WorkScheduleService::class)->forgetCache();
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('workingDays', 5)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->missing->id]['absent'] === 5);
+});
+
+test('a holiday is never counted against anyone', function () {
+    Holiday::create(['date' => '2026-07-02', 'holiday_name' => 'Libur Nasional']);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('workingDays', 5)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->missing->id]['absent'] === 5);
+});
+
+test('approved leave covers the day instead of counting as absent', function () {
+    LeaveRequest::create([
+        'employee_id' => $this->missing->id,
+        'type' => LeaveType::Annual,
+        'start_date' => '2026-07-01',
+        'end_date' => '2026-07-03',
+        'reason' => 'Acara keluarga',
+        'status' => LeaveStatus::Approved,
+    ]);
+
+    LeaveRequest::create([
+        'employee_id' => $this->missing->id,
+        'type' => LeaveType::Sick,
+        'start_date' => '2026-07-04',
+        'end_date' => '2026-07-04',
+        'reason' => 'Demam',
+        'status' => LeaveStatus::Approved,
+    ]);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('recap', function (array $recap) {
+            $budi = $recap[$this->missing->id];
+
+            // 3 hari cuti + 1 hari sakit, sisa 2 hari kerja tanpa keterangan.
+            return $budi['leave'] === 3
+                && $budi['sick'] === 1
+                && $budi['absent'] === 2;
+        });
+});
+
+test('a pending leave request does not excuse the absence', function () {
+    LeaveRequest::create([
+        'employee_id' => $this->missing->id,
+        'type' => LeaveType::Annual,
+        'start_date' => '2026-07-01',
+        'end_date' => '2026-07-03',
+        'reason' => 'Belum disetujui',
+        'status' => LeaveStatus::Pending,
+    ]);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->missing->id]['leave'] === 0
+            && $recap[$this->missing->id]['absent'] === 6);
+});
+
+test('an employee is only assessed from their contract start date', function () {
+    $this->missing->update(['contract_start_date' => '2026-07-06']);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->missing->id]['working_days'] === 2
+            && $recap[$this->missing->id]['absent'] === 2);
+});
+
+test('a future month has nothing to assess yet', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->set('month', '2026-09')
+        ->assertViewHas('workingDays', 0)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->missing->id]['absent'] === 0);
+});
+
+test('the recap only counts the selected month', function () {
+    Attendance::factory()->for($this->present)->onDate('2026-06-10')->create();
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->present->id]['present_total'] === 1)
+        ->set('month', '2026-06')
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->present->id]['present_total'] === 1)
+        ->assertViewHas('monthLabel', 'Juni 2026');
+});
+
+test('a malformed month in the url falls back to the current month', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class, ['month' => '2026-13'])
+        ->assertSet('month', '2026-07');
+});
+
+test('an unknown tab value falls back to the daily tab', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class, ['tab' => 'nonsense'])
+        ->assertSet('tab', AdminAttendance::TAB_DAILY);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', 'nonsense')
+        ->assertSet('tab', AdminAttendance::TAB_DAILY);
 });

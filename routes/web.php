@@ -20,6 +20,7 @@ use App\Livewire\Admin\Payroll\Show as AdminPayrollShow;
 use App\Livewire\Admin\Profile as AdminProfileEdit;
 use App\Livewire\Admin\RemoteWork as AdminRemoteWork;
 use App\Livewire\Admin\UserManagement as AdminUserManagement;
+use App\Livewire\Admin\WorkingDay as AdminWorkingDay;
 use App\Livewire\Auth\ForgotPassword;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\ResetPassword;
@@ -113,6 +114,7 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/announcements', AdminAnnouncements::class)->name('announcements')->middleware('can:manage_announcements');
         Route::get('/office-locations', AdminOfficeLocation::class)->name('office-locations')->middleware('can:manage_office_locations');
         Route::get('/holidays', AdminHoliday::class)->name('holidays')->middleware('can:manage_holidays');
+        Route::get('/working-days', AdminWorkingDay::class)->name('working-days')->middleware('can:manage_holidays');
 
         // Pengaturan (SuperAdmin only)
         Route::get('/users', AdminUserManagement::class)->name('users')->middleware('can:manage_users');

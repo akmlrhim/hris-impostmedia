@@ -45,7 +45,8 @@
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
     <x-stat-card label="Total Karyawan" :value="$stats['total_employees']" icon="users" color="bg-blue-500" />
     <x-stat-card label="Hadir Hari Ini" :value="$stats['present_today']" icon="check" color="bg-emerald-500" />
-    <x-stat-card label="Absen" :value="$stats['absent_today']" icon="x" color="bg-red-500" />
+    <x-stat-card label="Belum Absen" :value="$isOffDay ? 'Libur' : $stats['not_checked_in']" icon="clock"
+      color="bg-amber-500" />
   </div>
 
   <div class="grid grid-cols-1 gap-6">
