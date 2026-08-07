@@ -160,7 +160,9 @@ class Attendance extends Component
             return ['label' => 'Belum Bergabung', 'class' => 'bg-slate-100 text-slate-500'];
         }
 
-        if ($end && $date > $end->toDateString()) {
+        // Sejalan dengan isAssessable(): tanggal kontrak yang sudah lewat hanya
+        // berlaku untuk karyawan nonaktif.
+        if ($end && ! $employee->is_active && $date > $end->toDateString()) {
             return ['label' => 'Kontrak Selesai', 'class' => 'bg-slate-100 text-slate-500'];
         }
 
@@ -277,7 +279,7 @@ class Attendance extends Component
         $leaveByDate = $this->expandLeaveDates($leaves);
 
         foreach ($workingDates as $date) {
-            if (! $this->isUnderContract($employee, $date)) {
+            if (! $this->isAssessable($employee, $date, $covered)) {
                 continue;
             }
 
@@ -320,17 +322,32 @@ class Attendance extends Component
         return $byDate;
     }
 
-    /** Nobody is marked absent before they joined or after their contract ended. */
-    private function isUnderContract(Employee $employee, string $date): bool
+    /**
+     * Whether $date can be judged for this employee at all.
+     *
+     * @param  array<string, true>  $covered  Dates that already have an attendance record
+     */
+    private function isAssessable(Employee $employee, string $date, array $covered): bool
     {
+        // Ada absensi berarti orangnya jelas bekerja hari itu, apa pun kata
+        // tanggal kontraknya. Tanpa ini, hari yang dihitung hadir bisa hilang
+        // dari total hari kerja dan angkanya jadi tidak konsisten.
+        if (isset($covered[$date])) {
+            return true;
+        }
+
         $start = $employee->contract_start_date;
-        $end = $employee->contract_end_date;
 
         if ($start && $date < $start->toDateString()) {
             return false;
         }
 
-        return ! ($end && $date > $end->toDateString());
+        // Kontrak berakhir hanya membatasi karyawan yang sudah dinonaktifkan.
+        // Karyawan aktif dengan contract_end_date kedaluwarsa berarti kontraknya
+        // diperpanjang tapi datanya belum diperbarui — dia tetap harus dinilai.
+        $end = $employee->contract_end_date;
+
+        return ! ($end && ! $employee->is_active && $date > $end->toDateString());
     }
 
     private function monthStart(): Carbon

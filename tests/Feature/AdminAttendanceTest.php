@@ -234,6 +234,39 @@ test('an employee is only assessed from their contract start date', function () 
             && $recap[$this->missing->id]['absent'] === 2);
 });
 
+test('an active employee with an expired contract date is still assessed', function () {
+    // Kontrak "berakhir" tapi orangnya masih aktif dan masih masuk kerja.
+    $this->missing->update([
+        'contract_start_date' => '2023-01-01',
+        'contract_end_date' => '2026-01-01',
+        'is_active' => true,
+    ]);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('recap', fn (array $recap) => $recap[$this->missing->id]['working_days'] === 6
+            && $recap[$this->missing->id]['absent'] === 6);
+});
+
+test('a day with attendance always counts toward the working days', function () {
+    $this->present->update(['contract_end_date' => '2026-01-01']);
+    Attendance::factory()->for($this->present)->onDate('2026-07-06')->create();
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->call('setTab', AdminAttendance::TAB_RECAP)
+        ->assertViewHas('recap', function (array $recap) {
+            $adi = $recap[$this->present->id];
+
+            // 6 hari kerja dinilai: 6 Juli hadir, 5 sisanya tanpa keterangan.
+            // Kehadiran 8 Juli tetap terhitung walau harinya belum dinilai.
+            return $adi['working_days'] === 6
+                && $adi['absent'] === 5
+                && $adi['present_total'] === 2;
+        });
+});
+
 test('a future month has nothing to assess yet', function () {
     Livewire::actingAs($this->hr)
         ->test(AdminAttendance::class)
