@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Auth;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -19,6 +21,17 @@ class ForgotPassword extends Component
 
     public bool $sent = false;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+        ];
+    }
+
     public function sendLink(): void
     {
         $this->validate();
@@ -32,9 +45,32 @@ class ForgotPassword extends Component
 
         RateLimiter::hit($key, 300);
 
-        Password::sendResetLink(['email' => $this->email]);
+        $user = User::where('email', Str::lower($this->email))->first();
 
-        // Selalu tampilkan pesan berhasil untuk mencegah enumerasi email
+        if ($user === null) {
+            throw ValidationException::withMessages([
+                'email' => 'Email tidak terdaftar. Periksa kembali alamat email Anda.',
+            ]);
+        }
+
+        if (! $user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda tidak aktif. Hubungi administrator.',
+            ]);
+        }
+
+        $status = Password::sendResetLink(['email' => $user->email]);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            throw ValidationException::withMessages([
+                'email' => $status === Password::RESET_THROTTLED
+                    ? 'Tautan reset baru saja dikirim. Tunggu beberapa saat sebelum meminta lagi.'
+                    : 'Gagal mengirim tautan reset. Coba lagi nanti.',
+            ]);
+        }
+
+        RateLimiter::clear($key);
+
         $this->sent = true;
     }
 

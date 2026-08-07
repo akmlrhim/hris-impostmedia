@@ -7,7 +7,7 @@
       <div>
         <p class="font-semibold text-slate-900">Email terkirim!</p>
         <p class="text-sm text-slate-500 mt-1">
-          Jika email <strong>{{ $email }}</strong> terdaftar, Anda akan menerima tautan reset kata sandi.
+          Tautan reset kata sandi telah dikirim ke <strong>{{ $email }}</strong>.
           Periksa folder spam jika tidak menemukan email tersebut.
         </p>
       </div>
@@ -23,7 +23,7 @@
 
       <div>
         <label class="label" for="email">Email</label>
-        <input id="email" type="email" wire:model="email" class="input" placeholder="Masukkan alamat email" autocomplete="email" autofocus>
+        <input id="email" type="email" wire:model.blur="email" class="input @error('email') border-red-400 @enderror" placeholder="Masukkan alamat email" autocomplete="email" autofocus>
         @error('email')
           <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
         @enderror
