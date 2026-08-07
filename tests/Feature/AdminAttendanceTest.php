@@ -37,6 +37,48 @@ test('it lists employees who have not checked in yet', function () {
         ->assertSee('Belum Absen');
 });
 
+test('a day still running reads as belum absen, a past working day as tanpa keterangan', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->assertSee('Belum Absen')
+        ->assertDontSee('Tanpa Keterangan')
+        ->set('date', '2026-07-07')
+        ->assertSee('Tanpa Keterangan')
+        ->assertDontSee('Belum Absen');
+});
+
+test('a sunday reads as libur instead of belum absen', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->set('date', '2026-07-05')
+        ->assertViewHas('dayOffReason', 'Hari Minggu')
+        ->assertSee('Libur')
+        ->assertDontSee('Tanpa Keterangan');
+});
+
+test('a holiday reads as libur and names itself', function () {
+    Holiday::create(['date' => '2026-07-06', 'holiday_name' => 'Libur Nasional']);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->set('date', '2026-07-06')
+        ->assertViewHas('dayOffReason', 'Libur Nasional')
+        ->assertSee('Libur')
+        ->assertDontSee('Tanpa Keterangan');
+});
+
+test('an employee is not blamed for days before they joined', function () {
+    $this->missing->update(['contract_start_date' => '2026-07-08']);
+    $this->present->update(['contract_start_date' => '2026-01-01']);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->set('date', '2026-07-07')
+        // Budi belum bergabung, Adi sudah dan memang tidak absen hari itu.
+        ->assertSee('Belum Bergabung')
+        ->assertSee('Tanpa Keterangan');
+});
+
 test('it paints a recorded time green', function () {
     Livewire::actingAs($this->hr)
         ->test(AdminAttendance::class)
@@ -64,7 +106,7 @@ test('a day with no attendance at all still lists everyone', function () {
         ->test(AdminAttendance::class)
         ->set('date', '2026-07-07')
         ->assertViewHas('employees', fn ($employees) => $employees->count() === 2)
-        ->assertSee('Belum Absen');
+        ->assertSee('Tanpa Keterangan');
 });
 
 test('users without the permission cannot open the page', function () {

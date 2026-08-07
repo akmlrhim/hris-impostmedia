@@ -134,7 +134,46 @@ class Attendance extends Component
             ->orderBy('full_name')
             ->paginate(20);
 
-        return ['employees' => $employees];
+        return [
+            'employees' => $employees,
+            'dayOffReason' => $this->schedule->offDayReason($date),
+        ];
+    }
+
+    /**
+     * Label for an employee with no attendance record on the selected date.
+     *
+     * The daily tab lists every active employee, so a blank row can mean four
+     * very different things. Spelling them out keeps this tab consistent with
+     * the monthly recap, which only ever counts the last one against anyone.
+     *
+     * @return array{label: string, class: string}
+     */
+    public function missingState(Employee $employee): array
+    {
+        $date = $this->date ?: now()->toDateString();
+
+        $start = $employee->contract_start_date;
+        $end = $employee->contract_end_date;
+
+        if ($start && $date < $start->toDateString()) {
+            return ['label' => 'Belum Bergabung', 'class' => 'bg-slate-100 text-slate-500'];
+        }
+
+        if ($end && $date > $end->toDateString()) {
+            return ['label' => 'Kontrak Selesai', 'class' => 'bg-slate-100 text-slate-500'];
+        }
+
+        if ($this->schedule->isOffDay($date)) {
+            return ['label' => 'Libur', 'class' => 'bg-slate-100 text-slate-600'];
+        }
+
+        // Hari yang masih berjalan belum bisa dinilai — orangnya mungkin belum datang.
+        if ($date >= now()->toDateString()) {
+            return ['label' => 'Belum Absen', 'class' => 'bg-amber-100 text-amber-700'];
+        }
+
+        return ['label' => 'Tanpa Keterangan', 'class' => 'bg-red-100 text-red-700'];
     }
 
     /**
