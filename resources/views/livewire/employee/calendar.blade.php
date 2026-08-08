@@ -5,19 +5,24 @@
   {{-- The whole month is handed to Alpine, so switching days never hits the
        server; only the month arrows do. Re-keyed per month so a new month
        re-initialises the client state with fresh data. --}}
-  <div class="px-4 -mt-10 pb-32 space-y-4" wire:key="cal-{{ $year }}-{{ $month }}"
+  <div class="relative z-10 px-4 -mt-10 pb-32 space-y-4" wire:key="cal-{{ $year }}-{{ $month }}"
     x-data="{ selected: @js($selectedDate), days: @js($dayDetails) }">
-    {{-- Month navigation --}}
-    <div class="card-float p-3 flex items-center justify-between" wire:loading.class="opacity-50">
-      <button type="button" wire:click="previousMonth"
-        class="p-2 rounded-lg text-navy-500 hover:bg-slate-100 active:bg-slate-200 transition">
-        <x-icon name="chevron-left" class="w-5 h-5" />
-      </button>
-      <p class="font-bold text-navy-800 capitalize">{{ $monthLabel }}</p>
-      <button type="button" wire:click="nextMonth"
-        class="p-2 rounded-lg text-navy-500 hover:bg-slate-100 active:bg-slate-200 transition">
-        <x-icon name="chevron-right" class="w-5 h-5" />
-      </button>
+    {{-- Month navigation. The card surface stays opaque — it overlaps the navy
+         hero, so fading the card itself would let the hero bleed through. Only
+         its contents dim while the new month loads. --}}
+    <div class="card-float p-3">
+      <div class="flex items-center justify-between transition-opacity" wire:loading.class="opacity-50"
+        wire:target="previousMonth,nextMonth">
+        <button type="button" wire:click="previousMonth"
+          class="p-2 rounded-lg text-navy-500 hover:bg-slate-100 active:bg-slate-200 transition">
+          <x-icon name="chevron-left" class="w-5 h-5" />
+        </button>
+        <p class="font-bold text-navy-800 capitalize">{{ $monthLabel }}</p>
+        <button type="button" wire:click="nextMonth"
+          class="p-2 rounded-lg text-navy-500 hover:bg-slate-100 active:bg-slate-200 transition">
+          <x-icon name="chevron-right" class="w-5 h-5" />
+        </button>
+      </div>
     </div>
 
     {{-- Calendar grid --}}
