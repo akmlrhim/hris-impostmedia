@@ -1,5 +1,4 @@
 <div class="space-y-4">
-    {{-- Tabs --}}
     <div class="border-b border-slate-200">
         <nav class="flex gap-1 -mb-px" aria-label="Tab data absensi">
             @php
@@ -53,7 +52,6 @@
                             <th class="px-5 py-3 whitespace-nowrap">Karyawan</th>
                             <th class="px-5 py-3 whitespace-nowrap text-center">Check-in</th>
                             <th class="px-5 py-3 whitespace-nowrap text-center">Check-out</th>
-                            <th class="px-5 py-3 whitespace-nowrap">Terlambat</th>
                             <th class="px-5 py-3 whitespace-nowrap">Status</th>
                         </tr>
                     </thead>
@@ -87,10 +85,6 @@
                                     class="px-5 py-3 whitespace-nowrap text-center {{ $att?->check_out_at ? 'bg-emerald-50 font-semibold text-emerald-700' : 'text-slate-400' }}">
                                     {{ $att?->check_out_at?->format('H:i') ?? '-' }}
                                 </td>
-
-                                <td class="px-5 py-3 whitespace-nowrap">
-                                    {{ $att && $att->late_minutes > 0 ? $att->late_minutes . ' mnt' : '-' }}
-                                </td>
                                 <td class="px-5 py-3 whitespace-nowrap">
                                     @if ($att?->status)
                                         <span
@@ -105,7 +99,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-5 py-12 text-center text-slate-500">
+                                <td colspan="4" class="px-5 py-12 text-center text-slate-500">
                                     Tidak ada karyawan yang cocok dengan filter ini.
                                 </td>
                             </tr>
@@ -142,12 +136,10 @@
                             <th class="px-3 py-3 whitespace-nowrap text-center">Total Hadir</th>
                             <th class="px-3 py-3 whitespace-nowrap text-center">Tepat Waktu</th>
                             <th class="px-3 py-3 whitespace-nowrap text-center">Terlambat</th>
-                            <th class="px-3 py-3 whitespace-nowrap text-center">Pulang Cepat</th>
                             <th class="px-3 py-3 whitespace-nowrap text-center">Cuti</th>
                             <th class="px-3 py-3 whitespace-nowrap text-center">Izin</th>
                             <th class="px-3 py-3 whitespace-nowrap text-center">Sakit</th>
                             <th class="px-3 py-3 whitespace-nowrap text-center">Tanpa Keterangan</th>
-                            <th class="px-3 py-3 whitespace-nowrap text-right">Total Terlambat</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm">
@@ -184,10 +176,6 @@
                                     {{ $row['late'] }}
                                 </td>
                                 <td
-                                    class="px-3 py-3 text-center {{ $row['early_leave'] > 0 ? 'font-semibold text-amber-600' : 'text-slate-300' }}">
-                                    {{ $row['early_leave'] }}
-                                </td>
-                                <td
                                     class="px-3 py-3 text-center {{ $row['leave'] > 0 ? 'text-blue-600' : 'text-slate-300' }}">
                                     {{ $row['leave'] }}
                                 </td>
@@ -203,14 +191,10 @@
                                     class="px-3 py-3 text-center {{ $row['absent'] > 0 ? 'font-semibold text-red-600 bg-red-50' : 'text-slate-300' }}">
                                     {{ $row['absent'] }}
                                 </td>
-                                <td
-                                    class="px-3 py-3 text-right whitespace-nowrap {{ $row['late_minutes'] > 0 ? 'text-amber-600' : 'text-slate-300' }}">
-                                    {{ $row['late_minutes'] > 0 ? $row['late_minutes'] . ' mnt' : '-' }}
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="px-5 py-12 text-center text-slate-500">
+                                <td colspan="8" class="px-5 py-12 text-center text-slate-500">
                                     Belum ada karyawan aktif.
                                 </td>
                             </tr>

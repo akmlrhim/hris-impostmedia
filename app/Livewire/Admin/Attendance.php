@@ -26,7 +26,6 @@ class Attendance extends Component
 {
     use HandlesAdminActions, WithPagination;
 
-    /** Pseudo-status for employees with no attendance row on the selected date. */
     public const STATUS_MISSING = 'not_recorded';
 
     public const TAB_DAILY = 'daily';
@@ -37,7 +36,6 @@ class Attendance extends Component
     private const PRESENT_STATUSES = [
         AttendanceStatus::Present,
         AttendanceStatus::Late,
-        AttendanceStatus::EarlyLeave,
     ];
 
     #[Url]
@@ -49,7 +47,6 @@ class Attendance extends Component
     #[Url]
     public string $status = '';
 
-    /** Recap period in Y-m format. */
     #[Url]
     public string $month = '';
 
@@ -208,7 +205,7 @@ class Attendance extends Component
         $records = AttendanceModel::query()
             ->whereIn('employee_id', $employeeIds)
             ->whereBetween('attendance_date', [$start->toDateString(), $end->toDateString()])
-            ->get(['employee_id', 'attendance_date', 'status', 'late_minutes', 'work_minutes'])
+            ->get(['employee_id', 'attendance_date', 'status', 'work_minutes'])
             ->groupBy('employee_id');
 
         $leaves = LeaveRequest::query()
@@ -250,7 +247,6 @@ class Attendance extends Component
         $row['permission'] = 0;
         $row['present_total'] = 0;
         $row['recorded_total'] = 0;
-        $row['late_minutes'] = 0;
         $row['work_minutes'] = 0;
         $row['working_days'] = 0;
 
@@ -268,7 +264,6 @@ class Attendance extends Component
             $covered[$record->attendance_date->toDateString()] = true;
             $row[$status->value]++;
             $row['recorded_total']++;
-            $row['late_minutes'] += (int) $record->late_minutes;
             $row['work_minutes'] += (int) $record->work_minutes;
 
             if (in_array($status, self::PRESENT_STATUSES, true)) {

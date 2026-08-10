@@ -140,8 +140,7 @@ test('the recap tab tallies attendance per employee for the month', function () 
             return $adi['present'] === 2
                 && $adi['late'] === 1
                 && $adi['present_total'] === 3
-                && $adi['recorded_total'] === 3
-                && $adi['late_minutes'] > 0;
+                && $adi['recorded_total'] === 3;
         });
 });
 
