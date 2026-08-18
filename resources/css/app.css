@@ -122,6 +122,7 @@
     /* Native date & time fields: draw our own icon at the same inset as the
        select chevron and hide the cramped browser glyph sitting on the edge. */
     input.input[type="date"],
+    input.input[type="month"],
     input.input[type="time"],
     input.input[type="datetime-local"] {
         @apply relative appearance-none pr-11 bg-no-repeat;
@@ -130,6 +131,7 @@
         min-height: 2.625rem;
     }
     input.input[type="date"],
+    input.input[type="month"],
     input.input[type="datetime-local"] {
         background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M8 2v3m8-3v3M3.5 9.5h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Z'/%3E%3C/svg%3E");
     }
@@ -138,6 +140,7 @@
     }
     /* Invisible native trigger parked exactly under the drawn icon. */
     input.input[type="date"]::-webkit-calendar-picker-indicator,
+    input.input[type="month"]::-webkit-calendar-picker-indicator,
     input.input[type="time"]::-webkit-calendar-picker-indicator,
     input.input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         position: absolute;
@@ -154,6 +157,7 @@
     /* Touch devices: the whole field opens the picker, not just the icon. */
     @media (pointer: coarse) {
         input.input[type="date"]::-webkit-calendar-picker-indicator,
+        input.input[type="month"]::-webkit-calendar-picker-indicator,
         input.input[type="time"]::-webkit-calendar-picker-indicator,
         input.input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             inset: 0;
