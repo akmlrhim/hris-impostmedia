@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\AttendanceStatus;
-use App\Enums\LeaveStatus;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Services\AttendanceLatenessService;
@@ -26,7 +25,6 @@ class Dashboard extends Component
             'present_today' => Attendance::whereDate('attendance_date', $today)
                 ->whereIn('status', [AttendanceStatus::Present, AttendanceStatus::Late])
                 ->count(),
-            'not_checked_in' => $this->countNotCheckedIn($today, $isOffDay),
         ];
 
         $recentAttendance = Attendance::with('employee')
@@ -55,35 +53,5 @@ class Dashboard extends Component
             'isLateAlert',
             'isOffDay'
         ));
-    }
-
-    /**
-     * Active employees who have not checked in today, ignoring anyone on
-     * approved leave. Days off return 0 — nobody is expected in.
-     *
-     * Deliberately counted as "belum absen", not "absen": the day is still
-     * running, so a missing check-in at 09:00 is not yet an absence. The
-     * unexcused tally lives in the monthly recap, where the day has ended.
-     */
-    private function countNotCheckedIn(string $today, bool $isOffDay): int
-    {
-        if ($isOffDay) {
-            return 0;
-        }
-
-        return Employee::query()
-            ->where('is_active', true)
-            ->where(fn ($q) => $q->whereNull('contract_start_date')
-                ->orWhereDate('contract_start_date', '<=', $today))
-            ->where(fn ($q) => $q->whereNull('contract_end_date')
-                ->orWhereDate('contract_end_date', '>=', $today))
-            ->whereDoesntHave('attendances', fn ($q) => $q
-                ->whereDate('attendance_date', $today)
-                ->whereNotNull('check_in_at'))
-            ->whereDoesntHave('leaveRequests', fn ($q) => $q
-                ->where('status', LeaveStatus::Approved)
-                ->whereDate('start_date', '<=', $today)
-                ->whereDate('end_date', '>=', $today))
-            ->count();
     }
 }

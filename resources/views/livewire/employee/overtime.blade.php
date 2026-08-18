@@ -205,7 +205,7 @@
               <p class="font-bold text-navy-800">Lembur {{ $req->durationLabel() }}</p>
               <p class="text-xs text-navy-400 mt-0.5">{{ $req->started_at->translatedFormat('l, d M Y') }}</p>
               <p class="text-xs text-navy-400">
-                {{ $req->started_at->translatedFormat('H:i') }} – {{ $req->ended_at->translatedFormat('H:i') }}
+                {{ $req->started_at->translatedFormat('H:i') }} - {{ $req->ended_at->translatedFormat('H:i') }}
                 @if (! $req->started_at->isSameDay($req->ended_at))
                   (+1 hari)
                 @endif

@@ -79,6 +79,28 @@ test('an employee is not blamed for days before they joined', function () {
         ->assertSee('Tanpa Keterangan');
 });
 
+test('a recorded time is labelled with the timezone it was taken in', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->assertSee('WITA');
+});
+
+test('the label follows the timezone stored on the record', function () {
+    Attendance::where('employee_id', $this->present->id)->update(['timezone' => 'Asia/Jakarta']);
+
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->assertSee('WIB')
+        ->assertDontSee('WITA');
+});
+
+test('a day without attendance shows no timezone label', function () {
+    Livewire::actingAs($this->hr)
+        ->test(AdminAttendance::class)
+        ->set('date', '2026-07-07')
+        ->assertDontSee('WITA');
+});
+
 test('it paints a recorded time green', function () {
     Livewire::actingAs($this->hr)
         ->test(AdminAttendance::class)

@@ -25,7 +25,7 @@
           {{ $payroll->period->year }}
         </p>
         <p class="text-sm text-slate-500">
-          {{ $payroll->period->start_date->translatedFormat('d M') }} –
+          {{ $payroll->period->start_date->translatedFormat('d M') }} -
           {{ $payroll->period->end_date->translatedFormat('d M Y') }}
         </p>
         @if ($payroll->period->payment_date)

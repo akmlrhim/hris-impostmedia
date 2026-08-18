@@ -6,7 +6,7 @@
     <div>
       <h3 class="text-sm font-semibold text-slate-900">Jadwal Mingguan</h3>
       <p class="text-sm text-slate-500 mt-1">
-        Hari yang dimatikan dianggap libur mingguan — karyawan tidak wajib absen dan tidak dihitung
+        Hari yang dimatikan dianggap libur mingguan, karyawan tidak wajib absen dan tidak dihitung
         tidak hadir. Hari libur nasional diatur terpisah di
         <a wire:navigate href="{{ route('admin.holidays') }}" class="text-brand-600 hover:underline">Hari Libur</a>.
       </p>

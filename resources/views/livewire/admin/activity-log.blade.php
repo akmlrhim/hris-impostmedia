@@ -27,7 +27,7 @@
   {{-- Table --}}
   <div class="card-table">
     <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
-      <span>Menampilkan {{ $logs->firstItem() ?? 0 }}–{{ $logs->lastItem() ?? 0 }} dari {{ $logs->total() }} entri</span>
+      <span>Menampilkan {{ $logs->firstItem() ?? 0 }}-{{ $logs->lastItem() ?? 0 }} dari {{ $logs->total() }} entri</span>
     </div>
     <div class="overflow-x-auto">
       <table class="table-grid">

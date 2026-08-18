@@ -102,7 +102,7 @@
               <p class="font-semibold text-slate-900">{{ $selectedType?->label() }}</p>
               <p class="text-xs text-slate-500 mt-0.5">
                 @if ($startDt && $endDt)
-                  {{ $startDt->translatedFormat('d M Y H:i') }} – {{ $endDt->translatedFormat('d M Y H:i') }}
+                  {{ $startDt->translatedFormat('d M Y H:i') }} - {{ $endDt->translatedFormat('d M Y H:i') }}
                 @endif
               </p>
             </div>

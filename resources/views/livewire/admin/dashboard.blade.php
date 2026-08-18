@@ -13,7 +13,7 @@
             <p class="text-xs text-slate-500">Absensi Saya - {{ now()->translatedFormat('l, d F Y') }}</p>
             @if ($myAttendance?->check_out_at)
               <p class="font-semibold text-emerald-700">
-                Selesai · {{ $myAttendance->check_in_at->format('H:i') }} – {{ $myAttendance->check_out_at->format('H:i') }}
+                Selesai · {{ $myAttendance->check_in_at->format('H:i') }} - {{ $myAttendance->check_out_at->format('H:i') }}
                 <span class="font-normal text-slate-500 text-xs ml-1">({{ floor($myAttendance->work_minutes / 60) }}j {{ $myAttendance->work_minutes % 60 }}m)</span>
               </p>
             @elseif ($myAttendance?->check_in_at)
@@ -42,11 +42,9 @@
   @endif
 
   {{-- Stats grid --}}
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <x-stat-card label="Total Karyawan" :value="$stats['total_employees']" icon="users" color="bg-blue-500" />
     <x-stat-card label="Hadir Hari Ini" :value="$stats['present_today']" icon="check" color="bg-emerald-500" />
-    <x-stat-card label="Belum Absen" :value="$isOffDay ? 'Libur' : $stats['not_checked_in']" icon="clock"
-      color="bg-amber-500" />
   </div>
 
   <div class="grid grid-cols-1 gap-6">

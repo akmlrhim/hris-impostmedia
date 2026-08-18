@@ -114,9 +114,9 @@
     }
     /* Custom select with proper chevron positioning */
     select.input {
-        @apply appearance-none pr-10 bg-no-repeat;
+        @apply appearance-none pr-11 bg-no-repeat;
         background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%2364748b' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
-        background-position: right 0.75rem center;
+        background-position: right 1rem center;
         background-size: 1.1rem 1.1rem;
     }
     /* Native date & time fields: draw our own icon at the same inset as the
@@ -124,8 +124,8 @@
     input.input[type="date"],
     input.input[type="time"],
     input.input[type="datetime-local"] {
-        @apply relative appearance-none pr-10 bg-no-repeat;
-        background-position: right 0.75rem center;
+        @apply relative appearance-none pr-11 bg-no-repeat;
+        background-position: right 1rem center;
         background-size: 1.15rem 1.15rem;
         min-height: 2.625rem;
     }
@@ -142,7 +142,7 @@
     input.input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         position: absolute;
         top: 50%;
-        right: 0.75rem;
+        right: 1rem;
         transform: translateY(-50%);
         width: 1.15rem;
         height: 1.15rem;
@@ -212,9 +212,9 @@
         @apply border-accent-500 bg-accent-500 text-white;
     }
     .chip-select {
-        @apply inline-flex shrink-0 items-center px-3 py-1.5 pr-8 rounded-full border border-slate-200 bg-white text-xs font-semibold text-navy-500 appearance-none bg-no-repeat;
+        @apply inline-flex shrink-0 items-center px-3 py-1.5 pr-9 rounded-full border border-slate-200 bg-white text-xs font-semibold text-navy-500 appearance-none bg-no-repeat;
         background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%23263c80' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
-        background-position: right 0.6rem center;
+        background-position: right 0.8rem center;
         background-size: 0.9rem 0.9rem;
     }
     /* Horizontal filter rows scroll without showing a bar on mobile. */

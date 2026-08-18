@@ -38,7 +38,7 @@
                 <div
                     class="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
                     <x-icon name="flag" class="w-4 h-4 shrink-0 text-slate-400" />
-                    <span><span class="font-medium">{{ $dayOffReason }}</span> — hari libur, tidak dihitung tidak
+                    <span><span class="font-medium">{{ $dayOffReason }}</span>, hari libur, tidak dihitung tidak
                         hadir.</span>
                 </div>
             @endif
@@ -79,11 +79,21 @@
                                 {{-- A recorded time turns its cell green so a filled shift reads at a glance --}}
                                 <td
                                     class="px-5 py-3 whitespace-nowrap text-center {{ $att?->check_in_at ? 'bg-emerald-50 font-semibold text-emerald-700' : 'text-slate-400' }}">
-                                    {{ $att?->check_in_at?->format('H:i') ?? '-' }}
+                                    @if ($att?->check_in_at)
+                                        {{ $att->check_in_at->format('H:i') }}
+                                        <span class="text-[11px] font-normal opacity-70">{{ $att->timezone_label }}</span>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td
                                     class="px-5 py-3 whitespace-nowrap text-center {{ $att?->check_out_at ? 'bg-emerald-50 font-semibold text-emerald-700' : 'text-slate-400' }}">
-                                    {{ $att?->check_out_at?->format('H:i') ?? '-' }}
+                                    @if ($att?->check_out_at)
+                                        {{ $att->check_out_at->format('H:i') }}
+                                        <span class="text-[11px] font-normal opacity-70">{{ $att->timezone_label }}</span>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="px-5 py-3 whitespace-nowrap">
                                     @if ($att?->status)

@@ -95,7 +95,7 @@
             <p class="font-semibold text-slate-900">{{ $leaveType?->label() }}</p>
             <p class="text-xs text-slate-500 mt-0.5">
               @if ($startDt && $endDt)
-                {{ $startDt->translatedFormat('d M Y H:i') }} – {{ $endDt->translatedFormat('d M Y H:i') }}
+                {{ $startDt->translatedFormat('d M Y H:i') }} - {{ $endDt->translatedFormat('d M Y H:i') }}
               @endif
             </p>
           </div>
@@ -158,7 +158,7 @@
               <p class="font-bold text-navy-800">{{ $req->type->label() }}</p>
               <p class="text-xs text-navy-400 mt-0.5">{{ $days }} hari</p>
               <p class="text-xs text-navy-400">
-                Untuk: {{ $req->start_date->translatedFormat('d M') }} –
+                Untuk: {{ $req->start_date->translatedFormat('d M') }} -
                 {{ $req->end_date->translatedFormat('d M Y') }}
               </p>
             </div>

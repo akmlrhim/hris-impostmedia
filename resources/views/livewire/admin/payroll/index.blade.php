@@ -109,7 +109,7 @@
               <td class="px-5 py-3 whitespace-nowrap">
                 <p class="font-medium text-slate-900">{{ $p->code }}</p>
               </td>
-              <td class="px-5 py-3 whitespace-nowrap">{{ $p->start_date->translatedFormat('d M') }} – {{ $p->end_date->translatedFormat('d M Y') }}</td>
+              <td class="px-5 py-3 whitespace-nowrap">{{ $p->start_date->translatedFormat('d M') }} - {{ $p->end_date->translatedFormat('d M Y') }}</td>
               <td class="px-5 py-3 whitespace-nowrap">{{ $p->payment_date?->translatedFormat('d M Y') ?? '-' }}</td>
               <td class="px-5 py-3 text-right whitespace-nowrap">{{ $p->payrolls_count }}</td>
               <td class="px-5 py-3 whitespace-nowrap">

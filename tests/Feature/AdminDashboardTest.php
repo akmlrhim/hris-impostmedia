@@ -1,11 +1,8 @@
 <?php
 
-use App\Enums\LeaveStatus;
-use App\Enums\LeaveType;
 use App\Livewire\Admin\Dashboard;
 use App\Models\Attendance;
 use App\Models\Employee;
-use App\Models\LeaveRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -25,58 +22,19 @@ beforeEach(function () {
     Attendance::factory()->for($this->checkedIn)->onDate('2026-07-08')->create();
 });
 
-test('it counts active employees who have not checked in today', function () {
+test('it counts active employees and those present today', function () {
     Livewire::actingAs($this->admin)
         ->test(Dashboard::class)
-        ->assertViewHas('stats', fn (array $stats) => $stats['present_today'] === 1
-            && $stats['not_checked_in'] === 1)
-        ->assertSee('Belum Absen');
+        ->assertViewHas('stats', fn (array $stats) => $stats['total_employees'] === 2
+            && $stats['present_today'] === 1)
+        ->assertSee('Hadir Hari Ini');
 });
 
-test('an employee on approved leave is not counted', function () {
-    LeaveRequest::create([
-        'employee_id' => $this->notYet->id,
-        'type' => LeaveType::Annual,
-        'start_date' => '2026-07-07',
-        'end_date' => '2026-07-09',
-        'reason' => 'Acara keluarga',
-        'status' => LeaveStatus::Approved,
-    ]);
-
+test('the belum absen statistic is gone from the dashboard', function () {
     Livewire::actingAs($this->admin)
         ->test(Dashboard::class)
-        ->assertViewHas('stats', fn (array $stats) => $stats['not_checked_in'] === 0);
-});
-
-test('a pending leave request still leaves the employee counted', function () {
-    LeaveRequest::create([
-        'employee_id' => $this->notYet->id,
-        'type' => LeaveType::Annual,
-        'start_date' => '2026-07-08',
-        'end_date' => '2026-07-08',
-        'reason' => 'Belum disetujui',
-        'status' => LeaveStatus::Pending,
-    ]);
-
-    Livewire::actingAs($this->admin)
-        ->test(Dashboard::class)
-        ->assertViewHas('stats', fn (array $stats) => $stats['not_checked_in'] === 1);
-});
-
-test('an inactive employee is not counted', function () {
-    $this->notYet->update(['is_active' => false]);
-
-    Livewire::actingAs($this->admin)
-        ->test(Dashboard::class)
-        ->assertViewHas('stats', fn (array $stats) => $stats['not_checked_in'] === 0);
-});
-
-test('an employee who has not started yet is not counted', function () {
-    $this->notYet->update(['contract_start_date' => '2026-08-01']);
-
-    Livewire::actingAs($this->admin)
-        ->test(Dashboard::class)
-        ->assertViewHas('stats', fn (array $stats) => $stats['not_checked_in'] === 0);
+        ->assertViewHas('stats', fn (array $stats) => ! array_key_exists('not_checked_in', $stats))
+        ->assertDontSee('Belum Absen');
 });
 
 test('an open check-in without check-out still counts as present', function () {
@@ -84,24 +42,21 @@ test('an open check-in without check-out still counts as present', function () {
 
     Livewire::actingAs($this->admin)
         ->test(Dashboard::class)
-        ->assertViewHas('stats', fn (array $stats) => $stats['not_checked_in'] === 0);
+        ->assertViewHas('stats', fn (array $stats) => $stats['present_today'] === 2);
 });
 
-test('nobody is expected in on a sunday', function () {
+test('a sunday is flagged as an off day', function () {
     $this->travelTo(Carbon::parse('2026-07-05 10:00:00', 'Asia/Makassar'));
 
     Livewire::actingAs($this->admin)
         ->test(Dashboard::class)
-        ->assertViewHas('isOffDay', true)
-        ->assertViewHas('stats', fn (array $stats) => $stats['not_checked_in'] === 0)
-        ->assertSee('Libur');
+        ->assertViewHas('isOffDay', true);
 });
 
-test('saturday is a working day so the count still runs', function () {
+test('a saturday is a working day', function () {
     $this->travelTo(Carbon::parse('2026-07-04 10:00:00', 'Asia/Makassar'));
 
     Livewire::actingAs($this->admin)
         ->test(Dashboard::class)
-        ->assertViewHas('isOffDay', false)
-        ->assertViewHas('stats', fn (array $stats) => $stats['not_checked_in'] === 2);
+        ->assertViewHas('isOffDay', false);
 });

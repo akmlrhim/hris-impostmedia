@@ -8,7 +8,7 @@
       <div>
         <h2 class="text-base font-semibold text-slate-900">{{ $period->code }}</h2>
         <p class="text-sm text-slate-500">
-          {{ $period->start_date->translatedFormat('d M') }} – {{ $period->end_date->translatedFormat('d M Y') }}
+          {{ $period->start_date->translatedFormat('d M') }} - {{ $period->end_date->translatedFormat('d M Y') }}
           · Pembayaran {{ $period->payment_date?->translatedFormat('d M Y') ?? '-' }}
         </p>
       </div>

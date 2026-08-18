@@ -67,6 +67,22 @@ class Attendance extends Model
         );
     }
 
+    /**
+     * Indonesian abbreviation for the timezone the times were recorded in.
+     * check_in_at / check_out_at are stored as wall-clock time in that zone,
+     * so the label is what makes an 08:00 unambiguous across regions.
+     */
+    protected function timezoneLabel(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => match ($this->timezone ?: config('app.timezone')) {
+                'Asia/Makassar' => 'WITA',
+                'Asia/Jayapura' => 'WIT',
+                default => 'WIB',
+            },
+        );
+    }
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
