@@ -70,7 +70,7 @@ class WorkScheduleService
     {
         $day = $this->toCarbon($date);
 
-        $holiday = Holiday::whereDate('date', $day->toDateString())->first();
+        $holiday = Holiday::where('date', $day->toDateString())->first();
 
         return $holiday?->holiday_name ?? $this->weeklyOffLabel($day);
     }

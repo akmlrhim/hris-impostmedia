@@ -112,7 +112,7 @@ class Attendance extends Component
     {
         $date = $this->date ?: now()->toDateString();
 
-        $onDate = fn ($query) => $query->whereDate('attendance_date', $date);
+        $onDate = fn ($query) => $query->where('attendance_date', $date);
 
         $employees = Employee::query()
             ->where('is_active', true)

@@ -279,7 +279,7 @@ class Attendance extends Component
     private function findTodayAttendance(int $employeeId): ?AttendanceModel
     {
         return AttendanceModel::where('employee_id', $employeeId)
-            ->whereDate('attendance_date', now()->toDateString())
+            ->where('attendance_date', now()->toDateString())
             ->first();
     }
 
@@ -408,7 +408,7 @@ class Attendance extends Component
 
         $history = $employee
             ? AttendanceModel::where('employee_id', $employee->id)
-                ->whereDate('attendance_date', '<', $today)
+                ->where('attendance_date', '<', $today)
                 ->orderByDesc('attendance_date')
                 ->paginate(10)
             : collect();

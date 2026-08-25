@@ -17,6 +17,6 @@ class Holiday extends Model
 
     public static function isHoliday(string $date): bool
     {
-        return self::whereDate('date', $date)->exists();
+        return self::where('date', $date)->exists();
     }
 }

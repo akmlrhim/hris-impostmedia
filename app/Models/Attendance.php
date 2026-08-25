@@ -41,7 +41,11 @@ class Attendance extends Model
     protected function casts(): array
     {
         return [
-            'attendance_date' => 'date',
+            // Format eksplisit supaya nilainya tersimpan tanpa komponen jam.
+            // MySQL memang memangkasnya sendiri (kolomnya DATE), tetapi SQLite
+            // menyimpan apa adanya — tanpa ini perbandingan langsung pada
+            // attendance_date meleset di test.
+            'attendance_date' => 'date:Y-m-d',
             'status' => AttendanceStatus::class,
             'work_type' => WorkType::class,
         ];

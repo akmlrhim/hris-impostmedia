@@ -22,13 +22,13 @@ class Dashboard extends Component
 
         $stats = [
             'total_employees' => Employee::where('is_active', true)->count(),
-            'present_today' => Attendance::whereDate('attendance_date', $today)
+            'present_today' => Attendance::where('attendance_date', $today)
                 ->whereIn('status', [AttendanceStatus::Present, AttendanceStatus::Late])
                 ->count(),
         ];
 
         $recentAttendance = Attendance::with('employee')
-            ->whereDate('attendance_date', $today)
+            ->where('attendance_date', $today)
             ->latest('check_in_at')
             ->limit(5)
             ->get();
@@ -36,7 +36,7 @@ class Dashboard extends Component
         $myEmployee = auth()->user()?->employee;
         $myAttendance = $myEmployee
             ? Attendance::where('employee_id', $myEmployee->id)
-                ->whereDate('attendance_date', $today)
+                ->where('attendance_date', $today)
                 ->first()
             : null;
 
