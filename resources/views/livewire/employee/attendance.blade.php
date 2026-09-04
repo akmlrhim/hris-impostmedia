@@ -110,7 +110,7 @@
                     <p class="font-semibold text-slate-900">{{ $employee->nickname ?? $employee->full_name }}</p>
                     <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
                 </div>
-                <div class="text-right tabular-nums">
+                <div class="text-right">
                     <p x-data="{ t: '' }" x-init="setInterval(() => t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 1000)"
                         x-text="t || new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'})"
                         class="text-xl font-bold text-slate-900">

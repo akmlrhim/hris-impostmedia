@@ -15,7 +15,7 @@
 
 @theme {
     --font-sans:
-        "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+        "Noto Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
     --color-brand-50: #f8fafc;

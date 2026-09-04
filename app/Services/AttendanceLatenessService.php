@@ -11,16 +11,19 @@ use Illuminate\Support\Carbon;
  */
 class AttendanceLatenessService
 {
+    /** Lateness is judged against WITA wall-clock time regardless of where the employee checks in from. */
+    private const TIMEZONE = 'Asia/Makassar';
+
     private const START_HOUR = 9;
 
     private const START_MINUTE = 0;
 
     private const TOLERANCE_MINUTES = 15;
 
-    /** Official work-start time on the same calendar day as $localDate. */
+    /** Official work-start time (WITA) on the same calendar day as $localDate. */
     public function workStart(Carbon $localDate): Carbon
     {
-        return $localDate->copy()->setTime(self::START_HOUR, self::START_MINUTE, 0);
+        return $this->toWita($localDate)->setTime(self::START_HOUR, self::START_MINUTE, 0);
     }
 
     /** Latest check-in time still considered on-time (start time + grace period). */
@@ -29,9 +32,13 @@ class AttendanceLatenessService
         return $this->workStart($localDate)->addMinutes(self::TOLERANCE_MINUTES);
     }
 
+    /**
+     * The whole threshold minute counts as on-time: 09:15 WITA is not late,
+     * lateness only starts from 09:16 WITA onwards.
+     */
     public function isLate(Carbon $checkInLocal): bool
     {
-        return $checkInLocal->gt($this->lateThreshold($checkInLocal));
+        return $this->toWita($checkInLocal)->startOfMinute()->gt($this->lateThreshold($checkInLocal));
     }
 
     /** Minutes late relative to the official start time (0 when within the grace period). */
@@ -41,6 +48,11 @@ class AttendanceLatenessService
             return 0;
         }
 
-        return (int) $this->workStart($checkInLocal)->diffInMinutes($checkInLocal);
+        return (int) $this->workStart($checkInLocal)->diffInMinutes($this->toWita($checkInLocal)->startOfMinute());
+    }
+
+    private function toWita(Carbon $moment): Carbon
+    {
+        return $moment->copy()->setTimezone(self::TIMEZONE);
     }
 }
