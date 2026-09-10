@@ -65,10 +65,7 @@
                 <br>s/d {{ $req->end_date->translatedFormat('d M Y H:i') }}
               </td>
               <td class="px-5 py-3 max-w-xs">
-                <p class="text-slate-600 text-xs line-clamp-2">{{ $req->reason }}</p>
-                @if ($req->rejection_reason)
-                  <p class="text-red-600 text-xs mt-1 italic">Ditolak: {{ $req->rejection_reason }}</p>
-                @endif
+                <x-text-detail label="Alasan WFA" :text="$req->reason" :rejectText="$req->rejection_reason" />
               </td>
               <td class="px-5 py-3 whitespace-nowrap">
                 @php $color = $req->status->color(); @endphp

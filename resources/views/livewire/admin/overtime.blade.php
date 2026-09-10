@@ -123,10 +123,7 @@
                 <span class="badge bg-indigo-100 text-indigo-700">{{ $req->durationLabel() }}</span>
               </td>
               <td class="px-5 py-3 max-w-xs">
-                <p class="text-slate-600 text-xs line-clamp-2">{{ $req->reason }}</p>
-                @if ($req->rejection_reason)
-                  <p class="text-red-600 text-xs mt-1 italic">Ditolak: {{ $req->rejection_reason }}</p>
-                @endif
+                <x-text-detail label="Alasan Lembur" :text="$req->reason" :rejectText="$req->rejection_reason" />
               </td>
               <td class="px-5 py-3 whitespace-nowrap">
                 @if ($req->head_approval_path)

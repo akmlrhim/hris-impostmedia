@@ -46,7 +46,13 @@
                 <p class="text-xs text-slate-500">{{ $holiday->date->translatedFormat('l') }}</p>
               </td>
               <td class="px-5 py-3 text-slate-900 whitespace-nowrap">{{ $holiday->holiday_name }}</td>
-              <td class="px-5 py-3 text-slate-500">{{ $holiday->description ?: '-' }}</td>
+              <td class="px-5 py-3 max-w-xs">
+                @if ($holiday->description)
+                  <x-text-detail label="Keterangan" :text="$holiday->description" />
+                @else
+                  <span class="text-slate-400">-</span>
+                @endif
+              </td>
               <td class="px-5 py-3 text-right whitespace-nowrap">
                 <x-action-menu>
                   <button type="button" @click="open = false; $wire.set('showForm', true, false); $wire.open({{ $holiday->id }})"
