@@ -84,10 +84,10 @@
         <tbody class="text-sm">
           @forelse ($locations as $loc)
             <tr class="hover:bg-slate-50">
-              <td class="px-5 py-3 whitespace-nowrap">
+              <td class="px-5 py-3">
                 <p class="font-medium text-slate-900">{{ $loc->name }}</p>
                 @if ($loc->address)
-                  <p class="text-xs text-slate-500">{{ $loc->address }}</p>
+                  <p class="text-xs text-slate-500 break-words">{{ $loc->address }}</p>
                 @endif
               </td>
               <td class="px-5 py-3 font-mono text-xs text-slate-600 whitespace-nowrap">
