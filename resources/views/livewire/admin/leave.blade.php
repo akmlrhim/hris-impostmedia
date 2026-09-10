@@ -89,8 +89,8 @@
                 {{ $req->start_date->translatedFormat('d M Y H:i') }}
                 <br>s/d {{ $req->end_date->translatedFormat('d M Y H:i') }}
               </td>
-              <td class="px-5 py-3 max-w-xs">
-                <x-text-detail label="Keterangan" :text="$req->reason" :rejectText="$req->rejection_reason" />
+              <td class="px-5 py-3">
+                <x-text-detail label="Keterangan" :text="$req->reason" :rejectText="$req->rejection_reason" icon="eye" />
               </td>
               <td class="px-5 py-3 whitespace-nowrap">
                 <span class="badge bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700">

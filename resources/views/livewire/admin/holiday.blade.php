@@ -46,9 +46,9 @@
                 <p class="text-xs text-slate-500">{{ $holiday->date->translatedFormat('l') }}</p>
               </td>
               <td class="px-5 py-3 text-slate-900 whitespace-nowrap">{{ $holiday->holiday_name }}</td>
-              <td class="px-5 py-3 max-w-xs">
+              <td class="px-5 py-3">
                 @if ($holiday->description)
-                  <x-text-detail label="Keterangan" :text="$holiday->description" />
+                  <x-text-detail label="Keterangan" :text="$holiday->description" icon="eye" />
                 @else
                   <span class="text-slate-400">-</span>
                 @endif

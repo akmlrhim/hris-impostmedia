@@ -274,58 +274,6 @@
                 </div>
             @endif
 
-            {{-- Peringatan checkout dini --}}
-            @if ($showEarlyCheckoutWarning)
-                @php
-                    $workedH = intdiv($workedMinutes, 60);
-                    $workedM = $workedMinutes % 60;
-                    $remainingMinutes = max(0, 480 - $workedMinutes);
-                    $remainH = intdiv($remainingMinutes, 60);
-                    $remainM = $remainingMinutes % 60;
-                @endphp
-                <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
-                    <div class="flex items-start gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                            <x-icon name="clock" class="w-5 h-5 text-amber-600" />
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-amber-900">Jam Kerja Belum Cukup</p>
-                            <p class="text-xs text-amber-700 mt-0.5">
-                                Anda baru bekerja
-                                <strong>{{ $workedH > 0 ? $workedH . 'j ' : '' }}{{ $workedM }}m</strong>
-                                dari minimal <strong>8 jam</strong>.
-                                @if ($remainH > 0 || $remainM > 0)
-                                    Sisa
-                                    <strong>{{ $remainH > 0 ? $remainH . 'j ' : '' }}{{ $remainM }}m</strong>
-                                    lagi.
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button wire:click="cancelEarlyCheckout"
-                            class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-white border border-amber-200 text-amber-800 active:bg-amber-100 transition">
-                            Batal
-                        </button>
-                        <button wire:click="confirmEarlyCheckout" wire:target="confirmEarlyCheckout"
-                            wire:loading.attr="disabled"
-                            class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-amber-500 text-white active:bg-amber-600 disabled:opacity-50 transition">
-                            <span wire:loading.remove wire:target="confirmEarlyCheckout">Tetap Check-out</span>
-                            <span wire:loading wire:target="confirmEarlyCheckout"
-                                class="flex items-center justify-center gap-1.5">
-                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                        stroke="currentColor"
-                                        stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-                                </svg>
-                                Memproses…
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            @endif
-
             {{-- Tombol aksi --}}
             @if (!$attendance?->check_in_at)
                 <button @click="doCheckIn()" :disabled="!canProceed || processing"

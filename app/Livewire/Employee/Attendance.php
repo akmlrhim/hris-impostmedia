@@ -26,24 +26,7 @@ class Attendance extends Component
 {
   use WithPagination;
 
-  public bool $showEarlyCheckoutWarning = false;
-
-  public int $workedMinutes = 0;
-
   public string $webauthnChallenge = '';
-
-  // Location captured during the (already biometric-verified) check-out attempt
-  // that triggered the early-checkout warning, reused when the user confirms so
-  // they don't have to scan their biometric a second time.
-  public ?float $pendingCheckoutLatitude = null;
-
-  public ?float $pendingCheckoutLongitude = null;
-
-  public ?string $pendingCheckoutAddress = null;
-
-  public ?string $pendingCheckoutTimezone = null;
-
-  private const MINIMUM_WORK_MINUTES = 480;
 
   public function mount(): void
   {
@@ -199,76 +182,7 @@ class Attendance extends Component
     // diffInMinutes is UTC-based — accurate regardless of timezone
     $workedMinutes = (int) $attendance->check_in_at->diffInMinutes($localNow);
 
-    if ($workedMinutes < self::MINIMUM_WORK_MINUTES) {
-      // Biometric already verified above. Stash the verified location so the
-      // confirmation step can finalize without asking for biometrics again.
-      $this->workedMinutes = $workedMinutes;
-      $this->showEarlyCheckoutWarning = true;
-      $this->pendingCheckoutLatitude = $latitude;
-      $this->pendingCheckoutLongitude = $longitude;
-      $this->pendingCheckoutAddress = $address;
-      $this->pendingCheckoutTimezone = $tz;
-      // Refresh so that cancelling and retrying check-out has a valid challenge
-      // (the one just used above was consumed during verification).
-      $this->refreshChallenge();
-
-      return;
-    }
-
     $this->finalizeCheckOut($attendance, $localNow, $workedMinutes, $latitude, $longitude, $address, $employee);
-  }
-
-  /**
-   * Finalize an early check-out the user confirmed after the warning.
-   * No biometric re-verification: the originating checkOut() call already
-   * verified the credential before the warning was shown.
-   */
-  public function confirmEarlyCheckout(): void
-  {
-    // Guard: only reachable after a verified checkOut() raised the warning.
-    if (! $this->showEarlyCheckoutWarning) {
-      return;
-    }
-
-    $user = auth()->user();
-    $employee = $user?->employee;
-
-    if (! $employee) {
-      $this->dispatch('notify', message: 'Akun belum terhubung ke data karyawan.', type: 'error');
-
-      return;
-    }
-
-    $tz = in_array($this->pendingCheckoutTimezone, self::VALID_TIMEZONES) ? $this->pendingCheckoutTimezone : config('app.timezone');
-    $localNow = now($tz);
-
-    $attendance = $this->findTodayAttendance($employee->id);
-
-    if (! $attendance || ! $attendance->check_in_at) {
-      $this->resetEarlyCheckout();
-      $this->dispatch('notify', message: 'Anda belum check-in hari ini.', type: 'warning');
-
-      return;
-    }
-
-    if ($attendance->check_out_at) {
-      $this->resetEarlyCheckout();
-      $this->dispatch('notify', message: 'Anda sudah check-out.', type: 'warning');
-
-      return;
-    }
-
-    $workedMinutes = (int) $attendance->check_in_at->diffInMinutes($localNow);
-
-    $this->finalizeCheckOut(
-      $attendance,
-      $localNow,
-      $workedMinutes,
-      $this->pendingCheckoutLatitude,
-      $this->pendingCheckoutLongitude,
-      $this->pendingCheckoutAddress,
-      $employee,
-    );
   }
 
   /**
@@ -313,24 +227,8 @@ class Attendance extends Component
       ]);
     });
 
-    $this->resetEarlyCheckout();
     $this->dispatch('notify', message: 'Check-out berhasil! Terima kasih.', type: 'success');
     $this->dispatch('attendance-recorded');
-  }
-
-  private function resetEarlyCheckout(): void
-  {
-    $this->showEarlyCheckoutWarning = false;
-    $this->workedMinutes = 0;
-    $this->pendingCheckoutLatitude = null;
-    $this->pendingCheckoutLongitude = null;
-    $this->pendingCheckoutAddress = null;
-    $this->pendingCheckoutTimezone = null;
-  }
-
-  public function cancelEarlyCheckout(): void
-  {
-    $this->resetEarlyCheckout();
   }
 
   private function verifyAuthCredential(?string $credentialId, ?string $clientDataJSON, ?string $password): bool

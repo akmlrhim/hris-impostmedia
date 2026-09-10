@@ -1,16 +1,13 @@
-@props(['label', 'text', 'rejectText' => null])
+@props(['label', 'text', 'rejectText' => null, 'icon' => null])
 
 <div x-data="{ open: false }" class="inline">
-  <div class="flex items-start gap-2">
-    <p class="text-slate-600 text-xs line-clamp-2 flex-1">{{ $text }}</p>
-    <button type="button" @click="open = true"
-      class="shrink-0 text-xs text-brand-600 hover:text-brand-700 font-medium whitespace-nowrap">
-      Lihat
-    </button>
-  </div>
-  @if ($rejectText)
-    <p class="text-red-600 text-xs mt-1 italic">Ditolak: {{ $rejectText }}</p>
-  @endif
+  <button type="button" @click="open = true"
+    class="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-medium">
+    @if ($icon)
+      <x-icon :name="$icon" class="w-3.5 h-3.5" />
+    @endif
+    {{ $label }}
+  </button>
 
   <template x-teleport="body">
     <div x-show="open" x-transition:enter="transition ease-out duration-200"
