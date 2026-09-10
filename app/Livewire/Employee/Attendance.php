@@ -27,6 +27,7 @@ class Attendance extends Component
   use WithPagination;
 
   public string $webauthnChallenge = '';
+  public bool $showEarlyCheckoutWarning = false;
 
   public function mount(): void
   {
