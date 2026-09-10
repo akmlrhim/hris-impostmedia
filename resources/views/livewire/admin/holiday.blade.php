@@ -47,17 +47,17 @@
               </td>
               <td class="px-5 py-3 text-slate-900 whitespace-nowrap">{{ $holiday->holiday_name }}</td>
               <td class="px-5 py-3 text-slate-500">{{ $holiday->description ?: '-' }}</td>
-              <td class="px-5 py-3">
-                <div class="flex items-center justify-end gap-2 whitespace-nowrap">
-                  <button type="button" @click="$wire.set('showForm', true, false); $wire.open({{ $holiday->id }})"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-                    Edit
+              <td class="px-5 py-3 text-right whitespace-nowrap">
+                <x-action-menu>
+                  <button type="button" @click="open = false; $wire.set('showForm', true, false); $wire.open({{ $holiday->id }})"
+                    class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <x-icon name="pencil" class="w-3.5 h-3.5 text-amber-500" /> Edit
                   </button>
-                  <button wire:click="delete({{ $holiday->id }})" wire:confirm="Hapus hari libur ini?"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                    Hapus
+                  <button wire:click="delete({{ $holiday->id }})" wire:confirm="Hapus hari libur ini?" @click="open = false"
+                    class="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                    <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
                   </button>
-                </div>
+                </x-action-menu>
               </td>
             </tr>
           @empty

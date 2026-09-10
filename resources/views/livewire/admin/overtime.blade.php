@@ -143,27 +143,23 @@
                 @php $color = $req->status->color(); @endphp
                 <span class="badge bg-{{ $color }}-100 text-{{ $color }}-700">{{ $req->status->label() }}</span>
               </td>
-              <td class="px-5 py-3">
-                <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                  <button type="button" @click="$wire.set('showDetail', true, true); $wire.openDetail({{ $req->id }})"
-                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
-                    Detail
+              <td class="px-5 py-3 text-right whitespace-nowrap">
+                <x-action-menu>
+                  <button type="button" @click="open = false; $wire.set('showDetail', true, true); $wire.openDetail({{ $req->id }})"
+                    class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <x-icon name="eye" class="w-3.5 h-3.5 text-blue-500" /> Detail
                   </button>
                   @if ($req->status === \App\Enums\OvertimeStatus::Pending)
-                    <button wire:click="approve({{ $req->id }})"
-                      class="px-2 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">
-                      Setujui
+                    <button wire:click="approve({{ $req->id }})" @click="open = false"
+                      class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-emerald-50 flex items-center gap-2">
+                      <x-icon name="check-circle" class="w-3.5 h-3.5 text-emerald-500" /> Setujui
                     </button>
-                    <button type="button" @click="$wire.set('showRejectForm', true, true); $wire.openRejectForm({{ $req->id }})"
-                      class="px-2 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                      Tolak
+                    <button type="button" @click="open = false; $wire.set('showRejectForm', true, true); $wire.openRejectForm({{ $req->id }})"
+                      class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-red-50 flex items-center gap-2">
+                      <x-icon name="x-circle" class="w-3.5 h-3.5 text-red-500" /> Tolak
                     </button>
-                  @else
-                    <span class="text-xs text-slate-400 whitespace-nowrap">
-                      {{ $req->reviewer?->name ?? '-' }} · {{ $req->reviewed_at?->diffForHumans() }}
-                    </span>
                   @endif
-                </div>
+                </x-action-menu>
               </td>
             </tr>
           @empty

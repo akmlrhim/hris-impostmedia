@@ -124,20 +124,20 @@
                 <span
                   class="badge bg-{{ $color }}-100 text-{{ $color }}-700 capitalize">{{ $p->status }}</span>
               </td>
-              <td class="px-5 py-3">
-                <div class="flex items-center justify-end gap-2 whitespace-nowrap">
+              <td class="px-5 py-3 text-right whitespace-nowrap">
+                <x-action-menu>
                   <a wire:navigate href="{{ route('admin.payroll.show', $p) }}"
-                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
-                    Detail
+                    class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <x-icon name="eye" class="w-3.5 h-3.5 text-blue-500" /> Detail
                   </a>
                   @if (!$p->locked_at)
                     <button wire:click="delete({{ $p->id }})"
-                      wire:confirm="Hapus periode ini? Semua slip gaji terkait akan ikut terhapus."
-                      class="px-2 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                      Hapus
+                      wire:confirm="Hapus periode ini? Semua slip gaji terkait akan ikut terhapus." @click="open = false"
+                      class="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                      <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
                     </button>
                   @endif
-                </div>
+                </x-action-menu>
               </td>
             </tr>
           @empty

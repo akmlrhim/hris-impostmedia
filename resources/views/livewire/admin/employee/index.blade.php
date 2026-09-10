@@ -79,22 +79,23 @@
                   <span class="badge bg-red-100 text-red-700">Nonaktif</span>
                 @endif
               </td>
-              <td class="px-5 py-3">
-                <div class="flex items-center justify-end gap-2 whitespace-nowrap">
+              <td class="px-5 py-3 text-right whitespace-nowrap">
+                <x-action-menu>
                   <a wire:navigate href="{{ route('admin.employees.show', $emp) }}"
-                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
-                    Detail
+                    class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <x-icon name="eye" class="w-3.5 h-3.5 text-blue-500" /> Detail
                   </a>
-                  <button type="button" @click="$wire.set('showForm', true, false); $wire.open({{ $emp->id }})"
-                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-                    Edit
+                  <button type="button" @click="open = false; $wire.set('showForm', true, false); $wire.open({{ $emp->id }})"
+                    class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <x-icon name="pencil" class="w-3.5 h-3.5 text-amber-500" /> Edit
                   </button>
                   <button wire:click="toggleActive({{ $emp->id }})"
-                    wire:confirm="{{ $emp->is_active ? 'Nonaktifkan' : 'Aktifkan' }} karyawan {{ $emp->full_name }}?"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ $emp->is_active ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }} transition">
+                    wire:confirm="{{ $emp->is_active ? 'Nonaktifkan' : 'Aktifkan' }} karyawan {{ $emp->full_name }}?" @click="open = false"
+                    class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <x-icon name="{{ $emp->is_active ? 'eye-off' : 'eye' }}" class="w-3.5 h-3.5 text-slate-400" />
                     {{ $emp->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                   </button>
-                </div>
+                </x-action-menu>
               </td>
             </tr>
           @empty

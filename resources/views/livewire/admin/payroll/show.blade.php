@@ -142,19 +142,20 @@
               <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ rupiah_masked($pr->gross_salary) }}</td>
               <td class="px-5 py-3 text-right font-semibold text-emerald-600 whitespace-nowrap">{{ rupiah_masked($pr->net_salary) }}</td>
               <td class="px-5 py-3 text-right whitespace-nowrap">
-                <div class="flex items-center justify-end gap-2">
+                <x-action-menu>
                   <a wire:navigate href="{{ route('admin.payroll.payslip', $pr) }}"
-                    class="px-2 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
+                    class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <x-icon name="eye" class="w-3.5 h-3.5 text-blue-500" />
                     {{ $period->locked_at ? 'Lihat Slip' : 'Edit Slip' }}
                   </a>
                   @if (!$period->locked_at)
                     <button wire:click="removePayroll({{ $pr->id }})"
-                      wire:confirm="Hapus slip {{ $pr->employee->full_name }} dari periode ini?"
-                      class="px-2 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition">
-                      Hapus
+                      wire:confirm="Hapus slip {{ $pr->employee->full_name }} dari periode ini?" @click="open = false"
+                      class="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                      <x-icon name="trash" class="w-3.5 h-3.5" /> Hapus
                     </button>
                   @endif
-                </div>
+                </x-action-menu>
               </td>
             </tr>
           @empty
