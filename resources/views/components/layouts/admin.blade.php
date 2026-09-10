@@ -92,47 +92,37 @@
         @foreach ($nav as $item)
           @if (!$item['gate'] || auth()->user()?->can($item['gate']))
             @php $isActive = request()->routeIs($item['route'].'*'); @endphp
-            <div class="relative group" x-data="{ tooltip: false }">
+            <div class="relative group" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
               <a wire:navigate href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
                 class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition whitespace-nowrap {{ $isActive ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
                 <x-icon :name="$item['icon']" class="w-5 h-5 shrink-0" />
                 <span x-show="!collapsed" class="flex-1 truncate">{{ $item['label'] }}</span>
-                @if (!$collapsed)
-                  @if ($item['route'] === 'admin.remote-work' && $pendingWfa > 0)
-                    <span class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
-                      {{ $pendingWfa }}
-                    </span>
-                  @endif
-                  @if ($item['route'] === 'admin.overtime' && $pendingOvertime > 0)
-                    <span class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
-                      {{ $pendingOvertime }}
-                    </span>
-                  @endif
-                  @if ($item['route'] === 'admin.leave' && $pendingLeave > 0)
-                    <span class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
-                      {{ $pendingLeave }}
-                    </span>
-                  @endif
+                @if ($item['route'] === 'admin.remote-work' && $pendingWfa > 0)
+                  <span x-show="!collapsed" class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
+                    {{ $pendingWfa }}
+                  </span>
+                @endif
+                @if ($item['route'] === 'admin.overtime' && $pendingOvertime > 0)
+                  <span x-show="!collapsed" class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
+                    {{ $pendingOvertime }}
+                  </span>
+                @endif
+                @if ($item['route'] === 'admin.leave' && $pendingLeave > 0)
+                  <span x-show="!collapsed" class="text-[10px] font-bold bg-amber-400 text-white rounded-full px-1.5 py-0.5 leading-none">
+                    {{ $pendingLeave }}
+                  </span>
                 @endif
               </a>
-              {{-- Tooltip on collapsed sidebar --}}
-              <div x-show="collapsed" x-init="$watch('collapsed', v => { if (v) { $el.parentElement.addEventListener('mouseenter', () => tooltip = true); $el.parentElement.addEventListener('mouseleave', () => tooltip = false); } })"
-                x-show="tooltip" x-transition
+              <div x-show="collapsed && hover" x-transition.opacity
                 class="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
                 style="display: none;">
                 {{ $item['label'] }}
-                @if (($item['route'] === 'admin.remote-work' && $pendingWfa > 0) || ($item['route'] === 'admin.overtime' && $pendingOvertime > 0) || ($item['route'] === 'admin.leave' && $pendingLeave > 0))
-                  <span class="ml-1 text-amber-400 font-bold">
-                    @php
-                      $count = match($item['route']) {
-                        'admin.remote-work' => $pendingWfa,
-                        'admin.overtime' => $pendingOvertime,
-                        'admin.leave' => $pendingLeave,
-                        default => 0,
-                      };
-                    @endphp
-                    ({{ $count }})
-                  </span>
+                @if ($item['route'] === 'admin.remote-work' && $pendingWfa > 0)
+                  <span class="ml-1 text-amber-400 font-bold">({{ $pendingWfa }})</span>
+                @elseif ($item['route'] === 'admin.overtime' && $pendingOvertime > 0)
+                  <span class="ml-1 text-amber-400 font-bold">({{ $pendingOvertime }})</span>
+                @elseif ($item['route'] === 'admin.leave' && $pendingLeave > 0)
+                  <span class="ml-1 text-amber-400 font-bold">({{ $pendingLeave }})</span>
                 @endif
               </div>
             </div>
@@ -143,33 +133,33 @@
         @can('manage_users')
           <div class="pt-3 mt-1 border-t border-slate-200 space-y-1">
             <p x-show="!collapsed" class="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Pengaturan</p>
-            <div class="relative group" x-data="{ tooltip: false }">
+            <div class="relative group" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
               <a wire:navigate href="{{ route('admin.users') }}"
                 class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.users') ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
                 <x-icon name="users" class="w-5 h-5 shrink-0" />
                 <span x-show="!collapsed">Pengguna</span>
               </a>
-              <div x-show="collapsed" x-transition
+              <div x-show="collapsed && hover" x-transition.opacity
                 class="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
                 style="display: none;">Pengguna</div>
             </div>
-            <div class="relative group" x-data="{ tooltip: false }">
+            <div class="relative group" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
               <a wire:navigate href="{{ route('admin.access-control') }}"
                 class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.access-control') ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
                 <x-icon name="shield-check" class="w-5 h-5 shrink-0" />
                 <span x-show="!collapsed">Hak Akses</span>
               </a>
-              <div x-show="collapsed" x-transition
+              <div x-show="collapsed && hover" x-transition.opacity
                 class="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
                 style="display: none;">Hak Akses</div>
             </div>
-            <div class="relative group" x-data="{ tooltip: false }">
+            <div class="relative group" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
               <a wire:navigate href="{{ route('admin.activity-log') }}"
                 class="font-medium flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.activity-log') ? 'bg-brand-600 text-white' : 'text-black hover:bg-slate-100 hover:text-slate-900' }}">
                 <x-icon name="clock" class="w-5 h-5 shrink-0" />
                 <span x-show="!collapsed">Log Aktivitas</span>
               </a>
-              <div x-show="collapsed" x-transition
+              <div x-show="collapsed && hover" x-transition.opacity
                 class="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
                 style="display: none;">Log Aktivitas</div>
             </div>
