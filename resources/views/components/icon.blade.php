@@ -10,6 +10,7 @@
       'chevron-right' => '<path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/>',
       'chevron-left' => '<path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/>',
       'chevron-down' => '<path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>',
+      'chevrons-left' => '<path stroke-linecap="round" stroke-linejoin="round" d="m11 17-5-5 5-5"/><path stroke-linecap="round" stroke-linejoin="round" d="m18 17-5-5 5-5"/>',
       'menu' => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>',
       'x' => '<path stroke-linecap="round" stroke-linejoin="round" d="M18 6 6 18M6 6l12 12"/>',
       'external-link' =>
