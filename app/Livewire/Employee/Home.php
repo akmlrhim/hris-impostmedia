@@ -33,6 +33,9 @@ class Home extends Component
         if ($employee) {
             $all = $leaderboardService->standings(now()->year, now()->month, PHP_INT_MAX);
             $standing = $all->firstWhere('employee_id', $employee->id);
+            if ($standing) {
+                $standing['total'] = $all->count();
+            }
             if (! $standing) {
                 $standing = [
                     'rank' => null,
