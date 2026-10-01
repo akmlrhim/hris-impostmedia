@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\WorkType;
 use App\Observers\EmployeeObserver;
 use App\Traits\HasRouteHash;
-use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,7 +44,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 class Employee extends Model
 {
-    /** @use HasFactory<EmployeeFactory> */
     use HasFactory, HasRouteHash, SoftDeletes;
 
     protected function casts(): array

@@ -9,16 +9,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Ranks active employees by attendance for a month.
- */
 class AttendanceLeaderboardService
 {
     public const DEFAULT_LIMIT = 10;
 
-    /**
-     * @return Collection<int, object> rows with employee, present, on_time, late, late_minutes, rank
-     */
     public function standings(int $year, int $month, int $limit = self::DEFAULT_LIMIT): Collection
     {
         $key = "standings.{$year}.{$month}";
@@ -75,9 +69,6 @@ class AttendanceLeaderboardService
             });
     }
 
-    /**
-     * @return Collection<int, Employee>
-     */
     public function board(int $year, int $month, int $limit = self::DEFAULT_LIMIT): Collection
     {
         $rows = $this->standings($year, $month, $limit);
@@ -103,9 +94,6 @@ class AttendanceLeaderboardService
             ->values();
     }
 
-    /**
-     * @return array{rank: int|null, total: int, present: int, on_time: int, late: int, late_minutes: int, on_time_rate: float}
-     */
     public function standingFor(Employee $employee, int $year, int $month): array
     {
         $rows = $this->standings($year, $month, PHP_INT_MAX);

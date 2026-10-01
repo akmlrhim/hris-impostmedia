@@ -26,7 +26,6 @@ class Show extends Component
 
     public bool $showAddForm = false;
 
-    /** @var array<int, int> */
     public array $selectedEmployees = [];
 
     public bool $addSelectAll = false;
@@ -125,11 +124,6 @@ class Show extends Component
         }, permission: 'manage_payroll', genericError: 'Gagal menghapus slip.');
     }
 
-    /**
-     * Active employees not yet included in this period.
-     *
-     * @return Collection<int, Employee>
-     */
     private function availableEmployees(): Collection
     {
         $existingIds = $this->period->payrolls()->pluck('employee_id');

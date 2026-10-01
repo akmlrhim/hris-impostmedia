@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payroll;
-use App\Models\PayrollItem;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -34,16 +33,6 @@ class PayslipPdfController extends Controller
         return $pdf->download($filename);
     }
 
-    /**
-     * A4 is far bigger than a real payslip needs. Keep a small, fixed width
-     * (A5) but scale the page height to how many line items there actually
-     * are, so a slip with few components isn't mostly blank paper and one
-     * with many components doesn't get cramped.
-     *
-     * @param  Collection<int, PayrollItem>  $earnings
-     * @param  Collection<int, PayrollItem>  $deductions
-     * @return array<int, float>
-     */
     private function paperSize(Payroll $payroll, Collection $earnings, Collection $deductions): array
     {
         $width = 419.55; // A5 width in points — keeps the "small paper" feel

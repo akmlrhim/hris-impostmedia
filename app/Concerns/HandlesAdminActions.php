@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
-/**
- * Mixin for admin Livewire components. Provides a `safeAction()` wrapper
- * that converts authorization failures and unhandled exceptions into toast
- * notifications instead of breaking the page.
- */
 trait HandlesAdminActions
 {
     protected function toast(string $type, string $message): void
@@ -22,10 +17,6 @@ trait HandlesAdminActions
         $this->dispatch('notify', type: $type, message: $message);
     }
 
-    /**
-     * Wrap an action body. If $permission is given, re-checks the gate first.
-     * Returns the closure's return value on success, or null when blocked/failed.
-     */
     protected function safeAction(\Closure $action, ?string $permission = null, string $genericError = 'Terjadi kesalahan, coba lagi.'): mixed
     {
         try {
@@ -53,11 +44,6 @@ trait HandlesAdminActions
         }
     }
 
-    /**
-     * Catat aktivitas sensitif ke activity_logs.
-     *
-     * @param  array<string, mixed>  $properties
-     */
     protected function logActivity(
         string $action,
         string $description,

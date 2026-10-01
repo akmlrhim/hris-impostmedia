@@ -50,10 +50,6 @@ enum Permission: string
         };
     }
 
-    /**
-     * Permissions that can be toggled per role. Excludes the two permissions whose
-     * holder is fixed by role: ManageUsers (Admin only) and ViewSalary (HR only).
-     */
     public static function configurable(): array
     {
         return array_values(array_filter(

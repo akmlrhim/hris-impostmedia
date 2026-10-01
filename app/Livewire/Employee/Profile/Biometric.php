@@ -23,7 +23,6 @@ class Biometric extends Component
         $this->deviceName = $credential?->device_name ?? '';
     }
 
-    /** @return array<string, mixed> */
     public function getRegistrationOptions(): array
     {
         $user = auth()->user();

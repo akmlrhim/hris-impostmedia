@@ -27,12 +27,6 @@ class SecurityHeaders
         return $response;
     }
 
-    /**
-     * Build the Content-Security-Policy header.
-     *
-     * 'unsafe-inline' is required by Livewire 4 + Alpine.js (inline scripts/styles).
-     * frame-ancestors supersedes X-Frame-Options in modern browsers.
-     */
     protected function contentSecurityPolicy(): string
     {
         $fontsCss = 'https://fonts.googleapis.com';
@@ -64,9 +58,6 @@ class SecurityHeaders
         return implode('; ', $directives);
     }
 
-    /**
-     * Origin of the running Vite dev server, or null when not running hot.
-     */
     protected function viteDevServerOrigin(): ?string
     {
         $hotFile = public_path('hot');

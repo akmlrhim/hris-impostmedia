@@ -187,11 +187,6 @@ class Attendance extends Component
         $this->finalizeCheckOut($attendance, $localNow, $workedMinutes, $latitude, $longitude, $address, $employee);
     }
 
-    /**
-     * Find today's attendance only. A forgotten check-out from a previous day is
-     * intentionally left open (empty) so the employee can check in for today
-     * without having to close yesterday's session first.
-     */
     private function findTodayAttendance(int $employeeId): ?AttendanceModel
     {
         return AttendanceModel::where('employee_id', $employeeId)

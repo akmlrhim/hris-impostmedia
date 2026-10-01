@@ -17,7 +17,6 @@ class SendAnnouncementNotificationsJob implements ShouldQueue
 
     public int $timeout = 110;
 
-    /** @param int[] $recipientIds */
     public function __construct(
         private readonly Announcement $announcement,
         private readonly array $recipientIds,

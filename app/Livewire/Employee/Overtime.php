@@ -38,7 +38,6 @@ class Overtime extends Component
 
     public ?int $documentingId = null;
 
-    /** List filter — empty string means "all". */
     public string $statusFilter = '';
 
     public function mount(): void
@@ -62,13 +61,6 @@ class Overtime extends Component
         $this->showConfirm = false;
     }
 
-    /**
-     * Compose the stored datetime range from the date + time fields.
-     * An end time at or before the start time means the overtime runs past
-     * midnight, so it rolls over to the next day.
-     *
-     * @return array{0: Carbon, 1: Carbon}|null
-     */
     private function resolveRange(): ?array
     {
         if (! $this->overtime_date || ! $this->start_time || ! $this->end_time) {
@@ -89,9 +81,6 @@ class Overtime extends Component
         return [$start, $end];
     }
 
-    /**
-     * @return array<string, string>
-     */
     private function validationRules(): array
     {
         return [
@@ -104,9 +93,6 @@ class Overtime extends Component
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
     private function validationMessages(): array
     {
         return [
@@ -190,7 +176,6 @@ class Overtime extends Component
         $this->showDocForm = true;
     }
 
-    /** Work documentation stays editable after HR approval. */
     public function saveDocumentation(): void
     {
         $this->validate(

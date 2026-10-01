@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /** Grant the overtime permission to every role that already reviews remote work requests. */
     public function up(): void
     {
         $roles = DB::table('role_permissions')

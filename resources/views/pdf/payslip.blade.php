@@ -19,7 +19,6 @@
       padding: 16px 18px;
     }
 
-    /* ── HEADER ── */
     .header {
       display: table;
       width: 100%;
@@ -68,7 +67,6 @@
       text-transform: uppercase;
     }
 
-    /* ── EMPLOYEE INFO ── */
     .info-section {
       display: table;
       width: 100%;
@@ -100,7 +98,6 @@
       font-weight: bold;
     }
 
-    /* ── PENDAPATAN / POTONGAN (stacked, not side-by-side, to stay legible on small paper) ── */
     .section {
       width: 100%;
       margin-bottom: 14px;
@@ -119,7 +116,6 @@
       border-collapse: collapse;
     }
 
-    /* Full grid: every row and column is fenced off. */
     table.items td {
       padding: 4px 6px;
       font-size: 9.5px;
@@ -143,7 +139,6 @@
       padding-top: 6px;
     }
 
-    /* ── NET BOX ── */
     .net-box {
       display: table;
       width: 100%;
@@ -167,7 +162,6 @@
       font-weight: bold;
     }
 
-    /* ── BANK BOX ── */
     .bank-box {
       display: table;
       width: 100%;
@@ -204,7 +198,6 @@
       margin-top: 1px;
     }
 
-    /* ── FOOTER ── */
     .footer {
       display: table;
       width: 100%;

@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -51,7 +50,6 @@ class Login extends Component
             ]);
         }
 
-        /** @var User $user */
         $user = Auth::user();
 
         if (! $user->is_active) {
@@ -82,7 +80,6 @@ class Login extends Component
 
     private function handleAlreadyAuthenticated(): void
     {
-        /** @var User $user */
         $user = Auth::user();
 
         if (! $user->hasVerifiedEmail()) {

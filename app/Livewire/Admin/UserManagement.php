@@ -32,7 +32,6 @@ class UserManagement extends Component
 
     public string $email = '';
 
-    /** @var string[] */
     public array $selectedRoles = [];
 
     public bool $is_active = true;

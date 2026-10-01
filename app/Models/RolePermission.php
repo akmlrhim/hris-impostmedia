@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['role', 'permission'])]
 class RolePermission extends Model
 {
-    /** @return array<string, bool> permission_value => allowed */
     public static function forRole(UserRole $role): array
     {
         return static::where('role', $role->value)
@@ -19,7 +18,6 @@ class RolePermission extends Model
             ->all();
     }
 
-    /** @return array<string, array<string, bool>> role_value => [permission_value => bool] */
     public static function matrix(): array
     {
         $all = static::all(['role', 'permission']);

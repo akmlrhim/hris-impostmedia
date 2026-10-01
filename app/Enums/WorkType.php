@@ -49,7 +49,6 @@ enum WorkType: string
         };
     }
 
-    /** Tipe yang bisa diajukan oleh karyawan WFO sebagai pengajuan remote work. */
     public static function remoteRequestable(): array
     {
         return [self::WFA];

@@ -17,12 +17,6 @@ class WorkingDay extends Component
 {
     use HandlesAdminActions;
 
-    /**
-     * ISO weekday => is working. Bound to the toggles so the whole week is
-     * saved in one go rather than one round trip per day.
-     *
-     * @var array<int, bool>
-     */
     public array $schedule = [];
 
     public function mount(): void
@@ -74,7 +68,6 @@ class WorkingDay extends Component
         }, permission: 'manage_holidays', genericError: 'Gagal menyimpan hari kerja.');
     }
 
-    /** Comma-separated weekday names, e.g. "Senin, Selasa, …, Sabtu". */
     public function summary(): string
     {
         $names = collect($this->schedule)

@@ -14,7 +14,6 @@
       padding: 30px 36px;
     }
 
-    /* ── HEADER ── */
     .header {
       display: table;
       width: 100%;
@@ -69,7 +68,6 @@
       color: #0f172a;
     }
 
-    /* ── TABLE ── */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -158,7 +156,6 @@
       font-size: 13px;
     }
 
-    /* ── FOOTER ── */
     .footer {
       display: table;
       width: 100%;

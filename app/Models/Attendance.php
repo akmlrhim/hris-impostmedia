@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\AttendanceStatus;
 use App\Enums\WorkType;
 use Carbon\Carbon;
-use Database\Factories\AttendanceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,7 +34,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Attendance extends Model
 {
-    /** @use HasFactory<AttendanceFactory> */
     use HasFactory;
 
     protected function casts(): array
@@ -51,7 +49,6 @@ class Attendance extends Model
         ];
     }
 
-    /** Parse check_in_at in the record's stored timezone so Carbon UTC math is correct. */
     protected function checkInAt(): Attribute
     {
         return Attribute::make(
@@ -61,7 +58,6 @@ class Attendance extends Model
         );
     }
 
-    /** Parse check_out_at in the record's stored timezone so Carbon UTC math is correct. */
     protected function checkOutAt(): Attribute
     {
         return Attribute::make(
@@ -71,11 +67,6 @@ class Attendance extends Model
         );
     }
 
-    /**
-     * Indonesian abbreviation for the timezone the times were recorded in.
-     * check_in_at / check_out_at are stored as wall-clock time in that zone,
-     * so the label is what makes an 08:00 unambiguous across regions.
-     */
     protected function timezoneLabel(): Attribute
     {
         return Attribute::make(

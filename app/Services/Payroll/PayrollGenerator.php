@@ -18,12 +18,6 @@ class PayrollGenerator
 {
     public function __construct(private WorkScheduleService $schedule) {}
 
-    /**
-     * Generate payrolls for active employees in a period.
-     *
-     * @param  int[]|null  $employeeIds  When provided, only generate for these employees; otherwise all active employees.
-     * @return int Number of payroll records generated
-     */
     public function generateForPeriod(PayrollPeriod $period, ?array $employeeIds = null): int
     {
         return DB::transaction(function () use ($period, $employeeIds): int {
@@ -55,9 +49,6 @@ class PayrollGenerator
         });
     }
 
-    /**
-     * @param  Collection<string, PayrollComponent>  $components
-     */
     private function generateForEmployee(PayrollPeriod $period, Employee $employee, Collection $components): Payroll
     {
         $stats = $this->calculateAttendanceStats($period, $employee);
@@ -95,10 +86,6 @@ class PayrollGenerator
         return $payroll;
     }
 
-    /**
-     * @param  Collection<string, PayrollComponent>  $components
-     * @param  array{code: string, name: string, amount: float|int}  $item
-     */
     private function createItem(int $payrollId, Collection $components, array $item, string $type): void
     {
         PayrollItem::create([
@@ -111,9 +98,6 @@ class PayrollGenerator
         ]);
     }
 
-    /**
-     * @return array{working_days: int, present_days: int, absent_days: int, leave_days: int}
-     */
     private function calculateAttendanceStats(PayrollPeriod $period, Employee $employee): array
     {
         $start = Carbon::parse($period->start_date);
