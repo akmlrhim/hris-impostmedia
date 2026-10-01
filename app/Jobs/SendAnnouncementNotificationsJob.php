@@ -11,43 +11,43 @@ use Illuminate\Support\Facades\Log;
 
 class SendAnnouncementNotificationsJob implements ShouldQueue
 {
-	use Queueable;
+    use Queueable;
 
-	public int $tries = 1;
+    public int $tries = 1;
 
-	public int $timeout = 110;
+    public int $timeout = 110;
 
-	/** @param int[] $recipientIds */
-	public function __construct(
-		private readonly Announcement $announcement,
-		private readonly array $recipientIds,
-	) {}
+    /** @param int[] $recipientIds */
+    public function __construct(
+        private readonly Announcement $announcement,
+        private readonly array $recipientIds,
+    ) {}
 
-	public function handle(): void
-	{
-		$recipients = User::whereIn('id', $this->recipientIds)->get();
+    public function handle(): void
+    {
+        $recipients = User::whereIn('id', $this->recipientIds)->get();
 
-		Log::info('Mengirim notifikasi pengumuman', [
-			'announcement_id' => $this->announcement->id,
-			'total_recipients' => $recipients->count(),
-		]);
+        Log::info('Mengirim notifikasi pengumuman', [
+            'announcement_id' => $this->announcement->id,
+            'total_recipients' => $recipients->count(),
+        ]);
 
-		foreach ($recipients as $index => $recipient) {
-			// Resend rate limit: 2 req/sec — jeda 600ms agar aman
-			if ($index > 0) {
-				usleep(600_000);
-			}
+        foreach ($recipients as $index => $recipient) {
+            // Resend rate limit: 2 req/sec — jeda 600ms agar aman
+            if ($index > 0) {
+                usleep(600_000);
+            }
 
-			try {
-				$recipient->notify(new AnnouncementPublishedNotification($this->announcement));
-			} catch (\Throwable $e) {
-				Log::error('Gagal mengirim notifikasi pengumuman', [
-					'announcement_id' => $this->announcement->id,
-					'user_id' => $recipient->id,
-					'email' => $recipient->email,
-					'message' => $e->getMessage(),
-				]);
-			}
-		}
-	}
+            try {
+                $recipient->notify(new AnnouncementPublishedNotification($this->announcement));
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengirim notifikasi pengumuman', [
+                    'announcement_id' => $this->announcement->id,
+                    'user_id' => $recipient->id,
+                    'email' => $recipient->email,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\RolePermission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -108,7 +109,7 @@ test('hr can still update the salary', function () {
     expect((float) $this->employee->refresh()->basic_salary)->toBe(9000000.0);
 });
 
-test('admin cannot download the payroll period pdf', function () {
+test('payroll routes are disabled', function () {
     $period = PayrollPeriod::create([
         'code' => '2026-07',
         'year' => 2026,
@@ -118,7 +119,9 @@ test('admin cannot download the payroll period pdf', function () {
         'status' => 'draft',
     ]);
 
-    $this->actingAs($this->admin)
-        ->get(route('admin.payroll.period.pdf', $period))
-        ->assertForbidden();
+    foreach (['admin.payroll', 'admin.payroll.show', 'admin.payroll.period.pdf'] as $route) {
+        expect(Route::has($route))->toBeFalse();
+    }
+
+    expect($period->exists)->toBeTrue();
 });

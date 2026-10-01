@@ -12,42 +12,42 @@ use Livewire\Component;
 #[Title('Verifikasi Email')]
 class VerifyEmail extends Component
 {
-	public bool $sent = false;
+    public bool $sent = false;
 
-	public function mount(): void
-	{
-		/** @var User $user */
-		$user = Auth::user();
+    public function mount(): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
 
-		if ($user->hasVerifiedEmail()) {
-			$this->redirect($this->resolveRedirectUrl($user), navigate: false);
-		}
-	}
+        if ($user->hasVerifiedEmail()) {
+            $this->redirect($this->resolveRedirectUrl($user), navigate: false);
+        }
+    }
 
-	public function resend(): void
-	{
-		/** @var User $user */
-		$user = Auth::user();
+    public function resend(): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
 
-		if ($user->hasVerifiedEmail()) {
-			$this->redirect($this->resolveRedirectUrl($user), navigate: false);
+        if ($user->hasVerifiedEmail()) {
+            $this->redirect($this->resolveRedirectUrl($user), navigate: false);
 
-			return;
-		}
+            return;
+        }
 
-		$user->sendEmailVerificationNotification();
-		$this->sent = true;
-	}
+        $user->sendEmailVerificationNotification();
+        $this->sent = true;
+    }
 
-	private function resolveRedirectUrl(User $user): string
-	{
-		return $user->isAdminPanel() && $user->employee === null
-			? route('admin.dashboard')
-			: route('mobile.home');
-	}
+    private function resolveRedirectUrl(User $user): string
+    {
+        return $user->isAdminPanel() && $user->employee === null
+            ? route('admin.dashboard')
+            : route('mobile.home');
+    }
 
-	public function render(): mixed
-	{
-		return view('livewire.auth.verify-email');
-	}
+    public function render(): mixed
+    {
+        return view('livewire.auth.verify-email');
+    }
 }

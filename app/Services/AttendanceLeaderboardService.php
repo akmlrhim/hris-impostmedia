@@ -7,12 +7,10 @@ use App\Models\Attendance;
 use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Ranks active employees by attendance for a month.
- *
- * One grouped query backs both the board and a single employee's own standing,
- * so the rank a person sees always comes from the same tally the board shows.
  */
 class AttendanceLeaderboardService
 {
@@ -23,29 +21,33 @@ class AttendanceLeaderboardService
      */
     public function standings(int $year, int $month, int $limit = self::DEFAULT_LIMIT): Collection
     {
-        $start = Carbon::create($year, $month, 1)->startOfMonth();
-        $end = $start->copy()->endOfMonth();
+        $key = "standings.{$year}.{$month}";
 
-        $rows = Attendance::query()
-            ->join('employees', 'employees.id', '=', 'attendances.employee_id')
-            ->where('employees.is_active', true)
-            ->whereNull('employees.deleted_at')
-            ->whereBetween('attendances.attendance_date', [$start->toDateString(), $end->toDateString()])
-            ->whereNotNull('attendances.check_in_at')
-            ->groupBy('attendances.employee_id')
-            ->select('attendances.employee_id')
-            ->selectRaw('MIN(attendances.check_in_at) as earliest_check_in')
-            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as on_time', [AttendanceStatus::Present->value])
-            ->selectRaw('SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) as present', [
-                AttendanceStatus::Present->value,
-                AttendanceStatus::Late->value,
-            ])
-            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as late', [AttendanceStatus::Late->value])
-            ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN late_minutes ELSE 0 END), 0) as late_minutes', [
-                AttendanceStatus::Late->value,
-            ])
-            ->get()
-            ->filter(fn ($row) => (int) $row->present > 0);
+        $rows = Cache::remember($key, 300, function () use ($year, $month) {
+            $start = Carbon::create($year, $month, 1)->startOfMonth();
+            $end = $start->copy()->endOfMonth();
+
+            return Attendance::query()
+                ->join('employees', 'employees.id', '=', 'attendances.employee_id')
+                ->where('employees.is_active', true)
+                ->whereNull('employees.deleted_at')
+                ->whereBetween('attendances.attendance_date', [$start->toDateString(), $end->toDateString()])
+                ->whereNotNull('attendances.check_in_at')
+                ->groupBy('attendances.employee_id')
+                ->select('attendances.employee_id')
+                ->selectRaw('MIN(attendances.check_in_at) as earliest_check_in')
+                ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as on_time', [AttendanceStatus::Present->value])
+                ->selectRaw('SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) as present', [
+                    AttendanceStatus::Present->value,
+                    AttendanceStatus::Late->value,
+                ])
+                ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as late', [AttendanceStatus::Late->value])
+                ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN late_minutes ELSE 0 END), 0) as late_minutes', [
+                    AttendanceStatus::Late->value,
+                ])
+                ->get()
+                ->filter(fn ($row) => (int) $row->present > 0);
+        });
 
         return $rows
             ->sort(function ($a, $b) {
@@ -83,7 +85,6 @@ class AttendanceLeaderboardService
         return Employee::whereIn('id', $rows->pluck('employee_id'))
             ->get()
             ->keyBy('id')
-            ->map(fn (Employee $employee) => tap(clone $employee, function ($e) {}))
             ->values()
             ->map(function (Employee $employee) use ($rows) {
                 $row = $rows->firstWhere('employee_id', $employee->id);

@@ -220,6 +220,7 @@ class Attendance extends Component
 
         $employees = Employee::query()
             ->where('is_active', true)
+            ->with('user:id,name,email')
             ->orderBy('full_name')
             ->paginate(20);
 

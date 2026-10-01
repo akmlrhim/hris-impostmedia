@@ -187,24 +187,26 @@
             </dl>
         </div>
 
-        {{-- Recent Payslips --}}
-        <div class="card p-5">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-semibold text-slate-900">Slip Gaji Terbaru</h3>
+        {{-- Recent Payslips (hidden sementara, modul payroll dinonaktifkan) --}}
+        @if (false)
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-900">Slip Gaji Terbaru</h3>
+                </div>
+                @forelse ($recentPayrolls as $p)
+                    <a wire:navigate href="{{ route('admin.payroll.payslip', $p) }}"
+                       class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm hover:bg-slate-50 -mx-2 px-2 rounded transition">
+                        <div>
+                            <p class="font-medium text-slate-900">{{ $p->period->code }}</p>
+                            <p class="text-xs text-slate-500 capitalize">{{ $p->status }}</p>
+                        </div>
+                        <span class="font-semibold text-emerald-600">{{ rupiah_masked($p->net_salary) }}</span>
+                    </a>
+                @empty
+                    <p class="text-sm text-slate-500">Belum ada slip gaji.</p>
+                @endforelse
             </div>
-            @forelse ($recentPayrolls as $p)
-                <a wire:navigate href="{{ route('admin.payroll.payslip', $p) }}"
-                   class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm hover:bg-slate-50 -mx-2 px-2 rounded transition">
-                    <div>
-                        <p class="font-medium text-slate-900">{{ $p->period->code }}</p>
-                        <p class="text-xs text-slate-500 capitalize">{{ $p->status }}</p>
-                    </div>
-                    <span class="font-semibold text-emerald-600">{{ rupiah_masked($p->net_salary) }}</span>
-                </a>
-            @empty
-                <p class="text-sm text-slate-500">Belum ada slip gaji.</p>
-            @endforelse
-        </div>
+        @endif
     </div>
 
 </div>

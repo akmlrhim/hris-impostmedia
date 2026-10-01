@@ -31,7 +31,19 @@ class Home extends Component
         $leaderboard = collect();
 
         if ($employee) {
-            $standing = $leaderboardService->standingFor($employee, now()->year, now()->month);
+            $all = $leaderboardService->standings(now()->year, now()->month, PHP_INT_MAX);
+            $standing = $all->firstWhere('employee_id', $employee->id);
+            if (! $standing) {
+                $standing = [
+                    'rank' => null,
+                    'total' => $all->count(),
+                    'present' => 0,
+                    'on_time' => 0,
+                    'late' => 0,
+                    'late_minutes' => 0,
+                    'on_time_rate' => 0.0,
+                ];
+            }
             $leaderboard = $leaderboardService->board(now()->year, now()->month, 5);
         }
 

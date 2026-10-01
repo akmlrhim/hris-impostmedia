@@ -107,10 +107,11 @@ Route::middleware(['auth', 'admin.panel'])
         Route::get('/overtime', AdminOvertime::class)->name('overtime')->middleware('can:manage_overtime');
         Route::get('/leave', AdminLeave::class)->name('leave')->middleware('can:manage_leave');
 
-        Route::get('/payroll', AdminPayroll::class)->name('payroll')->middleware('can:manage_payroll');
-        Route::get('/payroll/payslip/{payroll}', AdminPayslip::class)->name('payroll.payslip')->middleware('can:manage_payroll');
-        Route::get('/payroll/{period}/pdf', PayrollPdfController::class)->name('payroll.period.pdf')->middleware('can:manage_payroll');
-        Route::get('/payroll/{period}', AdminPayrollShow::class)->name('payroll.show')->middleware('can:manage_payroll');
+        // Payroll dinonaktifkan sementara
+        // Route::get('/payroll', AdminPayroll::class)->name('payroll')->middleware('can:manage_payroll');
+        // Route::get('/payroll/payslip/{payroll}', AdminPayslip::class)->name('payroll.payslip')->middleware('can:manage_payroll');
+        // Route::get('/payroll/{period}/pdf', PayrollPdfController::class)->name('payroll.period.pdf')->middleware('can:manage_payroll');
+        // Route::get('/payroll/{period}', AdminPayrollShow::class)->name('payroll.show')->middleware('can:manage_payroll');
         Route::get('/announcements', AdminAnnouncements::class)->name('announcements')->middleware('can:manage_announcements');
         Route::get('/office-locations', AdminOfficeLocation::class)->name('office-locations')->middleware('can:manage_office_locations');
         Route::get('/holidays', AdminHoliday::class)->name('holidays')->middleware('can:manage_holidays');

@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\Employee;
 use App\Services\AttendanceLatenessService;
 use App\Services\WorkScheduleService;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -20,12 +21,14 @@ class Dashboard extends Component
         $today = now()->toDateString();
         $isOffDay = $schedule->isOffDay($today);
 
-        $stats = [
-            'total_employees' => Employee::where('is_active', true)->count(),
-            'present_today' => Attendance::where('attendance_date', $today)
-                ->whereIn('status', [AttendanceStatus::Present, AttendanceStatus::Late])
-                ->count(),
-        ];
+        $stats = Cache::remember('admin.dashboard.stats.'.$today, 300, function () use ($today) {
+            return [
+                'total_employees' => Employee::where('is_active', true)->count(),
+                'present_today' => Attendance::where('attendance_date', $today)
+                    ->whereIn('status', [AttendanceStatus::Present, AttendanceStatus::Late])
+                    ->count(),
+            ];
+        });
 
         $recentAttendance = Attendance::with('employee')
             ->where('attendance_date', $today)

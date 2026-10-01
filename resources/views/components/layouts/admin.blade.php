@@ -47,7 +47,6 @@
                   'icon' => 'calendar',
                   'gate' => 'manage_leave',
               ],
-              ['label' => 'Payroll', 'route' => 'admin.payroll', 'icon' => 'wallet', 'gate' => 'manage_payroll'],
               [
                   'label' => 'Pengumuman',
                   'route' => 'admin.announcements',

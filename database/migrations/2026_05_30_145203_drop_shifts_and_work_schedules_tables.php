@@ -5,14 +5,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-	public function up(): void
-	{
-		Schema::dropIfExists('work_schedules');
-		Schema::dropIfExists('shifts');
-	}
+    public function up(): void
+    {
+        Schema::dropIfExists('work_schedules');
+        Schema::dropIfExists('shifts');
+    }
 
-	public function down(): void
-	{
-		//
-	}
+    public function down(): void
+    {
+        //
+    }
 };
