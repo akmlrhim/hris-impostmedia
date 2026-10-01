@@ -21,13 +21,13 @@ class AttendanceLeaderboardService
      */
     public function standings(int $year, int $month, int $limit = self::DEFAULT_LIMIT): Collection
     {
-        $key = "standings.{$year}.{$month}";
+        $key = "standings.v2.{$year}.{$month}";
 
         $rows = Cache::remember($key, 300, function () use ($year, $month) {
             $start = Carbon::create($year, $month, 1)->startOfMonth();
             $end = $start->copy()->endOfMonth();
 
-            return Attendance::query()
+            $data = Attendance::query()
                 ->join('employees', 'employees.id', '=', 'attendances.employee_id')
                 ->where('employees.is_active', true)
                 ->whereNull('employees.deleted_at')
@@ -46,32 +46,35 @@ class AttendanceLeaderboardService
                     AttendanceStatus::Late->value,
                 ])
                 ->get()
-                ->filter(fn ($row) => (int) $row->present > 0);
+                ->filter(fn ($row) => (int) $row->present > 0)
+                ->toArray();
+
+            return $data;
         });
 
-        return $rows
+        return collect($rows)
             ->sort(function ($a, $b) {
-                if ($a->earliest_check_in && $b->earliest_check_in) {
-                    return $a->earliest_check_in <=> $b->earliest_check_in;
+                if ($a['earliest_check_in'] && $b['earliest_check_in']) {
+                    return $a['earliest_check_in'] <=> $b['earliest_check_in'];
                 }
-                if ($b->present != $a->present) {
-                    return $b->present <=> $a->present;
+                if ($b['present'] != $a['present']) {
+                    return $b['present'] <=> $a['present'];
                 }
-                if ($b->on_time != $a->on_time) {
-                    return $b->on_time <=> $a->on_time;
+                if ($b['on_time'] != $a['on_time']) {
+                    return $b['on_time'] <=> $a['on_time'];
                 }
 
-                return (int) $a->late_minutes <=> (int) $b->late_minutes;
+                return (int) $a['late_minutes'] <=> (int) $b['late_minutes'];
             })
             ->values()
             ->take($limit)
             ->map(function ($row, $index) {
-                $row->rank = $index + 1;
-                $row->on_time_rate = (int) $row->present > 0
-                    ? round(((int) $row->on_time / (int) $row->present) * 100, 1)
+                $row['rank'] = $index + 1;
+                $row['on_time_rate'] = (int) $row['present'] > 0
+                    ? round(((int) $row['on_time'] / (int) $row['present']) * 100, 1)
                     : 0.0;
 
-                return $row;
+                return (object) $row;
             });
     }
 
