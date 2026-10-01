@@ -74,7 +74,7 @@ class AttendanceLeaderboardService
                     ? round(((int) $row['on_time'] / (int) $row['present']) * 100, 1)
                     : 0.0;
 
-                return (object) $row;
+                return $row;
             });
     }
 
@@ -90,7 +90,7 @@ class AttendanceLeaderboardService
             ->keyBy('id')
             ->values()
             ->map(function (Employee $employee) use ($rows) {
-                $row = $rows->firstWhere('employee_id', $employee->id);
+                $row = (object) $rows->firstWhere('employee_id', $employee->id);
 
                 $employee->setAttribute('rank', $row->rank);
                 $employee->setAttribute('earliest_check_in', $row->earliest_check_in);
@@ -113,6 +113,7 @@ class AttendanceLeaderboardService
     {
         $rows = $this->standings($year, $month, PHP_INT_MAX);
         $row = $rows->firstWhere('employee_id', $employee->id);
+        $row = $row ? (object) $row : null;
 
         if (! $row) {
             return [

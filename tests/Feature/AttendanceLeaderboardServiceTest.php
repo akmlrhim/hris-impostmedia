@@ -56,12 +56,12 @@ test('standings ranks by earliest check-in and exposes every counter', function 
 
     $row = $rows->first();
 
-    expect($row->present)->toBe(2)
-        ->and($row->on_time)->toBe(1)
-        ->and($row->late)->toBe(1)
-        ->and($row->late_minutes)->toBe(20)
-        ->and($row->rank)->toBe(1)
-        ->and((float) $row->on_time_rate)->toBe(50.0);
+    expect($row['present'])->toBe(2)
+        ->and($row['on_time'])->toBe(1)
+        ->and($row['late'])->toBe(1)
+        ->and($row['late_minutes'])->toBe(20)
+        ->and($row['rank'])->toBe(1)
+        ->and((float) $row['on_time_rate'])->toBe(50.0);
 });
 
 test('a warm cache read returns the same ranking as a cold one', function () {
@@ -72,8 +72,8 @@ test('a warm cache read returns the same ranking as a cold one', function () {
     $cold = $service->standings(2026, 7, PHP_INT_MAX);
     $warm = $service->standings(2026, 7, PHP_INT_MAX);
 
-    expect($warm->first()->present)->toBe($cold->first()->present)
-        ->and($warm->first()->rank)->toBe($cold->first()->rank);
+    expect($warm->first()['present'])->toBe($cold->first()['present'])
+        ->and($warm->first()['rank'])->toBe($cold->first()['rank']);
 });
 
 test('board attaches the standings counters onto the employee', function () {
