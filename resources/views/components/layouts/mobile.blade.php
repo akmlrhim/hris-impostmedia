@@ -21,12 +21,12 @@
             ['route' => 'mobile.home', 'label' => 'Beranda', 'icon' => 'home'],
             ['route' => 'mobile.directory', 'label' => 'Direktori', 'icon' => 'users'],
             ['route' => 'mobile.calendar', 'label' => 'Kalender', 'icon' => 'calendar-days'],
-            ['route' => 'mobile.payslip', 'label' => 'Slip', 'icon' => 'wallet'],
+            // ['route' => 'mobile.payslip', 'label' => 'Slip', 'icon' => 'wallet'],
             ['route' => 'mobile.profile', 'label' => 'Profil', 'icon' => 'user'],
         ];
       @endphp
 
-      <div class="grid grid-cols-5 h-[4.25rem] items-center px-1">
+      <div class="grid grid-cols-4 h-[4.25rem] items-center px-1">
         @foreach ($tabs as $tab)
           @php $active = request()->routeIs($tab['route'] . '*'); @endphp
           <a wire:navigate href="{{ Route::has($tab['route']) ? route($tab['route']) : '#' }}"

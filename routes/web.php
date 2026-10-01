@@ -133,9 +133,10 @@ Route::middleware(['auth', 'employee.active'])
         Route::get('/attendance', MobileAttendance::class)->name('attendance');
         Route::get('/calendar', MobileCalendar::class)->name('calendar');
         Route::get('/directory', MobileDirectory::class)->name('directory');
-        Route::get('/payslip', MobilePayslip::class)->name('payslip');
-        Route::get('/payslip/{payroll}', MobilePayslipShow::class)->name('payslip.show');
-        Route::get('/payslip/{payroll}/pdf', PayslipPdfController::class)->name('payslip.pdf');
+        // Slip gaji dinonaktifkan sementara
+        // Route::get('/payslip', MobilePayslip::class)->name('payslip');
+        // Route::get('/payslip/{payroll}', MobilePayslipShow::class)->name('payslip.show');
+        // Route::get('/payslip/{payroll}/pdf', PayslipPdfController::class)->name('payslip.pdf');
         Route::get('/profile', MobileProfile::class)->name('profile');
         Route::get('/profile/edit', MobileProfileEdit::class)->name('profile.edit');
         Route::get('/profile/biometric', MobileProfileBiometric::class)->name('profile.biometric');
