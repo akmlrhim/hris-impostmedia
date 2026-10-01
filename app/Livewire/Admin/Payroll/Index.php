@@ -37,6 +37,7 @@ class Index extends Component
 
     public ?string $payment_date = null;
 
+    /** @var array<int, int> */
     public array $selectedEmployees = [];
 
     public bool $selectAll = true;
@@ -90,6 +91,9 @@ class Index extends Component
         $this->selectAll = count($this->selectedEmployees) === $this->activeEmployees()->count();
     }
 
+    /**
+     * @return Collection<int, Employee>
+     */
     private function activeEmployees(): Collection
     {
         return Employee::where('is_active', true)

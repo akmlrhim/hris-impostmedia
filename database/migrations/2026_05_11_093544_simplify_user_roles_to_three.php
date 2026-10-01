@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         // Bersihkan role_permissions lama yang tidak relevan

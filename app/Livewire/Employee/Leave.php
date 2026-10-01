@@ -25,6 +25,7 @@ class Leave extends Component
 
     public bool $showConfirm = false;
 
+    /** List filters — empty string means "all". */
     public string $statusFilter = '';
 
     public string $typeFilter = '';

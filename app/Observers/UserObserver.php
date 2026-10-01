@@ -6,6 +6,10 @@ use App\Models\User;
 
 class UserObserver
 {
+    /**
+     * Keep the linked employee's active state in sync with the user.
+     * Deactivating a user deactivates its employee, and vice versa.
+     */
     public function updated(User $user): void
     {
         if (! $user->wasChanged('is_active')) {

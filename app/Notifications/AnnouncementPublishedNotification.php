@@ -10,6 +10,7 @@ class AnnouncementPublishedNotification extends Notification
 {
     public function __construct(public readonly Announcement $announcement) {}
 
+    /** @return string[] */
     public function via(object $notifiable): array
     {
         return ['mail'];

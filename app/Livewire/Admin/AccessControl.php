@@ -78,6 +78,7 @@ class AccessControl extends Component
         }, permission: 'manage_users', genericError: 'Gagal menyimpan konfigurasi hak akses.');
     }
 
+    /** Roles that can be configured (Admin always has all, Employee has none). */
     private function editableRoles(): array
     {
         return [UserRole::HR];

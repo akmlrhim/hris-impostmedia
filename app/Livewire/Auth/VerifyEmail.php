@@ -16,6 +16,7 @@ class VerifyEmail extends Component
 
     public function mount(): void
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {
@@ -25,6 +26,7 @@ class VerifyEmail extends Component
 
     public function resend(): void
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\OvertimeStatus;
 use App\Traits\HasRouteHash;
+use Database\Factories\OvertimeRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class OvertimeRequest extends Model
 {
+    /** @use HasFactory<OvertimeRequestFactory> */
     use HasFactory, HasRouteHash;
 
     protected function casts(): array
@@ -50,6 +52,7 @@ class OvertimeRequest extends Model
         return (int) $this->started_at->diffInMinutes($this->ended_at);
     }
 
+    /** Human readable duration, e.g. "2j 30m". */
     public function durationLabel(): string
     {
         $minutes = $this->durationMinutes();
@@ -63,6 +66,10 @@ class OvertimeRequest extends Model
         return $remainder === 0 ? "{$hours}j" : "{$hours}j {$remainder}m";
     }
 
+    /**
+     * Work documentation stays editable by the employee after HR approval,
+     * so an approved overtime can still be documented once the work is done.
+     */
     public function documentationIsEditable(): bool
     {
         return $this->status !== OvertimeStatus::Rejected;

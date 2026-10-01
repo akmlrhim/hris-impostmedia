@@ -21,6 +21,9 @@ class ForgotPassword extends Component
 
     public bool $sent = false;
 
+    /**
+     * @return array<string, string>
+     */
     protected function messages(): array
     {
         return [

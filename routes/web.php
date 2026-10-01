@@ -40,6 +40,7 @@ use App\Livewire\Employee\Profile\Index as MobileProfile;
 use App\Livewire\Employee\RemoteWork as MobileRemoteWork;
 use App\Models\Employee;
 use App\Models\OvertimeRequest;
+use App\Models\User;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
 
+        /** @var User $user */
         $user = $request->user();
 
         $redirectTo = $user->isAdminPanel() && $user->employee === null

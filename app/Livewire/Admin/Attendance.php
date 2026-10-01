@@ -12,6 +12,7 @@ use App\Models\LeaveRequest;
 use App\Services\AttendanceLeaderboardService;
 use App\Services\WorkScheduleService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -34,8 +35,10 @@ class Attendance extends Component
 
     public const TAB_LEADERBOARD = 'leaderboard';
 
+    /** @var list<string> */
     public const TABS = [self::TAB_DAILY, self::TAB_RECAP, self::TAB_LEADERBOARD];
 
+    /** Statuses counted as physically present when summing "Total Hadir". */
     private const PRESENT_STATUSES = [
         AttendanceStatus::Present,
         AttendanceStatus::Late,
@@ -107,6 +110,12 @@ class Attendance extends Component
         };
     }
 
+    /**
+     * Month ranking driven by the same service the mobile leaderboard uses,
+     * so admin and employee numbers never disagree.
+     *
+     * @return array{board: Collection<int, Employee>, monthLabel: string}
+     */
     private function leaderboardData(AttendanceLeaderboardService $leaderboard): array
     {
         $start = $this->monthStart();
@@ -121,6 +130,12 @@ class Attendance extends Component
         ];
     }
 
+    /**
+     * The roster is driven by employees rather than attendance rows, so people
+     * who never checked in on the selected date still show up.
+     *
+     * @return array{employees: LengthAwarePaginator}
+     */
     private function dailyData(): array
     {
         $date = $this->date ?: now()->toDateString();
@@ -150,6 +165,15 @@ class Attendance extends Component
         ];
     }
 
+    /**
+     * Label for an employee with no attendance record on the selected date.
+     *
+     * The daily tab lists every active employee, so a blank row can mean four
+     * very different things. Spelling them out keeps this tab consistent with
+     * the monthly recap, which only ever counts the last one against anyone.
+     *
+     * @return array{label: string, class: string}
+     */
     public function missingState(Employee $employee): array
     {
         $date = $this->date ?: now()->toDateString();
@@ -179,6 +203,16 @@ class Attendance extends Component
         return ['label' => 'Tanpa Keterangan', 'class' => 'bg-red-100 text-red-700'];
     }
 
+    /**
+     * Per-employee attendance tally for the selected month.
+     *
+     * Each working day is classified exactly once, in priority order:
+     * an attendance record wins, then an approved leave request, and anything
+     * left over on an elapsed working day counts as absent without notice.
+     * Days off never count against anyone.
+     *
+     * @return array{employees: LengthAwarePaginator, recap: array<int, array<string, int>>, monthLabel: string, workingDays: int}
+     */
     private function recapData(): array
     {
         $start = $this->monthStart();
@@ -230,6 +264,12 @@ class Attendance extends Component
         ];
     }
 
+    /**
+     * @param  array<int, string>  $workingDates
+     * @param  Collection<int, AttendanceModel>  $records
+     * @param  Collection<int, LeaveRequest>  $leaves
+     * @return array<string, int>
+     */
     private function tallyEmployee(Employee $employee, array $workingDates, Collection $records, Collection $leaves): array
     {
         $row = array_fill_keys(array_column(AttendanceStatus::cases(), 'value'), 0);
@@ -286,6 +326,10 @@ class Attendance extends Component
         return $row;
     }
 
+    /**
+     * @param  Collection<int, LeaveRequest>  $leaves
+     * @return array<string, LeaveType>
+     */
     private function expandLeaveDates(Collection $leaves): array
     {
         $byDate = [];
@@ -302,6 +346,11 @@ class Attendance extends Component
         return $byDate;
     }
 
+    /**
+     * Whether $date can be judged for this employee at all.
+     *
+     * @param  array<string, true>  $covered  Dates that already have an attendance record
+     */
     private function isAssessable(Employee $employee, string $date, array $covered): bool
     {
         // Ada absensi berarti orangnya jelas bekerja hari itu, apa pun kata
@@ -330,6 +379,7 @@ class Attendance extends Component
         return Carbon::createFromFormat('Y-m', $this->normalizeMonth($this->month))->startOfMonth();
     }
 
+    /** Falls back to the current month when the URL carries a malformed value. */
     private function normalizeMonth(?string $month): string
     {
         if (! $month || preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month) !== 1) {

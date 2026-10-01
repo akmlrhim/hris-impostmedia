@@ -19,6 +19,7 @@ class Calendar extends Component
 
     public int $month;
 
+    /** Day whose attendance detail is shown below the grid, as Y-m-d. */
     public ?string $selectedDate = null;
 
     public function mount(): void
@@ -38,6 +39,7 @@ class Calendar extends Component
         $this->goToMonth(Carbon::create($this->year, $this->month, 1)->addMonthNoOverflow());
     }
 
+    /** Land on the month's first day, or on today when the month contains it. */
     private function goToMonth(Carbon $date): void
     {
         $this->year = $date->year;
@@ -47,6 +49,9 @@ class Calendar extends Component
             : $date->startOfMonth()->toDateString();
     }
 
+    /**
+     * @return array<int, array<int, ?Carbon>>
+     */
     private function buildWeeks(Carbon $monthStart, Carbon $monthEnd): array
     {
         $cursor = $monthStart->copy()->startOfWeek(Carbon::SUNDAY);
@@ -95,6 +100,14 @@ class Calendar extends Component
         ]);
     }
 
+    /**
+     * Pre-render every day of the month so tapping a date can swap the detail
+     * panel in the browser instead of waiting on a round trip.
+     *
+     * @param  Collection<string, AttendanceModel>  $attendances
+     * @param  Collection<string, Holiday>  $holidays
+     * @return array<string, array<string, mixed>>
+     */
     private function buildDayDetails(Carbon $monthStart, Carbon $monthEnd, Collection $attendances, Collection $holidays): array
     {
         $details = [];

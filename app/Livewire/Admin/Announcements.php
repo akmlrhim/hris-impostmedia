@@ -109,6 +109,13 @@ class Announcements extends Component
         ]);
     }
 
+    /**
+     * Sanitize rich-text HTML from the WYSIWYG editor.
+     * - Strips all disallowed elements (preserving inner text)
+     * - Removes every attribute except href on <a>
+     * - Rejects javascript:/vbscript:/data: URIs in href
+     * - Adds rel="noopener noreferrer" to external links
+     */
     private function sanitizeHtml(string $html): string
     {
         if (trim($html) === '') {
@@ -145,6 +152,7 @@ class Announcements extends Component
                 continue;
             }
 
+            /** @var \DOMElement $child */
             $tag = strtolower($child->nodeName);
             $remove = [];
 

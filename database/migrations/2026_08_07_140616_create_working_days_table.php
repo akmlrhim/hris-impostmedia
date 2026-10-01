@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /** Mon–Sat are working days by default, matching the company's current schedule. */
     private const DEFAULT_WORKING = [1, 2, 3, 4, 5, 6];
 
     public function up(): void
