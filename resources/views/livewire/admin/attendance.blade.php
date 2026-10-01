@@ -5,6 +5,7 @@
                 $tabs = [
                     \App\Livewire\Admin\Attendance::TAB_DAILY => 'Absensi Harian',
                     \App\Livewire\Admin\Attendance::TAB_RECAP => 'Rekap Bulanan',
+                    \App\Livewire\Admin\Attendance::TAB_LEADERBOARD => 'Peringkat',
                 ];
             @endphp
             @foreach ($tabs as $value => $label)
@@ -121,7 +122,7 @@
                 {{ $employees->links() }}
             </div>
         </div>
-    @else
+    @elseif ($tab === \App\Livewire\Admin\Attendance::TAB_RECAP)
         <div class="card p-4 space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                 <input wire:model.live="month" type="month" class="input md:w-52">
@@ -214,6 +215,95 @@
             </div>
             <div class="px-5 py-3 border-t border-slate-200">
                 {{ $employees->links() }}
+            </div>
+        </div>
+    @else
+        <div class="card p-4 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <input wire:model.live="month" type="month" class="input md:w-52">
+                <p class="text-sm text-slate-500">
+                    Peringkat kehadiran <span class="font-medium text-slate-700">{{ $monthLabel }}</span>
+                </p>
+            </div>
+            <p class="text-xs text-slate-500">
+                Diurutkan dari check-in paling pagi sepanjang bulan, bukan jumlah kehadiran.
+            </p>
+        </div>
+
+        <div class="card-table">
+            <div class="overflow-x-auto">
+                <table class="table-grid">
+                    <thead class="bg-slate-50">
+                        <tr class="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                            <th class="px-3 py-3 whitespace-nowrap text-center">Peringkat</th>
+                            <th class="px-5 py-3 whitespace-nowrap">Karyawan</th>
+                            <th class="px-3 py-3 whitespace-nowrap text-center">Check-in Terawal</th>
+                            <th class="px-3 py-3 whitespace-nowrap text-center">Hadir</th>
+                            <th class="px-3 py-3 whitespace-nowrap text-center">Tepat Waktu</th>
+                            <th class="px-3 py-3 whitespace-nowrap text-center">Terlambat</th>
+                            <th class="px-3 py-3 whitespace-nowrap text-center">Total Telat</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        @forelse ($board as $employee)
+                            @php
+                                $earliest = $employee->earliest_check_in
+                                    ? \Carbon\Carbon::parse($employee->earliest_check_in)->format('H:i')
+                                    : null;
+                            @endphp
+                            <tr class="hover:bg-slate-50" wire:key="board-{{ $employee->id }}">
+                                <td class="px-3 py-3 text-center">
+                                    @if ($employee->rank === 1)
+                                        <span class="badge bg-amber-100 text-amber-700">1</span>
+                                    @elseif ($employee->rank === 2)
+                                        <span class="badge bg-slate-100 text-slate-600">2</span>
+                                    @elseif ($employee->rank === 3)
+                                        <span class="badge bg-orange-100 text-orange-700">3</span>
+                                    @else
+                                        <span class="font-semibold text-slate-500">{{ $employee->rank }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-semibold text-slate-600 shrink-0">
+                                            @if ($employee->avatar_path)
+                                                <img src="{{ route('files.avatar', $employee) }}"
+                                                    class="w-full h-full object-cover">
+                                            @else
+                                                {{ strtoupper(substr($employee->full_name, 0, 1)) }}
+                                            @endif
+                                        </div>
+                                        <div class="whitespace-nowrap">
+                                            <p class="font-medium text-slate-900">{{ $employee->full_name }}</p>
+                                            <p class="text-xs text-slate-500">{{ $employee->employee_number }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td
+                                    class="px-3 py-3 whitespace-nowrap text-center {{ $earliest ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'text-slate-400' }}">
+                                    {{ $earliest ?? '-' }}
+                                </td>
+                                <td class="px-3 py-3 text-center font-semibold text-emerald-700">{{ $employee->present }}</td>
+                                <td class="px-3 py-3 text-center">{{ $employee->on_time }}</td>
+                                <td
+                                    class="px-3 py-3 text-center {{ $employee->late > 0 ? 'font-semibold text-amber-600' : 'text-slate-300' }}">
+                                    {{ $employee->late }}
+                                </td>
+                                <td
+                                    class="px-3 py-3 text-center {{ $employee->late_minutes > 0 ? 'font-semibold text-amber-600' : 'text-slate-300' }}">
+                                    {{ $employee->late_minutes }} menit
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-5 py-12 text-center text-slate-500">
+                                    Belum ada kehadiran pada {{ $monthLabel }}.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     @endif

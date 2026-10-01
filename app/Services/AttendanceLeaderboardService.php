@@ -89,6 +89,7 @@ class AttendanceLeaderboardService
                 $row = $rows->firstWhere('employee_id', $employee->id);
 
                 $employee->setAttribute('rank', $row->rank);
+                $employee->setAttribute('earliest_check_in', $row->earliest_check_in);
                 $employee->setAttribute('present', (int) $row->present);
                 $employee->setAttribute('on_time', (int) $row->on_time);
                 $employee->setAttribute('late', (int) $row->late);

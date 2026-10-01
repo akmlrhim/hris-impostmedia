@@ -9,6 +9,7 @@ use App\Enums\LeaveType;
 use App\Models\Attendance as AttendanceModel;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Services\AttendanceLeaderboardService;
 use App\Services\WorkScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -31,6 +32,11 @@ class Attendance extends Component
     public const TAB_DAILY = 'daily';
 
     public const TAB_RECAP = 'recap';
+
+    public const TAB_LEADERBOARD = 'leaderboard';
+
+    /** @var list<string> */
+    public const TABS = [self::TAB_DAILY, self::TAB_RECAP, self::TAB_LEADERBOARD];
 
     /** Statuses counted as physically present when summing "Total Hadir". */
     private const PRESENT_STATUSES = [
@@ -64,14 +70,14 @@ class Attendance extends Component
         $this->date = $this->date ?: now()->toDateString();
         $this->month = $this->normalizeMonth($this->month);
 
-        if (! in_array($this->tab, [self::TAB_DAILY, self::TAB_RECAP], true)) {
+        if (! in_array($this->tab, self::TABS, true)) {
             $this->tab = self::TAB_DAILY;
         }
     }
 
     public function setTab(string $tab): void
     {
-        if (! in_array($tab, [self::TAB_DAILY, self::TAB_RECAP], true)) {
+        if (! in_array($tab, self::TABS, true)) {
             return;
         }
 
@@ -95,11 +101,33 @@ class Attendance extends Component
         $this->resetPage();
     }
 
-    public function render(): mixed
+    public function render(AttendanceLeaderboardService $leaderboard): mixed
     {
-        return $this->tab === self::TAB_RECAP
-            ? view('livewire.admin.attendance', $this->recapData())
-            : view('livewire.admin.attendance', $this->dailyData());
+        return match ($this->tab) {
+            self::TAB_RECAP => view('livewire.admin.attendance', $this->recapData()),
+            self::TAB_LEADERBOARD => view('livewire.admin.attendance', $this->leaderboardData($leaderboard)),
+            default => view('livewire.admin.attendance', $this->dailyData()),
+        };
+    }
+
+    /**
+     * Month ranking driven by the same service the mobile leaderboard uses,
+     * so admin and employee numbers never disagree.
+     *
+     * @return array{board: Collection<int, Employee>, monthLabel: string}
+     */
+    private function leaderboardData(AttendanceLeaderboardService $leaderboard): array
+    {
+        $start = $this->monthStart();
+
+        return [
+            'board' => $leaderboard->board(
+                (int) $start->format('Y'),
+                (int) $start->format('n'),
+                PHP_INT_MAX,
+            ),
+            'monthLabel' => $start->translatedFormat('F Y'),
+        ];
     }
 
     /**
