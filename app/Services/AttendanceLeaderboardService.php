@@ -31,8 +31,10 @@ class AttendanceLeaderboardService
             ->where('employees.is_active', true)
             ->whereNull('employees.deleted_at')
             ->whereBetween('attendances.attendance_date', [$start->toDateString(), $end->toDateString()])
+            ->whereNotNull('attendances.check_in_at')
             ->groupBy('attendances.employee_id')
             ->select('attendances.employee_id')
+            ->selectRaw('MIN(attendances.check_in_at) as earliest_check_in')
             ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as on_time', [AttendanceStatus::Present->value])
             ->selectRaw('SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) as present', [
                 AttendanceStatus::Present->value,
@@ -47,6 +49,9 @@ class AttendanceLeaderboardService
 
         return $rows
             ->sort(function ($a, $b) {
+                if ($a->earliest_check_in && $b->earliest_check_in) {
+                    return $a->earliest_check_in <=> $b->earliest_check_in;
+                }
                 if ($b->present != $a->present) {
                     return $b->present <=> $a->present;
                 }
