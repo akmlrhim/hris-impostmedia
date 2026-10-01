@@ -32,9 +32,10 @@
             'icon' => 'clock',
             'fg' => 'text-accent-500',
         ],
-        $isWfo
-            ? ['route' => 'mobile.remote-work', 'label' => 'Ajukan WFA', 'icon' => 'laptop', 'fg' => 'text-amber-500']
-            : ['route' => 'mobile.payslip', 'label' => 'Slip Gaji', 'icon' => 'wallet', 'fg' => 'text-amber-500'],
+        // $isWfo
+        //     ? ['route' => 'mobile.remote-work', 'label' => 'Ajukan WFA', 'icon' => 'laptop', 'fg' => 'text-amber-500']
+        //     : ['route' => 'mobile.payslip', 'label' => 'Slip Gaji', 'icon' => 'wallet', 'fg' => 'text-amber-500'],
+        ['route' => 'mobile.remote-work', 'label' => 'Ajukan WFA', 'icon' => 'laptop', 'fg' => 'text-amber-500'],
     ];
   @endphp
   {{-- Amber slab sitting just behind the navy hero, so it only shows as two
@@ -128,53 +129,70 @@
     </div>
   @endif
 
-  {{-- Monthly stats --}}
-  @if ($monthStats !== null)
+  {{-- Attendance leaderboard --}}
+  @if ($standing !== null)
     <div class="px-5 mt-6">
-      <h3 class="section-title mb-3">Statistik Bulan Ini</h3>
-      <div class="grid grid-cols-3 gap-3">
-        @foreach ([['Hadir', $monthStats['hadir'], 'text-emerald-500'], ['Terlambat', $monthStats['terlambat'], 'text-amber-500'], ['Tidak Hadir', $monthStats['tidak_hadir'], 'text-rose-500']] as [$label, $value, $fg])
-          <div class="card-float p-3 text-center">
-            <p class="text-2xl font-bold {{ $fg }}">{{ $value }}</p>
-            <p class="text-[11px] text-navy-400 mt-0.5">{{ $label }}</p>
+      <h3 class="section-title mb-3">Peringkat Kehadiran</h3>
+      <div class="card-float p-4">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-2xl bg-amber-50 flex flex-col items-center justify-center shrink-0">
+            @if ($standing['rank'])
+              <p class="text-2xl font-bold text-amber-600 leading-none">#{{ $standing['rank'] }}</p>
+              <p class="text-[10px] text-amber-500 mt-1">dari {{ $standing['total'] }}</p>
+            @else
+              <x-icon name="trending-up" class="w-6 h-6 text-amber-400" />
+            @endif
           </div>
-        @endforeach
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold text-navy-800">
+              @if ($standing['rank'] === 1)
+                Peringkat teratas!
+              @elseif ($standing['rank'])
+                Peringkat ke-{{ $standing['rank'] }} bulan ini
+              @else
+                Belum ada kehadiran bulan ini
+              @endif
+            </p>
+            <div class="grid grid-cols-3 gap-2 mt-3">
+              <div>
+                <p class="text-lg font-bold text-emerald-600">{{ $standing['present'] }}</p>
+                <p class="text-[10px] text-navy-400">Hadir</p>
+              </div>
+              <div>
+                <p class="text-lg font-bold text-amber-600">{{ $standing['late'] }}</p>
+                <p class="text-[10px] text-navy-400">Terlambat</p>
+              </div>
+              <div>
+                <p class="text-lg font-bold text-navy-700">{{ $standing['on_time_rate'] }}%</p>
+                <p class="text-[10px] text-navy-400">Tepat Waktu</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if ($leaderboard->isNotEmpty())
+          <div class="mt-3 pt-3 border-t border-slate-100 space-y-2">
+            @foreach ($leaderboard as $top)
+              <div class="flex items-center gap-2.5">
+                <span class="w-5 text-center text-xs font-bold {{ $top->rank === 1 ? 'text-amber-600' : ($top->rank === 2 ? 'text-slate-500' : 'text-amber-700') }}">
+                  {{ $top->rank }}
+                </span>
+                <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-[10px] font-semibold text-slate-600 shrink-0">
+                  @if ($top->avatar_path)
+                    <img src="{{ route('files.avatar', $top) }}" class="w-full h-full object-cover">
+                  @else
+                    {{ strtoupper(substr($top->full_name, 0, 1)) }}
+                  @endif
+                </div>
+                <p class="flex-1 text-xs font-medium text-navy-700 truncate">{{ $top->full_name }}</p>
+                <span class="text-xs font-semibold text-emerald-600">{{ $top->present }}</span>
+              </div>
+            @endforeach
+          </div>
+        @endif
       </div>
     </div>
   @endif
-
-  {{-- Attendance history --}}
-  <div class="px-5 mt-6">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="section-title">Absensi</h3>
-      <a wire:navigate href="{{ route('mobile.calendar') }}" class="link-accent">Lihat Semua</a>
-    </div>
-
-    @if ($recentAttendances->isEmpty())
-      <div class="card-float p-6 text-center text-sm text-navy-400">
-        Belum ada riwayat absensi.
-      </div>
-    @else
-      <div class="space-y-3">
-        @foreach ($recentAttendances as $a)
-          <div class="card-float p-4" wire:key="att-{{ $a->id }}">
-            <p class="font-bold text-navy-800 text-sm">{{ $a->attendance_date->translatedFormat('D, d M Y') }}</p>
-            <div class="grid grid-cols-2 gap-3 mt-3">
-              @foreach ([['Mulai Kerja', $a->check_in_at, 'text-navy-600'], ['Selesai Kerja', $a->check_out_at, 'text-accent-600']] as [$label, $time, $fg])
-                <div class="flex items-center gap-2">
-                  <x-icon name="map-pin" class="w-5 h-5 text-rose-500 shrink-0" />
-                  <div class="min-w-0">
-                    <p class="text-[11px] text-navy-400 leading-tight">{{ $label }}</p>
-                    <p class="text-sm font-bold {{ $fg }}">{{ $time?->format('H:i') ?? '--:--' }}</p>
-                  </div>
-                </div>
-              @endforeach
-            </div>
-          </div>
-        @endforeach
-      </div>
-    @endif
-  </div>
 
   {{-- Announcements --}}
   <div class="px-5 mt-6">
