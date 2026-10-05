@@ -33,7 +33,7 @@ class Index extends Component
     public string $work_type_filter = '';
 
     #[Url]
-    public string $active_filter = '';
+    public string $filterStatus = '';
 
     // --- Form modal state ---
     public bool $showForm = false;
@@ -121,7 +121,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function updatingActiveFilter(): void
+    public function updatingFilterStatus(): void
     {
         $this->resetPage();
     }
@@ -332,7 +332,7 @@ class Index extends Component
                     ->orWhere('nik', 'like', "%{$this->search}%");
             }))
             ->when($this->work_type_filter !== '', fn ($q) => $q->where('work_type', $this->work_type_filter))
-            ->when($this->active_filter !== '', fn ($q) => $q->where('is_active', $this->active_filter === '1'))
+            ->when($this->filterStatus !== '', fn ($q) => $q->where('is_active', $this->filterStatus === '1'))
             ->latest()
             ->paginate(15);
 

@@ -24,6 +24,8 @@ class UserManagement extends Component
 
     public string $filterRole = '';
 
+    public string $filterStatus = '';
+
     public bool $showForm = false;
 
     public ?int $editingId = null;
@@ -68,6 +70,11 @@ class UserManagement extends Component
     }
 
     public function updatedFilterRole(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterStatus(): void
     {
         $this->resetPage();
     }
@@ -274,6 +281,7 @@ class UserManagement extends Component
                     ->orWhere('email', 'like', "%{$this->search}%");
             }))
             ->when($this->filterRole, fn ($q) => $q->whereJsonContains('roles', $this->filterRole))
+            ->when($this->filterStatus !== '', fn ($q) => $q->where('is_active', $this->filterStatus === '1'))
             ->with('employee:id,user_id,full_name,employee_number')
             ->orderBy('name')
             ->paginate(20);

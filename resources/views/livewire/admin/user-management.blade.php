@@ -17,6 +17,11 @@
         <option value="{{ $r->value }}">{{ $r->label() }}</option>
       @endforeach
     </select>
+    <select wire:model.live="filterStatus" class="input w-40">
+      <option value="">Semua Status</option>
+      <option value="1">Aktif</option>
+      <option value="0">Nonaktif</option>
+    </select>
   </div>
 
   @include('livewire.admin.partials.user-form-modal')
