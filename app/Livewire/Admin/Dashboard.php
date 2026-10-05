@@ -21,12 +21,38 @@ class Dashboard extends Component
         $today = now()->toDateString();
         $isOffDay = $schedule->isOffDay($today);
 
-        $stats = Cache::remember('admin.dashboard.stats.'.$today, 300, function () use ($today) {
-            return [
-                'total_employees' => Employee::where('is_active', true)->count(),
-                'present_today' => Attendance::where('attendance_date', $today)
+        $stats = Cache::remember('admin.dashboard.stats.v2.'.$today, 300, function () use ($today) {
+            $total = Employee::where('is_active', true)->count();
+
+            $counts = fn (string $date) => [
+                'present' => Attendance::where('attendance_date', $date)
                     ->whereIn('status', [AttendanceStatus::Present, AttendanceStatus::Late])
                     ->count(),
+                'late' => Attendance::where('attendance_date', $date)
+                    ->where('status', AttendanceStatus::Late)
+                    ->count(),
+            ];
+
+            $todayCounts = $counts($today);
+            $yesterdayCounts = $counts(now()->subDay()->toDateString());
+
+            $pct = fn (int $current, int $previous) => $previous > 0
+                ? (int) round(($current - $previous) / $previous * 100)
+                : null;
+
+            $missing = max(0, $total - $todayCounts['present']);
+            $missingYesterday = max(0, $total - $yesterdayCounts['present']);
+
+            return [
+                'total_employees' => $total,
+                'present_today' => $todayCounts['present'],
+                'late_today' => $todayCounts['late'],
+                'missing_today' => $missing,
+                'delta' => [
+                    'present' => $pct($todayCounts['present'], $yesterdayCounts['present']),
+                    'late' => $pct($todayCounts['late'], $yesterdayCounts['late']),
+                    'missing' => $pct($missing, $missingYesterday),
+                ],
             ];
         });
 

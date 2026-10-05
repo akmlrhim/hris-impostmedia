@@ -42,14 +42,30 @@
   @endif
 
   {{-- Stats grid --}}
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <x-stat-card label="Total Karyawan" :value="$stats['total_employees']" icon="users" color="bg-blue-500" />
-    <x-stat-card label="Hadir Hari Ini" :value="$stats['present_today']" icon="check" color="bg-emerald-500" />
+  @php
+    $cards = [
+        ['label' => 'Total Karyawan', 'value' => $stats['total_employees'], 'icon' => 'users', 'color' => 'bg-blue-100 text-blue-600', 'delta' => null, 'goodWhenDown' => false],
+        ['label' => 'Hadir Hari Ini', 'value' => $stats['present_today'], 'icon' => 'check-circle', 'color' => 'bg-emerald-100 text-emerald-600', 'delta' => $stats['delta']['present'], 'goodWhenDown' => false],
+        ['label' => 'Terlambat Hari Ini', 'value' => $stats['late_today'], 'icon' => 'clock', 'color' => 'bg-amber-100 text-amber-600', 'delta' => $stats['delta']['late'], 'goodWhenDown' => true],
+        ['label' => 'Tidak Hadir Hari Ini', 'value' => $stats['missing_today'], 'icon' => 'user-x', 'color' => 'bg-rose-100 text-rose-600', 'delta' => $stats['delta']['missing'], 'goodWhenDown' => true],
+    ];
+  @endphp
+  <div class="card rounded-md shadow-sm overflow-hidden grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-200">
+    @foreach ($cards as $c)
+      <x-stat-card
+        :label="$c['label']"
+        :value="$c['value']"
+        :icon="$c['icon']"
+        :color="$c['color']"
+        :delta="$c['delta']"
+        :goodWhenDown="$c['goodWhenDown']"
+        deltaLabel="vs kemarin" />
+    @endforeach
   </div>
 
   <div class="grid grid-cols-1 gap-6">
     {{-- Today's check-ins --}}
-    <div class="card overflow-hidden">
+    <div class="card rounded-md shadow-sm overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
         <h2 class="font-semibold text-black">Check-in Hari Ini</h2>
         <a wire:navigate href="{{ route('admin.attendance') }}" class="text-sm text-brand-600 hover:underline">Lihat

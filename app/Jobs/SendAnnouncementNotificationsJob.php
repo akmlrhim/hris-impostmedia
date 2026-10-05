@@ -17,32 +17,36 @@ class SendAnnouncementNotificationsJob implements ShouldQueue
 
     public int $timeout = 110;
 
-    /** @param int[] $recipientIds */
-    public function __construct(
-        private readonly Announcement $announcement,
-        private readonly array $recipientIds,
-    ) {}
+    public function __construct(public readonly int $announcementId) {}
 
     public function handle(): void
     {
-        $recipients = User::whereIn('id', $this->recipientIds)->get();
+        $announcement = Announcement::find($this->announcementId);
+
+        if (! $announcement) {
+            return;
+        }
+
+        $recipients = $announcement->audience === 'selected'
+            ? $announcement->recipients()->get()
+            : User::where('is_active', true)->whereNotNull('email')->where('email', '!=', '')->get();
 
         Log::info('Mengirim notifikasi pengumuman', [
-            'announcement_id' => $this->announcement->id,
+            'announcement_id' => $announcement->id,
             'total_recipients' => $recipients->count(),
         ]);
 
         foreach ($recipients as $index => $recipient) {
-            // Resend rate limit: 2 req/sec — jeda 600ms agar aman
+            // ponytail: jeda 600ms/recipient demi rate limit Resend — ganti ShouldQueue per-user bila recipient > ~150
             if ($index > 0) {
                 usleep(600_000);
             }
 
             try {
-                $recipient->notify(new AnnouncementPublishedNotification($this->announcement));
+                $recipient->notify(new AnnouncementPublishedNotification($announcement));
             } catch (\Throwable $e) {
                 Log::error('Gagal mengirim notifikasi pengumuman', [
-                    'announcement_id' => $this->announcement->id,
+                    'announcement_id' => $announcement->id,
                     'user_id' => $recipient->id,
                     'email' => $recipient->email,
                     'message' => $e->getMessage(),

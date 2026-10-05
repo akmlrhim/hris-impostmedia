@@ -4,9 +4,11 @@ namespace App\Livewire\Employee;
 
 use App\Models\Announcement;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.mobile')]
+#[Title('Pengumuman')]
 class AnnouncementShow extends Component
 {
     public Announcement $announcement;
@@ -14,8 +16,7 @@ class AnnouncementShow extends Component
     public function mount(Announcement $announcement): void
     {
         abort_unless(
-            $announcement->published_at && $announcement->published_at->isPast()
-                && (! $announcement->expires_at || $announcement->expires_at->isFuture()),
+            $announcement->currentlyPublished()->visibleTo(auth()->user())->exists(),
             404
         );
 

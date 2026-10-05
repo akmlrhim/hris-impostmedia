@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Concerns\HandlesAdminActions;
 use App\Models\Announcement;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -30,6 +31,9 @@ class Announcements extends Component
 
     public string $audience = 'all';
 
+    /** @var array<int, int> */
+    public array $target_users = [];
+
     public bool $is_pinned = false;
 
     public bool $publish_now = true;
@@ -39,7 +43,7 @@ class Announcements extends Component
 
     public function open(?int $id = null): void
     {
-        $this->reset(['title', 'content', 'audience', 'is_pinned', 'publish_now', 'expires_at', 'editingId']);
+        $this->reset(['title', 'content', 'audience', 'target_users', 'is_pinned', 'publish_now', 'expires_at', 'editingId']);
         $this->resetValidation();
 
         if ($id) {
@@ -48,6 +52,7 @@ class Announcements extends Component
             $this->title = $a->title;
             $this->content = $a->content;
             $this->audience = $a->audience;
+            $this->target_users = $a->recipients()->pluck('users.id')->all();
             $this->is_pinned = (bool) $a->is_pinned;
             $this->publish_now = (bool) $a->published_at;
             $this->expires_at = $a->expires_at?->toDateString() ?? '';
@@ -60,25 +65,37 @@ class Announcements extends Component
     {
         $this->validate();
 
-        $data = [
-            'title' => $this->title,
-            'content' => $this->sanitizeHtml($this->content),
-            'audience' => $this->audience,
-            'is_pinned' => $this->is_pinned,
-            'published_at' => $this->publish_now ? now() : null,
-            'expires_at' => $this->expires_at ? Carbon::parse($this->expires_at)->endOfDay() : null,
-            'author_id' => auth()->id(),
-        ];
+        $this->validateOnly('target_users', $this->audience === 'selected'
+            ? ['target_users' => 'required|array|min:1', 'target_users.*' => 'integer|exists:users,id']
+            : ['target_users' => 'nullable']);
 
-        $this->safeAction(function () use ($data) {
-            if ($this->editingId) {
-                Announcement::findOrFail($this->editingId)->update($data);
-                $this->toast('success', 'Pengumuman diperbarui.');
-            } else {
-                Announcement::create($data);
-                $this->toast('success', 'Pengumuman ditambahkan.');
-            }
+        $this->safeAction(function () {
+            $announcement = $this->editingId
+                ? Announcement::findOrFail($this->editingId)
+                : new Announcement;
 
+            $announcement->fill([
+                'author_id' => auth()->id(),
+                'title' => $this->title,
+                'content' => $this->sanitizeHtml($this->content),
+                'audience' => $this->audience,
+                'is_pinned' => $this->is_pinned,
+                'expires_at' => $this->expires_at ? Carbon::parse($this->expires_at)->endOfDay() : null,
+            ]);
+            $announcement->save();
+
+            $announcement->recipients()->sync($this->audience === 'selected' ? $this->target_users : []);
+
+            // Publish after recipients sync, so the observer notifies the right people
+            $announcement->published_at = $this->publish_now ? ($announcement->published_at ?? now()) : null;
+            $announcement->save();
+
+            $this->logActivity(
+                $this->editingId ? 'announcement.updated' : 'announcement.created',
+                ($this->editingId ? 'Memperbarui' : 'Membuat')." pengumuman: {$announcement->title}",
+                $announcement
+            );
+            $this->toast('success', $this->editingId ? 'Pengumuman diperbarui.' : 'Pengumuman ditambahkan.');
             $this->showForm = false;
         }, permission: 'manage_announcements', genericError: 'Gagal menyimpan pengumuman.');
     }
@@ -87,9 +104,9 @@ class Announcements extends Component
     {
         $this->safeAction(function () use ($id) {
             $ann = Announcement::findOrFail($id);
-            $title = $ann->title;
+            $snapshot = ['id' => $id, 'title' => $ann->title];
             $ann->delete();
-            $this->logActivity('announcement.deleted', "Menghapus pengumuman: {$title}", null, ['id' => $id, 'title' => $title]);
+            $this->logActivity('announcement.deleted', "Menghapus pengumuman: {$ann->title}", null, $snapshot);
             $this->toast('success', 'Pengumuman dihapus.');
         }, permission: 'manage_announcements', genericError: 'Gagal menghapus pengumuman.');
     }
@@ -103,9 +120,13 @@ class Announcements extends Component
     {
         return view('livewire.admin.announcements', [
             'announcements' => Announcement::with('author')
+                ->withCount('recipients')
                 ->orderByDesc('is_pinned')
                 ->latest()
                 ->paginate(10),
+            'users' => User::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 

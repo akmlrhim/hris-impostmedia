@@ -129,67 +129,27 @@
     </div>
   @endif
 
-  {{-- Attendance leaderboard --}}
-  @if ($standing !== null)
-    <div class="px-5 mt-6">
-      <h3 class="section-title mb-3">Peringkat Kehadiran</h3>
-      <div class="card-float p-4">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-2xl bg-amber-50 flex flex-col items-center justify-center shrink-0">
-            @if ($standing['rank'])
-              <p class="text-2xl font-bold text-amber-600 leading-none">#{{ $standing['rank'] }}</p>
-              <p class="text-[10px] text-amber-500 mt-1">dari {{ $standing['total'] }}</p>
-            @else
-              <x-icon name="trending-up" class="w-6 h-6 text-amber-400" />
-            @endif
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold text-navy-800">
-              @if ($standing['rank'] === 1)
-                Peringkat teratas!
-              @elseif ($standing['rank'])
-                Peringkat ke-{{ $standing['rank'] }} bulan ini
-              @else
-                Belum ada kehadiran bulan ini
-              @endif
-            </p>
-            <div class="grid grid-cols-3 gap-2 mt-3">
-              <div>
-                <p class="text-lg font-bold text-emerald-600">{{ $standing['present'] }}</p>
-                <p class="text-[10px] text-navy-400">Hadir</p>
-              </div>
-              <div>
-                <p class="text-lg font-bold text-amber-600">{{ $standing['late'] }}</p>
-                <p class="text-[10px] text-navy-400">Terlambat</p>
-              </div>
-              <div>
-                <p class="text-lg font-bold text-navy-700">{{ $standing['on_time_rate'] }}%</p>
-                <p class="text-[10px] text-navy-400">Tepat Waktu</p>
-              </div>
-            </div>
-          </div>
+  {{-- Attendance stats compact --}}
+  @if ($stats !== null)
+    <div class="px-5 mt-5">
+      <h3 class="text-sm font-bold text-navy-800 mb-2.5">Statistik Bulan Ini</h3>
+      <div class="grid grid-cols-4 gap-2">
+        <div class="rounded-xl bg-emerald-50 p-2.5 text-center">
+          <p class="text-lg font-bold text-emerald-600 leading-none">{{ $stats['present'] }}</p>
+          <p class="text-[10px] text-emerald-700 mt-0.5">Hadir</p>
         </div>
-
-        @if ($leaderboard->isNotEmpty())
-          <div class="mt-3 pt-3 border-t border-slate-100 space-y-2">
-            @foreach ($leaderboard as $top)
-              <div class="flex items-center gap-2.5">
-                <span class="w-5 text-center text-xs font-bold {{ $top->rank === 1 ? 'text-amber-600' : ($top->rank === 2 ? 'text-slate-500' : 'text-amber-700') }}">
-                  {{ $top->rank }}
-                </span>
-                <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-[10px] font-semibold text-slate-600 shrink-0">
-                  @if ($top->avatar_path)
-                    <img src="{{ route('files.avatar', $top) }}" class="w-full h-full object-cover">
-                  @else
-                    {{ strtoupper(substr($top->full_name, 0, 1)) }}
-                  @endif
-                </div>
-                <p class="flex-1 text-xs font-medium text-navy-700 truncate">{{ $top->full_name }}</p>
-                <span class="text-xs font-semibold text-emerald-600">{{ $top->present }}</span>
-              </div>
-            @endforeach
-          </div>
-        @endif
+        <div class="rounded-xl bg-amber-50 p-2.5 text-center">
+          <p class="text-lg font-bold text-amber-600 leading-none">{{ $stats['late'] }}</p>
+          <p class="text-[10px] text-amber-700 mt-0.5">Telat</p>
+        </div>
+        <div class="rounded-xl bg-rose-50 p-2.5 text-center">
+          <p class="text-lg font-bold text-rose-600 leading-none">{{ $stats['absent'] }}</p>
+          <p class="text-[10px] text-rose-700 mt-0.5">Tdk Absen</p>
+        </div>
+        <div class="rounded-xl bg-navy-50 p-2.5 text-center">
+          <p class="text-lg font-bold text-navy-700 leading-none">{{ $stats['on_time_rate'] }}%</p>
+          <p class="text-[10px] text-navy-500 mt-0.5">Tepat Wkt</p>
+        </div>
       </div>
     </div>
   @endif
@@ -208,7 +168,10 @@
             class="block p-4 active:bg-slate-50 transition">
             <div class="flex items-start gap-3">
               @if ($a->is_pinned)
-                <span class="badge bg-sun-400/25 text-amber-700 shrink-0 mt-0.5">📌</span>
+                <span class="badge bg-sun-400/25 text-amber-700 shrink-0 mt-0.5">
+                  <x-icon name="flag" class="w-3 h-3" />
+                  <span class="sr-only">Disematkan</span>
+                </span>
               @endif
               <div class="flex-1 min-w-0">
                 <p class="font-bold text-navy-800 text-sm">{{ $a->title }}</p>

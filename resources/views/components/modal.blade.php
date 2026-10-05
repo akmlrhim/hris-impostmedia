@@ -27,10 +27,12 @@
 <div x-data="{ open: @entangle($show) }"
      x-show="open"
      x-on:keydown.escape.window="@if ($closeable) open = false @endif"
-     class="fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center"
+     x-effect="const html = document.documentElement; if (open) { const width = window.innerWidth - html.clientWidth; document.body.style.paddingRight = width > 0 ? width + 'px' : ''; html.classList.add('overflow-hidden'); } else { html.classList.remove('overflow-hidden'); document.body.style.paddingRight = ''; }"
+     class="fixed inset-0 z-[60] flex flex-col justify-end sm:items-center sm:justify-center"
      style="display: none;">
 
-    {{-- Backdrop --}}
+    {{-- Backdrop: -inset-5 bleeds past the layout viewport so classic-scrollbar
+         gutters (right/bottom ~16px on Windows) stay covered --}}
     <div x-show="open"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
@@ -39,7 +41,7 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          @if ($closeable) @click="open = false" @endif
-         class="absolute inset-0 bg-slate-900/60"></div>
+         class="absolute -inset-5 bg-slate-900/75"></div>
 
     {{-- Panel --}}
     <div x-show="open"
@@ -50,7 +52,7 @@
          x-transition:leave-start="translate-y-0 sm:opacity-100 sm:scale-100"
          x-transition:leave-end="translate-y-full sm:translate-y-0 sm:opacity-0 sm:scale-95"
          class="relative flex flex-col bg-white w-full {{ $widthClass }}
-                rounded-t-2xl sm:rounded-xl sm:mx-4
+                rounded-t-2xl sm:rounded-xl sm:mx-4 shadow-2xl
                 max-h-[92dvh] sm:max-h-[85dvh]">
 
         {{-- Drag handle (mobile only) --}}
@@ -74,8 +76,15 @@
         @endif
 
         {{-- Body: scrolls on its own so the header stays put on long forms --}}
-        <div class="flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-sheet">
+        <div class="flex-1 overflow-y-auto overscroll-contain px-5 pt-5 {{ isset($footer) ? 'pb-5' : 'pb-sheet' }}">
             {{ $slot }}
         </div>
+
+        {{-- Optional pinned footer: stays put while the body scrolls --}}
+        @isset($footer)
+            <div class="shrink-0 border-t border-slate-100 bg-white px-5 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:rounded-b-xl sm:pb-3">
+                {{ $footer }}
+            </div>
+        @endisset
     </div>
 </div>

@@ -18,7 +18,8 @@
         });
     },
 }" x-show="open" x-on:keydown.escape.window="cancel()" @click.self="cancel()"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4" style="display: none;">
+  x-effect="const html = document.documentElement; if (open) { const width = window.innerWidth - html.clientWidth; document.body.style.paddingRight = width > 0 ? width + 'px' : ''; html.classList.add('overflow-hidden'); } else { html.classList.remove('overflow-hidden'); document.body.style.paddingRight = ''; }"
+  class="fixed -inset-5 z-[60] overflow-hidden flex items-center justify-center bg-slate-900/75 px-4" style="display: none;">
 
   <div x-show="open" x-transition.scale.origin.center @click.stop
     class="relative bg-white rounded-xl w-full max-w-md p-5 md:p-6">

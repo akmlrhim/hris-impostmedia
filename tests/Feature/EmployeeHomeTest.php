@@ -2,6 +2,7 @@
 
 use App\Enums\AttendanceStatus;
 use App\Livewire\Employee\Home;
+use App\Models\Announcement;
 use App\Models\Attendance as AttendanceModel;
 use App\Models\Employee;
 use App\Models\User;
@@ -56,4 +57,49 @@ test('the mobile home page renders when the leaderboard cache is already warm', 
 
     Livewire::actingAs($this->user)->test(Home::class)->assertOk();
     Livewire::actingAs($this->user)->test(Home::class)->assertOk();
+});
+
+it('shows announcement for all users', function () {
+    $announcement = Announcement::create([
+        'author_id' => $this->user->id,
+        'title' => 'Test All',
+        'content' => 'All employees',
+        'audience' => 'all',
+        'published_at' => now(),
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(Home::class)
+        ->assertSee('Test All');
+});
+
+it('shows announcement targeted to user', function () {
+    $announcement = Announcement::create([
+        'author_id' => $this->user->id,
+        'title' => 'Test Targeted',
+        'content' => 'Only for you',
+        'audience' => 'selected',
+        'published_at' => now(),
+    ]);
+    $announcement->recipients()->attach($this->user->id);
+
+    Livewire::actingAs($this->user)
+        ->test(Home::class)
+        ->assertSee('Test Targeted');
+});
+
+it('hides announcement not targeted to user', function () {
+    $other = User::factory()->create(['roles' => ['employee']]);
+    $announcement = Announcement::create([
+        'author_id' => $this->user->id,
+        'title' => 'Test Hidden',
+        'content' => 'Only for other',
+        'audience' => 'selected',
+        'published_at' => now(),
+    ]);
+    $announcement->recipients()->attach($other->id);
+
+    Livewire::actingAs($this->user)
+        ->test(Home::class)
+        ->assertDontSee('Test Hidden');
 });
